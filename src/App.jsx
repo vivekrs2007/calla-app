@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Fragment } from "react";
 import {
   Home, Inbox, Users, Bell, Settings, Plus, Mic, MicOff,
   ChevronLeft, ChevronRight, ChevronDown, ChevronUp,
@@ -611,7 +611,7 @@ function Briefing({events,members,onSelect}) {
         var showNoonDivider=i>0&&todayEvs[i-1].time<"12:00"&&ev.time>="12:00";
         const m=gm(ev.memberId),past=toM(ev.time)<now,next=!past&&todayEvs.slice(0,i).every(e=>toM(e.time)<now);
         return (
-          <React.Fragment key={ev.id}>
+          <Fragment key={ev.id}>
           {showNoonDivider&&(
             <div style={{display:"flex",alignItems:"center",gap:8,margin:"10px 0 8px"}}>
               <div style={{flex:1,height:1,background:"var(--border)"}}/>
@@ -641,7 +641,7 @@ function Briefing({events,members,onSelect}) {
             {next&&<Pill color={ev.color} bg={ev.color+"15"} style={{animation:"pulse 2s infinite"}}>Next</Pill>}
             {past?<Check size={13} color="#9CA3AF"/>:<ChevronRight size={14} color="#D1D5DB"/>}
           </div>
-          </React.Fragment>
+          </Fragment>
         );
       })}
       {tomEvs.length>0&&(
@@ -1046,7 +1046,7 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
         )}
 
         {/* Notes */}
-        {ev.notes&&<Card style={{marginBottom:16,background:"#FAFAF7"}}><div style={{display:"flex",gap:10}}><FileText size={15} color="#9CA3AF" style={{marginTop:2,flexShrink:0}}/><p style={{fontSize:15,color:"var(--cream2)",lineHeight:1.65}}>{ev.notes}</p></div></Card>}
+        {ev.notes&&<Card style={{marginBottom:16,background:"var(--ink3)"}}><div style={{display:"flex",gap:10}}><FileText size={15} color="var(--cream3)" style={{marginTop:2,flexShrink:0}}/><p style={{fontSize:15,color:"var(--cream2)",lineHeight:1.65}}>{ev.notes}</p></div></Card>}
 
         {/* Packing */}
         {ev.packingList&&ev.packingList.length>0&&(
@@ -1664,7 +1664,7 @@ function DaySheet({date,events,members,onClose,onSelect}) {
 }
 
 /* ─── Dashboard ─────────────────────────────────────────────────────────── */
-function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss}) {
+function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,initialSel,onClearSel}) {
   const [anchor,setAnchor]=useState(todayStr);
   const [showAdd,setShowAdd]=useState(false);
   const [showVoice,setShowVoice]=useState(false);
@@ -1672,6 +1672,7 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss}) 
   const [map,setMap]=useState(false);
   const [dayView,setDayView]=useState(null);
   const [calView,setCalView]=useState("month");
+  useEffect(()=>{if(initialSel){setSel(initialSel);if(onClearSel)onClearSel();}},[]); 
   const week=getWeek(anchor),cfls=conflicts(events);
   const gm=id=>members.find(m=>m.id===id)||{emoji:"👤",color:"var(--muted)"};
   const prev=()=>{const d=new Date(anchor);d.setDate(d.getDate()+(calView==="month"?-28:-7));setAnchor(d.toISOString().split("T")[0]);};
@@ -2941,7 +2942,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
   };
 
   if (done) return (
-    <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:"var(--cream)", padding:32, textAlign:"center" }}>
+    <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:"var(--ink)", padding:32, textAlign:"center" }}>
       <div className="fu">
         <div style={{ fontSize:72, marginBottom:20 }}>🎉</div>
         <h2 style={{ fontSize:26, fontWeight:800, letterSpacing:"-.5px", marginBottom:10 }}>Welcome to Calla Family!</h2>
@@ -2952,7 +2953,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
   );
 
   return (
-    <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", background:"var(--cream)" }}>
+    <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", background:"var(--ink)" }}>
       {/* Header */}
       <div style={{ background:"var(--sage)", padding:"48px 28px 36px", textAlign:"center", position:"relative" }}>
         {/* Decorative circles */}
@@ -3091,10 +3092,10 @@ function TrialBanner({ daysLeft, onUpgrade }) {
   const urgent  = daysLeft <= 7;
   const warning = daysLeft <= 14;
 
-  const bg     = urgent  ? "#FEF2F2" : warning ? "#FFFBEB" : "#F0FDF4";
-  const border = urgent  ? "#FECACA" : warning ? "rgba(196,149,58,.35)" : "#A7F3D0";
-  const color  = urgent  ? "#DC2626" : warning ? "#D97706" : "var(--sage2)";
-  const icon   = urgent  ? "⚠️"       : warning ? "⏳"      : "✓";
+  const bg     = urgent  ? "rgba(196,90,90,.12)"   : warning ? "rgba(196,149,58,.1)" : "rgba(46,107,94,.1)";
+  const border = urgent  ? "rgba(196,90,90,.3)"    : warning ? "rgba(196,149,58,.35)" : "rgba(46,107,94,.25)";
+  const color  = urgent  ? "var(--rose)"           : warning ? "var(--gold2)"        : "var(--sage3)";
+  const icon   = urgent  ? "⚠️"                    : warning ? "⏳"                  : "✓";
 
   const msg = urgent
     ? `Only ${daysLeft} day${daysLeft!==1?"s":""} left — upgrade now to keep your data`
@@ -3388,7 +3389,7 @@ export default function App() {
   const upc=events.filter(e=>e.date>=todayStr&&e.date<=addDays(todayStr,2)).length;
 
   const screen=()=>{
-    if(tab==="home")    return <DashScreen events={events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)}/>;
+    if(tab==="home")    return <DashScreen events={events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)}/>;
     if(tab==="inbox")   return <InboxScreen members={members} onAdd={addEvent}/>;
     if(tab==="lists")   return <ListsScreen members={members}/>;
     if(tab==="members") return <MembersScreen members={members} setMembers={setMembers} events={events}/>;
