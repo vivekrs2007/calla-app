@@ -91,6 +91,8 @@ const GS = () => (
     /* ── Animations ── */
     @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
     @keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+    @keyframes slideDown{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}}
+    .sheet-top{animation:slideDown .38s cubic-bezier(.32,1,.4,1) forwards}
     @keyframes backdropIn{from{opacity:0}to{opacity:1}}
     @keyframes screenEnter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
     @keyframes toastIn{from{opacity:0;transform:translateY(-10px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
@@ -530,7 +532,7 @@ function CoParentSetup({user,onDone}) {
           <p style={{color:"var(--cream3)",fontSize:16,lineHeight:1.75,textAlign:"center",marginBottom:28,fontWeight:300}}>Invite your partner so you both see every event, change and reminder — in real time. No more "I didn't know about that."</p>
 
           {/* Live sync preview */}
-          <div style={{marginBottom:28,border:"1px solid rgba(83,136,122,.25)",borderRadius:16,padding:"20px 18px",background:"rgba(83,136,122,.08)"}}>
+          <div style={{marginBottom:28,border:"1px solid rgba(83,136,122,.25)",borderRadius:16,padding:"16px 12px",background:"rgba(83,136,122,.08)"}}>
             <p style={{fontSize:15,color:"var(--sage3)",fontWeight:700,textTransform:"uppercase",letterSpacing:".1em",marginBottom:16}}>What co-parent sync looks like</p>
             <div style={{display:"flex",flexDirection:"column",gap:14}}>
               {[["You add 'Ballet Tuesday 4pm'","Appears on partner's phone instantly"],["Partner changes pickup time","Your calendar updates automatically"],["Conflict detected automatically","Both parents get alerted"]].map(([a,b],i)=>(
@@ -1271,8 +1273,8 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
   };
 
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.7)",zIndex:500,display:"flex",alignItems:"flex-end"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className="sheet-enter" style={{borderRadius:"20px 20px 0 0",padding:"8px 20px 40px",width:"100%",maxHeight:"92vh",overflowY:"auto",background:"var(--ink2)"}}>
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.7)",zIndex:500,display:"flex",alignItems:"flex-start"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="sheet-top" style={{borderRadius:"0 0 24px 24px",padding:"env(safe-area-inset-top,20px) 20px 32px",width:"100%",maxHeight:"92vh",overflowY:"auto",background:"var(--ink2)",marginTop:0}}>
         <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 20px"}}/>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
           <h2 style={{fontSize:18,fontWeight:800}}>New Event</h2>
@@ -1516,8 +1518,8 @@ function VoiceSheet({members,onAdd,onClose}) {
   };
 
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.5)",zIndex:500,display:"flex",alignItems:"flex-end"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className="sheet-enter" style={{borderRadius:"20px 20px 0 0",padding:"8px 24px 48px",width:"100%",background:"var(--ink2)"}}>
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.5)",zIndex:500,display:"flex",alignItems:"flex-start"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="sheet-top" style={{borderRadius:"0 0 24px 24px",padding:"env(safe-area-inset-top,20px) 24px 48px",width:"100%",background:"var(--ink2)"}}>
         <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 24px"}}/>
         {stage==="ready"&&(
           <div style={{textAlign:"center"}}>
@@ -1600,7 +1602,7 @@ function VoiceSheet({members,onAdd,onClose}) {
           <div style={{textAlign:"center",padding:"20px 0"}}>
             <MicOff size={38} color="#DC2626" style={{margin:"0 auto 14px"}}/>
             <p style={{fontWeight:700,fontSize:16,marginBottom:8}}>{stage==="nosupport"?"Voice not supported":"Didn't catch that"}</p>
-            <p style={{color:"var(--cream3)",fontSize:15,marginBottom:22}}>{stage==="nosupport"?"Try Safari on iPhone.":"Speak clearly with event name, time and date."}</p>
+            <p style={{color:"var(--cream3)",fontSize:15,marginBottom:22}}>{stage==="nosupport"?"Voice works on Safari (iPhone) or Chrome (Android). On desktop, use Add Event instead.":"Speak clearly with event name, time and date."}</p>
             <Btn onClick={()=>setStage("ready")} style={{margin:"0 auto",display:"flex",alignItems:"center",gap:8}}>Try Again</Btn>
           </div>
         )}
@@ -1806,46 +1808,66 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
 
             /* Month view */
       ):calView==="month"?(
-        <div style={{marginBottom:16}}>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",marginBottom:6}}>
-            {["Su","Mo","Tu","We","Th","Fr","Sa"].map(function(d){
-              return <p key={d} style={{fontSize:11,fontWeight:700,color:"var(--cream3)",textAlign:"center",padding:"4px 0",textTransform:"uppercase",letterSpacing:".04em"}}>{d}</p>;
+        <div style={{margin:"0 -12px 16px"}}>
+          {/* Day headers */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",marginBottom:2,padding:"0 8px"}}>
+            {["S","M","T","W","T","F","S"].map(function(d,i){
+              return <p key={i} style={{fontSize:10,fontWeight:700,color:"var(--cream3)",textAlign:"center",padding:"4px 0",letterSpacing:".02em"}}>{d}</p>;
             })}
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2}}>
-            {buildMonth().map(function(date,i){
-              if(!date) return <div key={"b"+i} style={{minHeight:62}}/>;
-              var dayEvs=events.filter(function(e){return e.date===date;});
-              var isT=date===todayStr;
-              var d=new Date(date+"T12:00:00");
-              var isWeekend=d.getDay()===0||d.getDay()===6;
+          {/* Calendar grid */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",padding:"0 8px"}}>
+            {buildMonth().map(function(date,idx){
+              var dayEvs=date?events.filter(function(e){return e.date===date;}):[],
+                  isT=date===todayStr,
+                  d=date?new Date(date+"T12:00:00"):null,
+                  isWeekend=d&&(d.getDay()===0||d.getDay()===6);
               return (
-                <div key={date} onClick={function(){setDayView(date);}}
-                  style={{minHeight:62,borderRadius:9,padding:"5px 3px",cursor:"pointer",transition:"transform .15s,box-shadow .15s",
-                    background:isT?"var(--sage)":"var(--ink3)",animation:isT?"todayGlow 3s ease-in-out infinite":"",
-                    border:"1px solid",borderColor:isT?"var(--sage2)":"var(--border)"}}>
-                  <p style={{fontSize:13,fontWeight:isT?800:500,color:isT?"var(--cream)":isWeekend?"var(--cream3)":"var(--cream2)",textAlign:"center",marginBottom:3}}>{d.getDate()}</p>
-                  <div style={{display:"flex",flexDirection:"column",gap:1}}>
-                    {dayEvs.slice(0,2).map(function(ev){
-                      return (
-                        <div key={ev.id} onClick={function(e){e.stopPropagation();setSel(ev);}}
-                          style={{background:ev.color+"dd",borderRadius:3,padding:"1px 4px"}}>
-                          <p style={{fontSize:11,fontWeight:700,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",lineHeight:1.6}}>{ev.title}</p>
-                        </div>
-                      );
-                    })}
-                    {dayEvs.length>2&&<div style={{display:"flex",gap:2,justifyContent:"center",flexWrap:"wrap",marginTop:1}}>{dayEvs.slice(2).map(function(e){return <div key={e.id} style={{width:5,height:5,borderRadius:"50%",background:e.color,opacity:.8,flexShrink:0}}/>;})}</div>}
-                  </div>
+                <div key={date||"b"+idx}
+                  onClick={date?function(){setDayView(date);}:undefined}
+                  style={{
+                    height:54,
+                    borderRadius:8,
+                    padding:"4px 2px",
+                    margin:"1px",
+                    cursor:date?"pointer":"default",
+                    background:!date?"transparent":isT?"var(--sage)":"var(--ink3)",
+                    border:date?"1px solid":"1px solid transparent",
+                    borderColor:isT?"var(--sage2)":"var(--border)",
+                    animation:isT?"todayGlow 3s ease-in-out infinite":"",
+                    overflow:"hidden",
+                    boxSizing:"border-box",
+                  }}>
+                  {date&&(
+                    <>
+                      <p style={{fontSize:11,fontWeight:isT?700:400,color:isT?"#fff":isWeekend?"var(--cream3)":"var(--cream2)",textAlign:"center",lineHeight:1.2,marginBottom:2}}>{d.getDate()}</p>
+                      <div style={{display:"flex",flexDirection:"column",gap:1}}>
+                        {dayEvs.slice(0,1).map(function(ev){return(
+                          <div key={ev.id} onClick={function(e){e.stopPropagation();setSel(ev);}}
+                            style={{background:ev.color,borderRadius:2,padding:"1px 3px",overflow:"hidden"}}>
+                            <p style={{fontSize:8,fontWeight:700,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",lineHeight:1.4}}>{ev.title}</p>
+                          </div>
+                        );})}
+                        {dayEvs.length>1&&(
+                          <div style={{display:"flex",gap:1,justifyContent:"center",marginTop:1}}>
+                            {dayEvs.slice(1).map(function(e){return(
+                              <div key={e.id} style={{width:4,height:4,borderRadius:"50%",background:e.color,flexShrink:0}}/>
+                            );})}
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
               );
             })}
           </div>
           {/* Member legend */}
-          <div style={{display:"flex",gap:12,flexWrap:"wrap",marginTop:12,padding:"10px 14px",background:"var(--ink3)",borderRadius:12,border:"1px solid var(--border)"}}>
+          <div style={{display:"flex",gap:10,flexWrap:"wrap",marginTop:8,padding:"8px 16px",background:"var(--ink3)",borderTop:"1px solid var(--border)",borderBottom:"1px solid var(--border)"}}>
             {members.map(function(m){return(
-              <div key={m.id} style={{display:"flex",alignItems:"center",gap:6}}>
-                <div style={{width:10,height:10,borderRadius:3,background:m.color,flexShrink:0}}/>
-                <span style={{fontSize:12,color:"var(--cream3)",fontWeight:500}}>{m.name}</span>
+              <div key={m.id} style={{display:"flex",alignItems:"center",gap:5}}>
+                <div style={{width:8,height:8,borderRadius:2,background:m.color,flexShrink:0}}/>
+                <span style={{fontSize:11,color:"var(--cream3)",fontWeight:500}}>{m.name}</span>
               </div>
             );})}
           </div>
