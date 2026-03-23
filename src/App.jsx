@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, Fragment } from "react";
+import { supabase } from "./supabase.js";
 import {
   Home, Inbox, Users, Bell, Settings, Plus, Mic, MicOff,
   ChevronLeft, ChevronRight, ChevronDown, ChevronUp,
@@ -57,6 +58,7 @@ const GS = () => (
       background:#fff;
       border:1.5px solid var(--border2);
       color:var(--cream);
+      color-scheme:light;
       font-family:'DM Sans','Helvetica Neue',sans-serif;
       border-radius:10px;
       padding:12px 14px;
@@ -358,16 +360,57 @@ const ONBOARD_SLIDES = [
 ];
 
 function Auth({onLogin}) {
-  const [slide,setSlide]=useState(0),[showForm,setShowForm]=useState(false),[mode,setMode]=useState("signup"),[name,setName]=useState(""),[family,setFamily]=useState(""),[email,setEmail]=useState(""),[pass,setPass]=useState(""),[loading,setLoading]=useState(false),[showPass,setShowPass]=useState(false);
+  const [slide,setSlide]=useState(0),[showForm,setShowForm]=useState(false),[mode,setMode]=useState("signup"),[name,setName]=useState(""),[family,setFamily]=useState(""),[email,setEmail]=useState(""),[pass,setPass]=useState(""),[loading,setLoading]=useState(false),[showPass,setShowPass]=useState(false),[authError,setAuthError]=useState("");
+
+  // Clear error when switching tabs
+  function switchMode(m){setMode(m);setAuthError("");}
+
   const go=()=>{
-    if(!email.trim()||!pass.trim())return;
+    setAuthError("");
+    // Validate all fields
     if(mode==="signup"){
-      if(pass.length<6)return;
-      if(!email.includes("@")||!email.includes("."))return;
-      if(!name.trim()||!family.trim())return;
+      if(!name.trim()){setAuthError("Please enter your name.");return;}
+      if(!family.trim()){setAuthError("Please enter your family name.");return;}
+      if(!email.trim()){setAuthError("Please enter your email address.");return;}
+      if(!email.includes("@")||!email.includes(".")){setAuthError("Please enter a valid email address.");return;}
+      if(!pass.trim()){setAuthError("Please choose a password.");return;}
+      if(pass.length<6){setAuthError("Password must be at least 6 characters.");return;}
+    } else {
+      if(!email.trim()){setAuthError("Please enter your email address.");return;}
+      if(!pass.trim()){setAuthError("Please enter your password.");return;}
     }
     setLoading(true);
-    setTimeout(()=>{setLoading(false);onLogin({name:name||"Parent",family:family||"My Family",email});},900);
+    if(mode==="signup"){
+      supabase.auth.signUp({email:email.trim(),password:pass,options:{data:{name:name.trim(),family_name:family.trim()}}}).then(function(res){
+        setLoading(false);
+        if(res.error){
+          var msg=res.error.message||"";
+          if(msg.toLowerCase().includes("already registered")||msg.toLowerCase().includes("already exists")){
+            setAuthError("An account with this email already exists. Try signing in instead.");
+          } else if(msg.toLowerCase().includes("invalid email")){
+            setAuthError("Please enter a valid email address.");
+          } else if(msg.toLowerCase().includes("password")){
+            setAuthError("Password must be at least 6 characters.");
+          } else {
+            setAuthError("Something went wrong. Please try again.");
+          }
+          return;
+        }
+        var u=res.data.user;
+        supabase.from("profiles").upsert({id:u.id,name:name.trim(),family_name:family.trim()}).then(function(){
+          onLogin({id:u.id,name:name.trim()||"Parent",family:family.trim()||"My Family",email:email.trim()});
+        });
+      });
+    } else {
+      supabase.auth.signInWithPassword({email:email.trim(),password:pass}).then(function(res){
+        setLoading(false);
+        if(res.error){setAuthError("Wrong email or password — try again.");return;}
+        var u=res.data.user;
+        var meta=u.user_metadata||{};
+        localStorage.setItem("calla_setup_"+u.id,"true");
+        onLogin({id:u.id,name:meta.name||"Parent",family:meta.family_name||"My Family",email:u.email});
+      });
+    }
   };
   const cur=ONBOARD_SLIDES[slide];
 
@@ -382,7 +425,7 @@ function Auth({onLogin}) {
           </div>
           <span style={{fontSize:15,fontWeight:700,color:"rgba(245,240,232,.9)",letterSpacing:"-.01em"}}>calla</span>
         </div>
-        <button onClick={()=>{setMode("login");setShowForm(true);}}
+        <button onClick={()=>{setMode("login");setShowForm(true);setAuthError("");}}
           style={{background:"rgba(245,240,232,.12)",border:"1px solid rgba(245,240,232,.2)",borderRadius:99,padding:"6px 14px",fontSize:13,fontWeight:600,color:"rgba(245,240,232,.8)",paddingTop:16}}>
           Sign in
         </button>
@@ -675,7 +718,7 @@ function Auth({onLogin}) {
         <Card>
           <div style={{display:"flex",background:"var(--ink3)",borderRadius:12,padding:3,border:"1px solid var(--border)",marginBottom:20}}>
             {["signup","login"].map(m=>(
-              <button key={m} onClick={()=>setMode(m)} style={{flex:1,padding:"9px",borderRadius:8,background:mode===m?"var(--ink4)":"transparent",color:mode===m?"var(--cream)":"var(--cream3)",fontWeight:600,fontSize:15,border:"none",boxShadow:mode===m?"0 1px 4px rgba(0,0,0,.08)":"none"}}>
+              <button key={m} onClick={()=>switchMode(m)} style={{flex:1,padding:"9px",borderRadius:8,background:mode===m?"var(--ink4)":"transparent",color:mode===m?"var(--cream)":"var(--cream3)",fontWeight:600,fontSize:15,border:"none",boxShadow:mode===m?"0 1px 4px rgba(0,0,0,.08)":"none"}}>
                 {m==="signup"?"Create Family":"Sign In"}
               </button>
             ))}
@@ -722,15 +765,20 @@ function Auth({onLogin}) {
                 : <>{mode==="signup"?"Let's get started →":"Sign In →"}</>
               }
             </Btn>
+            {authError&&<div style={{background:"rgba(168,56,56,.08)",border:"1px solid rgba(168,56,56,.2)",borderRadius:10,padding:"10px 14px",marginTop:8,fontSize:14,color:"var(--rose)",textAlign:"center"}}>{authError}</div>}
           </div>
 
-          {/* Privacy micro-copy below button */}
-          <div style={{marginTop:14,paddingTop:14,borderTop:"1px solid var(--border)",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
-            <div style={{width:12,height:12,borderRadius:"50%",background:"var(--sage2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-              <Check size={7} color="#fff"/>
-            </div>
-            <p style={{fontSize:15,color:"var(--cream3)",textAlign:"center"}}>No credit card · No ads · Email deleted after use · Demo: any credentials</p>
-          {mode==="login"&&<button type="button" onClick={()=>alert("We'll send a reset link to your email. Give us a moment.")} style={{background:"none",border:"none",color:"var(--sage3)",fontSize:15,fontWeight:600,display:"block",margin:"8px auto 0",cursor:"pointer"}}>Forgot password?</button>}
+          {/* Privacy micro-copy — signup only. Forgot password — login only */}
+          <div style={{marginTop:14,paddingTop:14,borderTop:"1px solid var(--border)",display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+            {mode==="signup"&&(
+              <div style={{display:"flex",alignItems:"center",gap:5}}>
+                <div style={{width:12,height:12,borderRadius:"50%",background:"var(--sage2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <Check size={7} color="#fff"/>
+                </div>
+                <p style={{fontSize:13,color:"var(--cream3)",textAlign:"center"}}>No credit card required · No ads · Your data is private</p>
+              </div>
+            )}
+            {mode==="login"&&<button type="button" onClick={function(){alert("We will send a reset link to your email.");}} style={{background:"none",border:"none",color:"var(--sage3)",fontSize:14,fontWeight:600,cursor:"pointer"}}>Forgot password?</button>}
           </div>
         </Card>
 
@@ -1524,9 +1572,9 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
             ))}
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-            <div><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>DATE *</label><input type="date" value={ev.date} onChange={e=>s("date")(e.target.value)}/></div>
-            <div><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>START TIME</label><input type="time" value={ev.time} onChange={e=>s("time")(e.target.value)}/></div>
-            <div style={{gridColumn:"1/-1"}}><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>END TIME <span style={{fontWeight:400}}>(optional)</span></label><input type="time" value={ev.endTime||""} onChange={e=>s("endTime")(e.target.value)}/></div>
+            <div><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>DATE *</label><input type="date" value={ev.date} onChange={e=>s("date")(e.target.value)} style={{colorScheme:"light",color:"var(--cream)",background:"#fff"}}/></div>
+            <div><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>START TIME</label><input type="time" value={ev.time} onChange={e=>s("time")(e.target.value)} style={{colorScheme:"light",color:"var(--cream)",background:"#fff"}}/></div>
+            <div style={{gridColumn:"1/-1"}}><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>END TIME <span style={{fontWeight:400}}>(optional)</span></label><input type="time" value={ev.endTime||""} onChange={e=>s("endTime")(e.target.value)} style={{colorScheme:"light",color:"var(--cream)",background:"#fff"}}/></div>
           </div>
 
           {/* Location with autocomplete */}
@@ -1603,7 +1651,7 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
                     <button key={f} onClick={()=>s("recurFreq")(f)} style={{padding:"6px 14px",borderRadius:99,background:ev.recurFreq===f?"var(--sage)":"var(--ink4)",color:ev.recurFreq===f?"var(--cream)":"var(--cream3)",fontSize:15,fontWeight:600,border:"1.5px solid",borderColor:ev.recurFreq===f?"var(--sage2)":"var(--border2)",textTransform:"capitalize"}}>{f}</button>
                   ))}
                 </div>
-                <div><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>UNTIL</label><input type="date" value={ev.recurEnd} onChange={e=>s("recurEnd")(e.target.value)}/></div>
+                <div><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>UNTIL</label><input type="date" value={ev.recurEnd} onChange={e=>s("recurEnd")(e.target.value)} style={{colorScheme:"light",color:"var(--cream)",background:"#fff"}}/></div>
                 <p style={{fontSize:15,color:"var(--sage2)",fontWeight:600}}>Creates ~{recurCount(ev.recurFreq,ev.date,ev.recurEnd)} events</p>
               </div>
             )}
@@ -3589,11 +3637,12 @@ const DN={enabled:true,reminders:["60","1440"],digest:"daily_morning",quietHours
 
 export default function App() {
   const [user,setUser]           = useState(null);
+  const [authLoading,setAuthLoading] = useState(true);
   const [setupDone,setSetupDone] = useState(false);
   const [tab,setTab]             = useState("home");
   const [globalSel,setGlobalSel] = useState(null);
   const [members,setMembers]     = useState(M0);
-  const [events,setEvents]       = useState(E0);
+  const [events,setEvents]       = useState([]);
   const [notif,setNotif]         = useState(DN);
   const [toasts,setToasts]       = useState([]);
   const [inboxBadge,setInboxBadge] = useState(2);
@@ -3601,36 +3650,95 @@ export default function App() {
   const [paid,setPaid]           = useState(false);
   const [showPaywall,setShowPaywall] = useState(false);
 
-  // ── Demo: trial day scrubber ──────────────────────────────────────────────
-  // In production this would be user.createdAt from your backend
-  // Here we let you simulate any trial day (0–65) via a hidden slider
+  // ── Trial scrubber ────────────────────────────────────────────────────────
   const [simDay,setSimDay] = useState(0);
   const fakeStart = new Date(Date.now() - simDay * 86400000).toISOString();
   const trial = paid ? null : trialStatus(fakeStart);
 
   const toast=t=>{const id=genId();setToasts(p=>[...p,{...t,id}]);setTimeout(()=>setToasts(p=>p.filter(x=>x.id!==id)),3000);};
 
-  useEffect(()=>{
-    if(!user) return;
-    const t=setTimeout(()=>{toast({icon:"📬",title:"New email from Mrs. Johnson",body:"Tap Inbox to review",color:"var(--sage3)"});setInboxBadge(p=>p+1);},7000);
-    return()=>clearTimeout(t);
-  },[user]);
-  useEffect(()=>{
-    if(!user) return;
-    const t=setTimeout(()=>{const n=events.find(e=>e.date>=todayStr);if(n)toast({icon:"⏰",title:"Reminder: "+n.title,body:n.time,color:n.color});},13000);
-    return()=>clearTimeout(t);
-  },[user]);
+  // ── Restore session on page load ──────────────────────────────────────────
+  useEffect(function(){
+    supabase.auth.getSession().then(function(res){
+      var session=res.data.session;
+      if(session&&session.user){
+        var u=session.user;
+        var meta=u.user_metadata||{};
+        setUser({id:u.id,name:meta.name||"Parent",family:meta.family_name||"My Family",email:u.email});
+        var done=localStorage.getItem("calla_setup_"+u.id);
+        setSetupDone(done==="true");
+        loadUserData(u.id);
+      }
+      setAuthLoading(false);
+    });
+    var sub=supabase.auth.onAuthStateChange(function(event,session){
+      if(event==="SIGNED_OUT"){setUser(null);setSetupDone(false);setEvents([]);setMembers(M0);}
+    });
+    return function(){sub.data.subscription.unsubscribe();};
+  },[]);
 
-  const addEvent=ev=>{setEvents(p=>[...p,ev]);toast({icon:"✓",title:"Event added",body:ev.title,color:"var(--sage2)"});};
-  const delEvent=id=>setEvents(p=>p.filter(e=>e.id!==id));
+  // ── Load events + members from Supabase ───────────────────────────────────
+  function loadUserData(userId){
+    supabase.from("events").select("*").eq("user_id",userId).then(function(res){
+      if(res.data){
+        setEvents(res.data.map(function(e){return{
+          id:e.id,title:e.title,memberId:e.member_id,date:e.date,time:e.time,
+          endTime:e.end_time,location:e.location,color:e.color,recurring:e.recurring,
+          recurFreq:e.recur_freq,recurEnd:e.recur_end,notes:e.notes,
+          cost:e.cost,costType:e.cost_type,packingList:e.packing_list||[],
+        };}));
+      }
+    });
+    supabase.from("members").select("*").eq("user_id",userId).then(function(res){
+      if(res.data&&res.data.length>0){
+        setMembers(res.data.map(function(m){return{id:m.id,name:m.name,color:m.color,emoji:m.emoji};}));
+      }
+    });
+  }
 
+  // ── Save event to Supabase ─────────────────────────────────────────────────
+  const addEvent=function(ev){
+    setEvents(function(p){return[...p,ev];});
+    toast({icon:"✓",title:"Event added",body:ev.title,color:"var(--sage2)"});
+    if(user&&user.id){
+      supabase.from("events").upsert({
+        id:ev.id,user_id:user.id,title:ev.title,member_id:ev.memberId,
+        date:ev.date,time:ev.time,end_time:ev.endTime,location:ev.location,
+        color:ev.color,recurring:ev.recurring,recur_freq:ev.recurFreq,
+        recur_end:ev.recurEnd,notes:ev.notes,cost:ev.cost,
+        cost_type:ev.costType,packing_list:ev.packingList||[],
+      }).then(function(){});
+    }
+  };
+
+  // ── Delete event from Supabase ─────────────────────────────────────────────
+  const delEvent=function(id){
+    setEvents(function(p){return p.filter(function(e){return e.id!==id;});});
+    if(user&&user.id){supabase.from("events").delete().eq("id",id).then(function(){});}
+  };
+
+  // ── Step 0: Loading session ───────────────────────────────────────────────
+  if(authLoading) return (
+    <><GS/><div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--ink2)"}}>
+      <div style={{textAlign:"center"}}>
+        <div style={{fontSize:40,marginBottom:16}}>🌸</div>
+        <div style={{width:24,height:24,border:"2px solid var(--border2)",borderTopColor:"var(--sage2)",borderRadius:"50%",animation:"spin .7s linear infinite",margin:"0 auto"}}/>
+      </div>
+    </div></>
+  );
   // ── Step 1: Auth ──────────────────────────────────────────────────────────
   if(!user) return (
-    <><GS/><Auth onLogin={u=>{setUser(u);setTimeout(()=>toast({icon:"👋",title:"Welcome, "+u.name+"! 60 days free.",color:"var(--sage2)"}),400);}}/></>
+    <><GS/><Auth onLogin={function(u){
+      setUser(u);
+      var done=localStorage.getItem("calla_setup_"+u.id);
+      setSetupDone(done==="true");
+      if(u.id) loadUserData(u.id);
+      setTimeout(function(){toast({icon:"👋",title:"Welcome, "+u.name+"! 60 days free.",color:"var(--sage2)"});},400);
+    }}/></>
   );
   // ── Step 2: Co-parent setup ───────────────────────────────────────────────
   if(!setupDone) return (
-    <><GS/><Toasts toasts={toasts}/><CoParentSetup user={user} onDone={()=>setSetupDone(true)}/></>
+    <><GS/><Toasts toasts={toasts}/><CoParentSetup user={user} onDone={function(){localStorage.setItem("calla_setup_"+user.id,"true");setSetupDone(true);}}/></>
   );
   // ── Step 3: Hard paywall — trial expired ──────────────────────────────────
   if(!paid && trial && trial.expired) return (
@@ -3650,7 +3758,7 @@ export default function App() {
     if(tab==="lists")   return <ListsScreen members={members}/>;
     if(tab==="members") return <MembersScreen members={members} setMembers={setMembers} events={events}/>;
     if(tab==="notif")   return <NotifScreen events={events} members={members} onSelectEvent={ev=>{setGlobalSel(ev);setTab("home");}}/>;
-    if(tab==="more")    return <MoreScreen members={members} setMembers={setMembers} events={events} user={user} paid={paid} trialLeft={trial?trial.left:null} onUpgrade={()=>setShowPaywall(true)} notifSettings={notif} setNotifSettings={setNotif} onSignOut={()=>{setUser(null);setSetupDone(false);setTab("home");setEvents(E0);setMembers(M0);setPaid(false);setShowPaywall(false);toast({icon:"👋",title:"Signed out",color:"var(--cream3)"});}}/>;
+    if(tab==="more")    return <MoreScreen members={members} setMembers={setMembers} events={events} user={user} paid={paid} trialLeft={trial?trial.left:null} onUpgrade={()=>setShowPaywall(true)} notifSettings={notif} setNotifSettings={setNotif} onSignOut={()=>{supabase.auth.signOut();setUser(null);setSetupDone(false);setTab("home");setEvents([]);setMembers(M0);setPaid(false);setShowPaywall(false);toast({icon:"👋",title:"Signed out",color:"var(--cream3)"});}}/>;
   };
 
   return (
