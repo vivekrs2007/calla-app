@@ -14,45 +14,47 @@ const GS = () => (
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&display=swap');
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
-      --ink:   #0e0f12;
-      --ink2:  #161820;
-      --ink3:  #1e2028;
-      --ink4:  #272a35;
-      --ink5:  #30333f;
-      --cream: #f2ede4;
-      --cream2:#d4cab8;
-      --cream3:#8c8272;
-      --sage:  #2e6b5e;
-      --sage2: #438f7e;
-      --sage3: #72c4b4;
-      --sage4: rgba(67,143,126,.14);
-      --gold:  #c4953a;
-      --gold2: #ddb05c;
-      --gold3: #f5d48e;
-      --amber: #d4813a;
-      --rose:  #c45a5a;
-      --red:   #e05050;
-      --border:rgba(234,228,216,.07);
-      --border2:rgba(234,228,216,.12);
-      --border3:rgba(234,228,216,.22);
-      --muted: rgba(234,228,216,.38);
-      --muted2:rgba(234,228,216,.62);
-      /* legacy aliases so existing inline styles still work */
-      --sage-light:rgba(83,136,122,.15);
-      --sage-mid:  rgba(83,136,122,.28);
-      --terra:     #b07042;
-      --terra-light:rgba(176,112,66,.12);
+      /* ── Warm Ivory Theme ── */
+      --ink:   #f5f0e8;
+      --ink2:  #efe9de;
+      --ink3:  #e8e0d2;
+      --ink4:  #ddd5c4;
+      --ink5:  #cfc6b4;
+      --cream: #1a2e1a;
+      --cream2:#2d4a2d;
+      --cream3:#5a6e5a;
+      --sage:  #2d5a3d;
+      --sage2: #3d7a52;
+      --sage3: #52a06e;
+      --sage4: rgba(45,90,61,.1);
+      --gold:  #a07820;
+      --gold2: #c49a30;
+      --gold3: #e8c060;
+      --amber: #b86820;
+      --rose:  #a83838;
+      --red:   #c84040;
+      --border:rgba(45,60,45,.08);
+      --border2:rgba(45,60,45,.13);
+      --border3:rgba(45,60,45,.22);
+      --muted: rgba(45,60,45,.4);
+      --muted2:rgba(45,60,45,.65);
+      /* legacy aliases */
+      --sage-light:rgba(45,90,61,.1);
+      --sage-mid:  rgba(45,90,61,.2);
+      --terra:     #8b5a2a;
+      --terra-light:rgba(139,90,42,.1);
     }
     body{
       background:var(--ink2);
       color:var(--cream);
       font-family:'DM Sans','Helvetica Neue',sans-serif;
       -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
       min-height:100vh;
     }
     /* ── Inputs ── */
     input,textarea,select{
-      background:var(--ink3);
+      background:#fff;
       border:1.5px solid var(--border2);
       color:var(--cream);
       font-family:'DM Sans','Helvetica Neue',sans-serif;
@@ -61,14 +63,16 @@ const GS = () => (
       font-size:14px;
       outline:none;
       width:100%;
-      transition:border-color .18s,background .18s;
+      transition:border-color .18s,background .18s,box-shadow .18s;
+      box-shadow:0 1px 3px rgba(45,60,45,.06);
     }
     input::placeholder,textarea::placeholder{color:var(--cream3)}
     input:focus,textarea:focus,select:focus{
       border-color:var(--sage2);
-      background:var(--ink4);
+      background:#fff;
+      box-shadow:0 0 0 3px rgba(61,122,82,.1);
     }
-    select option{background:var(--ink3);color:var(--cream)}
+    select option{background:#fff;color:var(--cream)}
     /* ── Buttons ── */
     button{
       cursor:pointer;
@@ -79,13 +83,13 @@ const GS = () => (
     button:active{transform:scale(.96);opacity:.8}
     /* Row tap feedback */
     .tap-row{transition:background .15s}
-    .tap-row:active{background:rgba(240,236,226,.05) !important}
+    .tap-row:active{background:rgba(45,60,45,.05) !important}
     /* ── Scrollbar ── */
     ::-webkit-scrollbar{width:3px;height:3px}
     ::-webkit-scrollbar-track{background:transparent}
-    ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+    ::-webkit-scrollbar-thumb{background:var(--border3);border-radius:3px}
     /* Premium selection color */
-    ::selection{background:rgba(67,143,126,.35);color:var(--cream)}
+    ::selection{background:rgba(61,122,82,.25);color:var(--cream)}
     /* Smooth tap highlight removal on mobile */
     *{-webkit-tap-highlight-color:transparent}
     /* ── Animations ── */
@@ -106,7 +110,7 @@ const GS = () => (
     .toast-enter{animation:toastIn .3s cubic-bezier(.16,1,.3,1) forwards}
     @keyframes memberPop{0%{transform:scale(1)}40%{transform:scale(1.14)}70%{transform:scale(.96)}100%{transform:scale(1)}}
     @keyframes fieldShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}
-    @keyframes todayGlow{0%,100%{box-shadow:0 0 0 0 rgba(46,107,94,.0)}50%{box-shadow:0 0 12px 3px rgba(46,107,94,.35)}}
+    @keyframes todayGlow{0%,100%{box-shadow:0 0 0 0 rgba(45,90,61,.0)}50%{box-shadow:0 0 8px 2px rgba(45,90,61,.25)}}
     @keyframes conflictSlide{0%{transform:translateX(-6px) translateY(-4px);opacity:0}60%{transform:translateX(2px)}100%{transform:translateX(0) translateY(0);opacity:1}}
     @keyframes strengthFill{from{width:0}to{width:var(--sw)}}
     @keyframes tickDraw{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}
@@ -120,10 +124,10 @@ const GS = () => (
     @keyframes glow{0%,100%{box-shadow:0 0 20px rgba(83,136,122,.15)}50%{box-shadow:0 0 40px rgba(83,136,122,.3)}}
 
     /* ── Sheet backdrop ── */
-    .sheet-scroll{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+    .sheet-scroll{overflow-y:scroll;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;will-change:transform}
     /* ── Glass card used by sheets ── */
     .glass{
-      background:rgba(24,24,28,.92);
+      background:rgba(245,240,232,.95);
       backdrop-filter:blur(28px);
       -webkit-backdrop-filter:blur(28px);
     }
@@ -138,11 +142,11 @@ const GS = () => (
       pointer-events:none;
     }
     /* ── Nav label sizes ── */
-    .nav-label{font-size:9px;font-weight:600;letter-spacing:.02em;margin-top:1px}
+    .nav-label{font-size:10px;font-weight:600;letter-spacing:.01em;margin-top:2px;color:inherit}
     /* ── Range slider ── */
     input[type=range]{
       -webkit-appearance:none;
-      background:var(--ink5);
+      background:var(--ink4);
       border-radius:4px;
       height:4px;
       border:none;
@@ -152,8 +156,8 @@ const GS = () => (
       -webkit-appearance:none;
       width:18px;height:18px;
       border-radius:50%;
-      background:var(--cream);
-      box-shadow:0 2px 8px rgba(0,0,0,.4);
+      background:#fff;
+      box-shadow:0 2px 8px rgba(0,0,0,.15);
       border:2px solid var(--sage2);
     }
   `}</style>
@@ -215,10 +219,10 @@ const makeRecurring = ev => {
 
 /* ─── Seed data ─────────────────────────────────────────────────────────── */
 const M0 = [
-  {id:"m1",name:"Mom", color:"var(--sage3)",emoji:"👩"},
-  {id:"m2",name:"Dad", color:"var(--sage2)",emoji:"👨"},
+  {id:"m1",name:"Mom", color:"#2d5a3d",emoji:"👩"},
+  {id:"m2",name:"Dad", color:"#3d7a52",emoji:"👨"},
   {id:"m3",name:"Emma",color:"#7C3AED",emoji:"👧"},
-  {id:"m4",name:"Liam",color:"var(--gold2)",emoji:"👦"},
+  {id:"m4",name:"Liam",color:"#a07820",emoji:"👦"},
 ];
 const E0 = [
   {id:"e1",title:"Soccer Practice",memberId:"m3",date:todayStr,            time:"15:00",location:"Riverside Field",color:"#7C3AED",recurring:false},
@@ -249,22 +253,22 @@ const conflicts = events => {
 
 /* ─── Primitive components ──────────────────────────────────────────────── */
 const Pill = ({children,color="var(--cream2)",bg="var(--ink4)",style={}}) => (
-  <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"3px 10px",borderRadius:99,background:bg,color,fontSize:15,fontWeight:600,border:"1px solid rgba(234,228,216,.08)",...style}}>{children}</span>
+  <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"3px 10px",borderRadius:99,background:bg,color,fontSize:15,fontWeight:600,border:"1.5px solid var(--border2)",...style}}>{children}</span>
 );
 const Toggle = ({on,onChange}) => (
-  <div onClick={onChange} style={{width:46,height:26,borderRadius:13,background:on?"var(--sage2)":"var(--ink5)",position:"relative",cursor:"pointer",transition:"background .22s",flexShrink:0,border:"1px solid var(--border2)"}}>
+  <div onClick={onChange} style={{width:46,height:26,borderRadius:13,background:on?"var(--sage2)":"var(--ink4)",position:"relative",cursor:"pointer",transition:"background .22s",flexShrink:0,border:"1px solid var(--border2)",boxShadow:"inset 0 1px 3px rgba(0,0,0,.1)"}}>
     <div style={{position:"absolute",top:3,left:on?22:3,width:20,height:20,borderRadius:"50%",background:on?"#fff":"var(--cream3)",transition:"left .22s",boxShadow:"0 2px 6px rgba(0,0,0,.4)"}}/>
   </div>
 );
 const Card = ({children,style={},...p}) => (
-  <div style={{background:"var(--ink2)",borderRadius:16,border:"1px solid var(--border2)",padding:20,...style}}{...p}>{children}</div>
+  <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--border2)",padding:20,boxShadow:"0 1px 4px rgba(45,60,45,.06)",...style}}{...p}>{children}</div>
 );
 const Btn = ({children,v="primary",style={},...p}) => {
   const S={
-    primary:{background:"var(--sage)",color:"var(--cream)",padding:"13px 22px",borderRadius:12,fontWeight:700,fontSize:15,boxShadow:"0 4px 20px rgba(58,100,89,.35)"},
-    ghost:{background:"transparent",color:"var(--cream2)",padding:"11px 18px",borderRadius:12,fontWeight:500,fontSize:15,border:"1px solid var(--border2)"},
-    danger:{background:"rgba(220,80,80,.1)",color:"var(--rose)",padding:"12px 20px",borderRadius:12,fontWeight:600,fontSize:15,border:"1px solid rgba(220,80,80,.2)"},
-    icon:{background:"var(--ink3)",color:"var(--cream2)",padding:10,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",border:"1px solid var(--border)"},
+    primary:{background:"var(--sage)",color:"#fff",padding:"13px 22px",borderRadius:12,fontWeight:700,fontSize:15,boxShadow:"0 4px 16px rgba(45,90,61,.3)"},
+    ghost:{background:"transparent",color:"var(--cream2)",padding:"11px 18px",borderRadius:12,fontWeight:500,fontSize:15,border:"1.5px solid var(--border2)"},
+    danger:{background:"rgba(168,56,56,.08)",color:"var(--rose)",padding:"12px 20px",borderRadius:12,fontWeight:600,fontSize:15,border:"1px solid rgba(168,56,56,.2)"},
+    icon:{background:"#fff",color:"var(--cream2)",padding:10,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",border:"1px solid var(--border2)",boxShadow:"0 1px 3px rgba(0,0,0,.06)"},
   };
   return <button style={{...S[v],...style}}{...p}>{children}</button>;
 };
@@ -273,9 +277,9 @@ const Btn = ({children,v="primary",style={},...p}) => {
 const Toasts = ({toasts}) => (
   <div style={{position:"fixed",top:16,left:16,right:16,zIndex:9999,display:"flex",flexDirection:"column",gap:10,pointerEvents:"none"}}>
     {toasts.map(t=>(
-      <div key={t.id} className="toast-enter" style={{background:"rgba(18,18,24,.97)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid var(--border2)",borderLeft:"3px solid "+(t.color||"var(--sage2)"),borderRadius:16,padding:"13px 18px",boxShadow:"0 8px 40px rgba(0,0,0,.5)",display:"flex",alignItems:"center",gap:12}}>
+      <div key={t.id} className="toast-enter" style={{background:"#f0ebe2",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid var(--border2)",borderLeft:"3px solid "+(t.color||"var(--sage2)"),borderRadius:16,padding:"13px 18px",boxShadow:"0 8px 32px rgba(45,60,45,.15)",display:"flex",alignItems:"center",gap:12}}>
         <span style={{fontSize:18,flexShrink:0}}>{t.icon}</span>
-        <div><p style={{fontWeight:600,fontSize:15,color:"var(--cream)"}}>{t.title}</p>{t.body&&<p style={{fontSize:15,color:"var(--muted2)",marginTop:2}}>{t.body}</p>}</div>
+        <div><p style={{fontWeight:600,fontSize:15,color:"var(--cream)"}}>{t.title}</p>{t.body&&<p style={{fontSize:15,color:"var(--cream3)",marginTop:2}}>{t.body}</p>}</div>
       </div>
     ))}
   </div>
@@ -284,54 +288,72 @@ const Toasts = ({toasts}) => (
 /* ─── Auth / Onboarding ─────────────────────────────────────────────────── */
 const ONBOARD_SLIDES = [
   {
-    emoji: "😤",
-    headline: "Running your kids' schedules in your head?",
-    sub: "Soccer at 3. Piano at 4. Permission slip due Friday. Doctor next Tuesday. That ends today.",
-    cta: "That's us →",
-    bg: "var(--ink)",
-    textColor: "#fff",
-    chips: ["🎙 Voice Add","📬 Email Parser","⚡ Conflict Alerts","👨‍👩‍👧 Co-parent Sync","🎒 Packing Lists"],
-    trust: null,
-  },
-  {
-    emoji: "📬",
-    headline: "Schools send emails. You lose track. We fix that.",
-    sub: "Forward any school email to Calla. We extract every event automatically — then delete the email immediately.",
-    cta: "How we protect you →",
-    bg: "var(--sage)",
-    textColor: "#fff",
-    chips: null,
-    trust: {
-      label: "Email Privacy",
-      points: ["Email read once to extract events","Permanently deleted right after","Only calendar events are ever stored"],
+    // Slide 1: THE HOOK — emotional opening, name the chaos
+    bg:        "linear-gradient(160deg,#1a2e1a 0%,#2d5a3d 100%)",
+    textColor: "#f5f0e8",
+    eyebrow:   "FOR PARENTS WHO DO IT ALL",
+    headline:  "The chaos\nends here.",
+    sub:       "Soccer at 3. Piano at 4. Permission slip due Friday. Doctor Tuesday. Sound familiar? Calla holds it all — so you don't have to.",
+    cta:       "Show me how →",
+    visual: {
+      type: "chaos-pills",
+      items: [
+        "📧 School emails",
+        "⚽ Practice times",
+        "🏥 Appointments",
+        "🎒 Permission slips",
+        "📱 Teacher texts",
+        "🍎 Snack duty",
+      ]
     },
   },
   {
-    emoji: "🔒",
-    headline: "Your family's data belongs to your family.",
-    sub: "We will never sell your data, read your emails, or show you ads. Calla exists to serve your family — not to monetise it.",
-    cta: "We take this seriously →",
-    bg: "#2D6A4F",
-    textColor: "#fff",
-    chips: null,
-    trust: {
-      label: "Our Privacy Promise",
-      points: ["No ads. Ever.","No data selling. Ever.","Emails deleted immediately after extraction","Your family data is never shared with third parties"],
+    // Slide 2: EMAIL PARSER — paste or forward, strict privacy
+    bg:        "linear-gradient(160deg,#1a2a1a 0%,#1a3a2a 100%)",
+    textColor: "#f5f0e8",
+    eyebrow:   "YOUR PRIVACY COMES FIRST",
+    headline:  "We read it.\nWe delete it.\nWe keep nothing.",
+    sub:       "Paste any school email into Calla, or forward it directly. We extract the events — then permanently delete every word. No email is ever stored on our servers.",
+    cta:       "That's the promise →",
+    visual: {
+      type: "email-delete",
     },
   },
   {
-    emoji: "🎙️",
-    headline: "Both parents. One calendar. Zero confusion.",
-    sub: "Add events by voice. Both parents see changes instantly. No more \"I thought you knew.\"",
-    cta: "Let's build your family calendar →",
-    bg: "var(--terra)",
-    textColor: "#fff",
-    chips: null,
-    trust: {
-      label: "Always free to start",
-      points: ["No credit card needed","No hidden fees","Cancel anytime"],
+    // Slide 3: THE SOLUTION — show the 3 superpowers
+    bg:        "linear-gradient(160deg,#1a2e1a 0%,#3d7a52 100%)",
+    textColor: "#f5f0e8",
+    eyebrow:   "HOW CALLA HELPS",
+    headline:  "Calla catches it.\nYou catch a breath.",
+    sub:       "Paste or forward any school email. Speak an event out loud. Calla spots conflicts before they become arguments. You just show up.",
+    cta:       "This is what I need →",
+    visual: {
+      type: "superpowers",
+      items: [
+        {icon:"📬", title:"Email Parser",    desc:"Paste it in or forward it — events extracted, email deleted"},
+        {icon:"🎙️", title:"Voice Add",       desc:"\"Soccer Saturday 10am\" → done in 3 seconds"},
+        {icon:"⚡",  title:"Conflict Alerts", desc:"Calla spots clashes before they become arguments"},
+      ]
     },
-    final: true,
+  },
+  {
+    // Slide 4: THE CTA — remove every objection
+    bg:        "linear-gradient(160deg,#1a2e1a 0%,#2d5a3d 100%)",
+    textColor: "#f5f0e8",
+    eyebrow:   "FREE FOR 60 DAYS",
+    headline:  "Ready to get your\nbrain back?",
+    sub:       "Join thousands of parents who stopped keeping it all in their heads. No credit card needed to start.",
+    cta:       "Create my family's calendar →",
+    final:     true,
+    visual: {
+      type: "trust",
+      items: [
+        {icon:"✓", text:"60 days completely free"},
+        {icon:"✓", text:"Both parents included"},
+        {icon:"✓", text:"$20/year after — less than a coffee a month"},
+        {icon:"✓", text:"Cancel anytime. No questions."},
+      ]
+    },
   },
 ];
 
@@ -350,66 +372,274 @@ function Auth({onLogin}) {
   const cur=ONBOARD_SLIDES[slide];
 
   if(!showForm) return (
-    <div style={{height:"100vh",maxHeight:"100dvh",display:"flex",flexDirection:"column",background:cur.bg,transition:"background .5s",overflow:"hidden"}}>
+    <div style={{height:"100vh",maxHeight:"100dvh",display:"flex",flexDirection:"column",background:cur.bg,transition:"background .6s",overflow:"hidden"}}>
 
-      {/* Scrollable content area */}
-      <div className="fu" key={slide} style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column",justifyContent:"center",padding:"48px 28px 16px"}}>
-        <div style={{fontSize:60,marginBottom:18,textAlign:"center"}}>{cur.emoji}</div>
-        <h1 style={{fontSize:26,fontWeight:800,color:cur.textColor,lineHeight:1.25,letterSpacing:"-.5px",marginBottom:12,textAlign:"center"}}>{cur.headline}</h1>
-        <p style={{fontSize:15,color:cur.textColor,opacity:.72,lineHeight:1.7,textAlign:"center"}}>{cur.sub}</p>
-
-        {/* Feature chips — slide 0 only */}
-        {cur.chips&&(
-          <div style={{paddingTop:18,display:"flex",gap:7,flexWrap:"wrap",justifyContent:"center"}}>
-            {cur.chips.map(v=>(
-              <div key={v} style={{background:"rgba(255,255,255,.1)",borderRadius:99,padding:"5px 13px",fontSize:15,fontWeight:600,color:"var(--cream)"}}>{v}</div>
-            ))}
+      {/* Top bar — logo + slide counter */}
+      <div style={{flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"env(safe-area-inset-top,16px) 24px 0"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,paddingTop:16}}>
+          <div style={{width:28,height:28,background:"rgba(245,240,232,.2)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <span style={{fontSize:14}}>🌸</span>
           </div>
-        )}
+          <span style={{fontSize:15,fontWeight:700,color:"rgba(245,240,232,.9)",letterSpacing:"-.01em"}}>calla</span>
+        </div>
+        <button onClick={()=>{setMode("login");setShowForm(true);}}
+          style={{background:"rgba(245,240,232,.12)",border:"1px solid rgba(245,240,232,.2)",borderRadius:99,padding:"6px 14px",fontSize:13,fontWeight:600,color:"rgba(245,240,232,.8)",paddingTop:16}}>
+          Sign in
+        </button>
+      </div>
 
-        {/* Privacy / trust block — slides 1, 2, 3 */}
-        {cur.trust&&(
-          <div style={{marginTop:16,background:"rgba(255,255,255,.08)",borderRadius:16,padding:"14px 16px",border:"1px solid rgba(255,255,255,.12)"}}>
-            <p style={{fontSize:15,fontWeight:800,color:"rgba(255,255,255,.55)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:10}}>{cur.trust.label}</p>
-            <div style={{display:"flex",flexDirection:"column",gap:8}}>
-              {cur.trust.points.map((pt,i)=>(
-                <div key={i} style={{display:"flex",alignItems:"center",gap:9}}>
-                  <div style={{width:18,height:18,borderRadius:"50%",background:"rgba(255,255,255,.2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    <Check size={10} color="#fff"/>
-                  </div>
-                  <p style={{fontSize:15,color:"rgba(255,255,255,.88)",fontWeight:500}}>{pt}</p>
+      {/* Main content */}
+      <div className="fu" key={slide} style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column",justifyContent:"center",padding:"24px 28px 16px"}}>
+
+        {/* Eyebrow label */}
+        <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(245,240,232,.12)",borderRadius:99,padding:"4px 12px",marginBottom:20,alignSelf:"flex-start",border:"1px solid rgba(245,240,232,.15)"}}>
+          <span style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.7)",letterSpacing:".12em"}}>{cur.eyebrow}</span>
+        </div>
+
+        {/* Headline — Playfair Display, large */}
+        <h1 style={{fontSize:30,fontWeight:700,color:cur.textColor,lineHeight:1.2,letterSpacing:"-.5px",marginBottom:14,fontFamily:"'Playfair Display',Georgia,serif",whiteSpace:"pre-line"}}>{cur.headline}</h1>
+
+        {/* Subheadline */}
+        <p style={{fontSize:15,color:cur.textColor,opacity:.78,lineHeight:1.75,marginBottom:28,fontWeight:300,maxWidth:340}}>{cur.sub}</p>
+
+        {/* Visual block — changes per slide */}
+
+        {/* SLIDE 1: Phone mockup — voice adding an event */}
+        {cur.visual&&cur.visual.type==="chaos-pills"&&(
+          <div className="fu" style={{marginBottom:8}}>
+            <div style={{background:"rgba(245,240,232,.08)",border:"1px solid rgba(245,240,232,.15)",borderRadius:20,padding:"14px",overflow:"hidden"}}>
+              <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
+                <div style={{width:7,height:7,borderRadius:"50%",background:"#ff5f57"}}/>
+                <div style={{width:7,height:7,borderRadius:"50%",background:"#febc2e"}}/>
+                <div style={{width:7,height:7,borderRadius:"50%",background:"#28c840"}}/>
+                <div style={{flex:1,background:"rgba(245,240,232,.08)",borderRadius:5,height:16,marginLeft:4,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <span style={{fontSize:8,color:"rgba(245,240,232,.4)"}}>getcalla.ca</span>
                 </div>
-              ))}
+              </div>
+              <div style={{background:"rgba(245,240,232,.05)",borderRadius:12,padding:"10px"}}>
+                <div style={{display:"flex",gap:6,marginBottom:8}}>
+                  <div style={{flex:1,background:"rgba(245,240,232,.08)",borderRadius:8,padding:"8px",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
+                    <span style={{fontSize:12}}>🎙️</span>
+                    <span style={{fontSize:10,color:"rgba(245,240,232,.7)",fontWeight:600}}>Voice</span>
+                  </div>
+                  <div style={{flex:2,background:"rgba(45,90,61,.5)",borderRadius:8,padding:"8px",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <span style={{fontSize:10,color:"#f5f0e8",fontWeight:700}}>+ New Event</span>
+                  </div>
+                </div>
+                <div style={{background:"rgba(45,90,61,.25)",border:"1px solid rgba(245,240,232,.12)",borderRadius:10,padding:"12px",textAlign:"center",marginBottom:8}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:2,marginBottom:6}}>
+                    {[12,18,14,22,16,20,13,18,14].map(function(h,i){return(
+                      <div key={i} style={{width:3,height:h,borderRadius:2,background:"rgba(245,240,232,.65)",animation:"waveform .6s "+((i*0.08).toFixed(2))+"s ease-in-out infinite"}}/>
+                    );})}
+                  </div>
+                  <p style={{fontSize:10,color:"rgba(245,240,232,.5)",marginBottom:3}}>Listening...</p>
+                  <p style={{fontSize:12,color:"rgba(245,240,232,.9)",fontWeight:600,fontStyle:"italic"}}>Soccer Saturday 10am Riverside</p>
+                </div>
+                <div style={{background:"rgba(245,240,232,.07)",borderRadius:8,padding:"8px",display:"flex",gap:8,alignItems:"center"}}>
+                  <div style={{width:26,height:26,borderRadius:7,background:"rgba(124,58,237,.25)",border:"1px solid rgba(124,58,237,.4)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <span style={{fontSize:12}}>⚽</span>
+                  </div>
+                  <div style={{flex:1}}>
+                    <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Soccer Practice · Added ✓</p>
+                    <p style={{fontSize:9,color:"rgba(245,240,232,.45)"}}>Sat · 10:00am · Riverside Field</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
+
+        {/* SLIDE 2: Email deletion + privacy — the centrepiece */}
+        {cur.visual&&cur.visual.type==="email-delete"&&(
+          <div className="fu" style={{marginBottom:8}}>
+            <div style={{background:"rgba(245,240,232,.06)",border:"1px solid rgba(245,240,232,.12)",borderRadius:20,padding:"14px",overflow:"hidden"}}>
+
+              {/* Two input methods */}
+              <div style={{display:"flex",gap:6,marginBottom:10}}>
+                <div style={{flex:1,background:"rgba(59,130,246,.12)",border:"1px solid rgba(59,130,246,.22)",borderRadius:10,padding:"8px 10px",textAlign:"center"}}>
+                  <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.85)",marginBottom:2}}>📋 Paste it in</p>
+                  <p style={{fontSize:9,color:"rgba(245,240,232,.45)",lineHeight:1.4}}>Copy any email text, paste into Calla</p>
+                </div>
+                <div style={{width:1,background:"rgba(245,240,232,.1)",flexShrink:0}}/>
+                <div style={{flex:1,background:"rgba(45,90,61,.15)",border:"1px solid rgba(45,90,61,.25)",borderRadius:10,padding:"8px 10px",textAlign:"center"}}>
+                  <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.85)",marginBottom:2}}>📧 Forward it</p>
+                  <p style={{fontSize:9,color:"rgba(245,240,232,.45)",lineHeight:1.4}}>Forward to your Calla address</p>
+                </div>
+              </div>
+
+              {/* Email being shredded */}
+              <div style={{position:"relative",marginBottom:10}}>
+                {/* The email card — partially shredded */}
+                <div style={{background:"rgba(245,240,232,.07)",borderRadius:10,padding:"10px",border:"1px solid rgba(245,240,232,.08)",position:"relative",overflow:"hidden"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:6}}>
+                    <div style={{width:22,height:22,borderRadius:"50%",background:"rgba(59,130,246,.25)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,flexShrink:0}}>📧</div>
+                    <div style={{flex:1}}>
+                      <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.88)"}}>Riverside Soccer Club</p>
+                      <p style={{fontSize:9,color:"rgba(245,240,232,.4)"}}>Practice Tue 4pm · Game Sat 10am · Permission slip...</p>
+                    </div>
+                  </div>
+                  {/* Shred lines overlay */}
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,transparent 40%,rgba(26,42,26,.9) 100%)",borderRadius:10,pointerEvents:"none"}}/>
+                  <div style={{position:"absolute",bottom:0,left:0,right:0,display:"flex",gap:2,padding:"0 8px",alignItems:"flex-end",justifyContent:"center"}}>
+                    {[28,36,22,40,26,34,20,38,24,32,28,36].map(function(h,i){return(
+                      <div key={i} style={{flex:1,height:h,background:"rgba(26,42,26,.95)",borderRadius:"2px 2px 0 0"}}/>
+                    );})}
+                  </div>
+                </div>
+                {/* Deletion progress bar */}
+                <div style={{marginTop:8,background:"rgba(245,240,232,.06)",borderRadius:6,height:4,overflow:"hidden"}}>
+                  <div style={{height:"100%",width:"100%",background:"linear-gradient(90deg,rgba(200,60,60,.6),rgba(200,60,60,.9))",borderRadius:6,animation:"shimmer 1.5s linear infinite",backgroundSize:"200% 100%"}}/>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
+                  <p style={{fontSize:9,color:"rgba(200,80,80,.7)",fontWeight:600}}>🗑️ Deleting email...</p>
+                  <p style={{fontSize:9,color:"rgba(200,80,80,.7)"}}>100%</p>
+                </div>
+              </div>
+
+              {/* Events extracted — safe */}
+              <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:10}}>
+                <p style={{fontSize:9,fontWeight:700,color:"rgba(245,240,232,.4)",letterSpacing:".06em",marginBottom:2}}>EVENTS EXTRACTED · SAVED TO CALENDAR</p>
+                {[
+                  {emoji:"⚽",title:"Soccer Practice",date:"Tue Mar 26 · 4:00pm"},
+                  {emoji:"🏆",title:"Soccer Game",date:"Sat Mar 29 · 10:00am"},
+                ].map(function(ev,i){return(
+                  <div key={i} style={{background:"rgba(45,90,61,.18)",borderRadius:8,padding:"7px 10px",display:"flex",alignItems:"center",gap:8,border:"1px solid rgba(45,90,61,.25)"}}>
+                    <span style={{fontSize:12}}>{ev.emoji}</span>
+                    <div style={{flex:1}}>
+                      <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.9)"}}>{ev.title}</p>
+                      <p style={{fontSize:9,color:"rgba(245,240,232,.5)"}}>{ev.date}</p>
+                    </div>
+                    <div style={{width:14,height:14,borderRadius:"50%",background:"rgba(61,122,82,.6)",display:"flex",alignItems:"center",justifyContent:"center"}}><Check size={7} color="#f5f0e8"/></div>
+                  </div>
+                );})}
+              </div>
+
+              {/* Privacy guarantees */}
+              <div style={{background:"rgba(245,240,232,.05)",borderRadius:10,padding:"10px 12px",border:"1px solid rgba(245,240,232,.1)"}}>
+                <p style={{fontSize:9,fontWeight:700,color:"rgba(245,240,232,.5)",letterSpacing:".07em",marginBottom:7}}>🔒 OUR PRIVACY GUARANTEES</p>
+                {[
+                  "Email deleted immediately — never stored on our servers",
+                  "We never read, share or sell your email content",
+                  "Only the calendar events are ever kept",
+                  "No ads. Not now. Not ever.",
+                ].map(function(pt,i){return(
+                  <div key={i} style={{display:"flex",alignItems:"flex-start",gap:6,marginBottom:i<3?5:0}}>
+                    <div style={{width:12,height:12,borderRadius:"50%",background:"rgba(61,122,82,.5)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}}><Check size={6} color="#f5f0e8"/></div>
+                    <p style={{fontSize:9,color:"rgba(245,240,232,.7)",lineHeight:1.45,fontWeight:400}}>{pt}</p>
+                  </div>
+                );})}
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* SLIDE 3: Conflict detected — both parents alerted */}
+        {cur.visual&&cur.visual.type==="superpowers"&&(
+          <div className="fu" style={{marginBottom:8}}>
+            <div style={{background:"rgba(245,240,232,.06)",border:"1px solid rgba(245,240,232,.12)",borderRadius:20,padding:"14px"}}>
+              <p style={{fontSize:9,fontWeight:700,color:"rgba(245,240,232,.4)",letterSpacing:".08em",marginBottom:6}}>SATURDAY · MARCH 29</p>
+              <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:10}}>
+                <div style={{background:"rgba(124,58,237,.18)",border:"1px solid rgba(124,58,237,.28)",borderRadius:9,padding:"9px 10px",display:"flex",gap:8,alignItems:"center"}}>
+                  <span style={{fontSize:14}}>⚽</span>
+                  <div style={{flex:1}}>
+                    <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Soccer Game</p>
+                    <p style={{fontSize:9,color:"rgba(245,240,232,.5)"}}>10:00am · Riverside Field · Emma</p>
+                  </div>
+                </div>
+                <div style={{background:"rgba(196,149,58,.14)",border:"1px solid rgba(196,149,58,.28)",borderRadius:9,padding:"9px 10px",display:"flex",gap:8,alignItems:"center"}}>
+                  <span style={{fontSize:14}}>🎹</span>
+                  <div style={{flex:1}}>
+                    <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Piano Recital</p>
+                    <p style={{fontSize:9,color:"rgba(245,240,232,.5)"}}>10:30am · Music Academy · Liam</p>
+                  </div>
+                </div>
+              </div>
+              <div style={{background:"rgba(220,140,30,.1)",border:"1px solid rgba(220,140,30,.25)",borderRadius:10,padding:"9px 12px",marginBottom:8,display:"flex",gap:8,alignItems:"center"}}>
+                <span style={{fontSize:14,animation:"pulse 2s infinite"}}>⚡</span>
+                <div style={{flex:1}}>
+                  <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Conflict detected</p>
+                  <p style={{fontSize:9,color:"rgba(245,240,232,.5)"}}>30 min gap — who's taking which kid?</p>
+                </div>
+              </div>
+              <div style={{display:"flex",gap:6}}>
+                {[{emoji:"👩",name:"Mom"},{emoji:"👨",name:"Dad"}].map(function(p,i){return(
+                  <div key={i} style={{flex:1,background:"rgba(45,90,61,.2)",border:"1px solid rgba(45,90,61,.3)",borderRadius:9,padding:"7px 8px",display:"flex",alignItems:"center",gap:6}}>
+                    <span style={{fontSize:14}}>{p.emoji}</span>
+                    <div>
+                      <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.85)"}}>{p.name} notified</p>
+                      <p style={{fontSize:9,color:"rgba(245,240,232,.4)"}}>instantly ✓</p>
+                    </div>
+                  </div>
+                );})}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SLIDE 4: Family in sync + pricing */}
+        {cur.visual&&cur.visual.type==="trust"&&(
+          <div className="fu" style={{marginBottom:8}}>
+            <div style={{background:"rgba(245,240,232,.06)",border:"1px solid rgba(245,240,232,.12)",borderRadius:20,padding:"14px",marginBottom:8}}>
+              <div style={{display:"flex",justifyContent:"space-around",marginBottom:10}}>
+                {[
+                  {emoji:"👩",name:"Mom",color:"#2d5a3d"},
+                  {emoji:"👨",name:"Dad",color:"#3d7a52"},
+                  {emoji:"👧",name:"Emma",color:"#7C3AED"},
+                  {emoji:"👦",name:"Liam",color:"#a07820"},
+                ].map(function(m,i){return(
+                  <div key={i} style={{textAlign:"center"}}>
+                    <div style={{width:36,height:36,borderRadius:10,background:m.color+"33",border:"1.5px solid "+m.color+"55",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,margin:"0 auto 4px"}}>{m.emoji}</div>
+                    <p style={{fontSize:9,color:"rgba(245,240,232,.55)",fontWeight:500}}>{m.name}</p>
+                  </div>
+                );})}
+              </div>
+              <div style={{height:1,background:"rgba(245,240,232,.08)",marginBottom:8}}/>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
+                <div style={{width:6,height:6,borderRadius:"50%",background:"#3d7a52"}}/>
+                <p style={{fontSize:10,color:"rgba(245,240,232,.65)",fontWeight:500}}>Always in sync · real time updates</p>
+              </div>
+            </div>
+            <div style={{background:"rgba(245,240,232,.07)",borderRadius:14,padding:"12px 14px",border:"1px solid rgba(245,240,232,.12)"}}>
+              {cur.visual.items.map(function(item,i){return(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:9,marginBottom:i<cur.visual.items.length-1?9:0}}>
+                  <div style={{width:18,height:18,borderRadius:"50%",background:"rgba(61,122,82,.4)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:9,fontWeight:800,color:"rgba(245,240,232,.9)"}}>{item.icon}</div>
+                  <p style={{fontSize:12,color:"rgba(245,240,232,.78)",fontWeight:400}}>{item.text}</p>
+                </div>
+              );})}
+            </div>
+          </div>
+        )}
+
       </div>
 
       {/* ALWAYS-VISIBLE bottom section — pinned */}
-      <div style={{flexShrink:0,padding:"12px 28px calc(32px + env(safe-area-inset-bottom,0px)) 28px",background:"rgba(0,0,0,.15)"}}>
+      <div style={{flexShrink:0,padding:"12px 24px calc(28px + env(safe-area-inset-bottom,0px)) 24px"}}>
+
         {/* Dot indicators */}
-        <div style={{display:"flex",justifyContent:"center",gap:6,marginBottom:14}}>
-          {ONBOARD_SLIDES.map((_,i)=>(
-            <div key={i} onClick={()=>setSlide(i)} style={{width:i===slide?22:6,height:6,borderRadius:3,background:i===slide?"#fff":"rgba(255,255,255,.25)",transition:"width .3s",cursor:"pointer"}}/>
-          ))}
+        <div style={{display:"flex",justifyContent:"center",gap:5,marginBottom:16}}>
+          {ONBOARD_SLIDES.map(function(_,i){return(
+            <div key={i} onClick={function(){setSlide(i);}}
+              style={{width:i===slide?24:6,height:6,borderRadius:3,background:i===slide?"rgba(245,240,232,.9)":"rgba(245,240,232,.25)",transition:"width .3s cubic-bezier(.34,1.56,.64,1)",cursor:"pointer"}}/>
+          );})}
         </div>
 
         {/* Primary CTA */}
         <button
-          onClick={()=>{ if(cur.final){setShowForm(true);}else setSlide(s=>s+1); }}
-          style={{background:"rgba(255,255,255,.95)",color:cur.bg==="var(--ink)"?"#111":cur.bg,padding:"16px",borderRadius:16,fontWeight:800,fontSize:16,width:"100%",boxShadow:"0 8px 32px rgba(0,0,0,.3)"}}>
+          onClick={function(){if(cur.final){setShowForm(true);}else setSlide(function(s){return s+1;});}}
+          style={{background:"rgba(245,240,232,.95)",color:"#1a3a1a",padding:"17px",borderRadius:16,fontWeight:800,fontSize:16,width:"100%",boxShadow:"0 8px 32px rgba(0,0,0,.25)",letterSpacing:"-.01em"}}>
           {cur.cta}
         </button>
 
-        {/* Secondary links */}
+        {/* Secondary */}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8}}>
           {slide===0
-            ? <button onClick={()=>{setMode("login");setShowForm(true);}} style={{background:"transparent",color:"rgba(255,255,255,.55)",fontSize:15,fontWeight:500,padding:"8px 0",border:"none",width:"100%",textAlign:"center"}}>
-                Already have an account? Sign in
+            ? <button onClick={function(){setMode("login");setShowForm(true);}} style={{background:"transparent",color:"rgba(245,240,232,.45)",fontSize:14,fontWeight:400,padding:"8px 0",border:"none",width:"100%",textAlign:"center"}}>
+                Already have an account? <span style={{color:"rgba(245,240,232,.7)",fontWeight:600}}>Sign in</span>
               </button>
             : <>
-                <button onClick={()=>setSlide(s=>s-1)} style={{background:"transparent",color:"rgba(255,255,255,.5)",fontSize:15,fontWeight:500,padding:"8px",border:"none"}}>← Back</button>
-                {!cur.final&&<button onClick={()=>setShowForm(true)} style={{background:"transparent",color:"rgba(255,255,255,.38)",fontSize:15,fontWeight:500,padding:"8px",border:"none"}}>Skip →</button>}
+                <button onClick={function(){setSlide(function(s){return s-1;});}} style={{background:"transparent",color:"rgba(245,240,232,.45)",fontSize:14,padding:"8px",border:"none"}}>← Back</button>
+                {!cur.final&&<button onClick={function(){setShowForm(true);}} style={{background:"transparent",color:"rgba(245,240,232,.35)",fontSize:14,padding:"8px",border:"none"}}>Skip</button>}
               </>
           }
         </div>
@@ -419,7 +649,7 @@ function Auth({onLogin}) {
 
   // ── Sign-up / login form ──
   return (
-    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:24,background:"var(--ink2)"}}>
+    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:24,background:"var(--ink)"}}>
       <div className="fu" style={{width:"100%",maxWidth:380}}>
         <div style={{textAlign:"center",marginBottom:24}}>
           <div style={{width:52,height:52,background:"var(--sage)",borderRadius:16,display:"inline-flex",alignItems:"center",justifyContent:"center",marginBottom:14}}><span style={{fontSize:22}}>🌸</span></div>
@@ -428,7 +658,7 @@ function Auth({onLogin}) {
         </div>
 
         {/* Privacy reassurance above form */}
-        <div style={{background:"rgba(83,136,122,.08)",border:"1px solid rgba(83,136,122,.2)",borderRadius:12,padding:"12px 14px",marginBottom:16,display:"flex",gap:10,alignItems:"flex-start"}}>
+        <div style={{background:"rgba(45,90,61,.06)",border:"1px solid rgba(83,136,122,.2)",borderRadius:12,padding:"12px 14px",marginBottom:16,display:"flex",gap:10,alignItems:"flex-start"}}>
           <div style={{width:22,height:22,background:"var(--sage2)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}}>
             <Check size={11} color="#fff"/>
           </div>
@@ -484,7 +714,7 @@ function Auth({onLogin}) {
                   </div>
                 );
               })()}
-              <button type="button" onClick={()=>setShowPass(function(s){return !s;})} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",color:"var(--muted)",fontSize:15,fontWeight:600,padding:4}}>{showPass?"Hide":"Show"}</button>
+              <button type="button" onClick={()=>setShowPass(function(s){return !s;})} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",color:"var(--cream3)",fontSize:15,fontWeight:600,padding:4}}>{showPass?"Hide":"Show"}</button>
             </div>
             <Btn onClick={go} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:4}}>
               {loading
@@ -514,7 +744,7 @@ function Auth({onLogin}) {
 function CoParentSetup({user,onDone}) {
   const [partnerEmail,setPartnerEmail]=useState(""),[sent,setSent]=useState(false),[skipped,setSkipped]=useState(false);
   if(skipped||sent) return (
-    <div style={{height:"100vh",maxHeight:"100dvh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:36,textAlign:"center",background:"var(--ink)"}}>
+    <div style={{height:"100vh",maxHeight:"100dvh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:36,textAlign:"center",background:"var(--ink2)"}}>
       <div className="fu">
         <div style={{fontSize:72,marginBottom:24}}>{sent?"🎉":"👍"}</div>
         <h2 style={{fontSize:26,fontWeight:700,marginBottom:12,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)"}}>{sent?"Invite sent!":"No problem."}</h2>
@@ -524,7 +754,7 @@ function CoParentSetup({user,onDone}) {
     </div>
   );
   return (
-    <div style={{height:"100vh",maxHeight:"100dvh",display:"flex",flexDirection:"column",background:"var(--ink)",overflow:"hidden"}}>
+    <div style={{height:"100vh",maxHeight:"100dvh",display:"flex",flexDirection:"column",background:"var(--ink2)",overflow:"hidden"}}>
       <div style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column",justifyContent:"center",padding:"52px 24px 24px"}}>
         <div className="fu">
           <div style={{fontSize:72,textAlign:"center",marginBottom:28}}>👨‍👩‍👧‍👦</div>
@@ -532,7 +762,7 @@ function CoParentSetup({user,onDone}) {
           <p style={{color:"var(--cream3)",fontSize:16,lineHeight:1.75,textAlign:"center",marginBottom:28,fontWeight:300}}>Invite your partner so you both see every event, change and reminder — in real time. No more "I didn't know about that."</p>
 
           {/* Live sync preview */}
-          <div style={{marginBottom:28,border:"1px solid rgba(83,136,122,.25)",borderRadius:16,padding:"16px 12px",background:"rgba(83,136,122,.08)"}}>
+          <div style={{marginBottom:28,border:"1px solid rgba(83,136,122,.25)",borderRadius:16,padding:"16px 12px",background:"rgba(45,90,61,.06)"}}>
             <p style={{fontSize:15,color:"var(--sage3)",fontWeight:700,textTransform:"uppercase",letterSpacing:".1em",marginBottom:16}}>What co-parent sync looks like</p>
             <div style={{display:"flex",flexDirection:"column",gap:14}}>
               {[["You add 'Ballet Tuesday 4pm'","Appears on partner's phone instantly"],["Partner changes pickup time","Your calendar updates automatically"],["Conflict detected automatically","Both parents get alerted"]].map(([a,b],i)=>(
@@ -564,16 +794,20 @@ function ValueBanner({onDismiss}) {
   if(dismissed) return null;
   const dismiss=()=>{setDismissed(true);onDismiss&&onDismiss();};
   return (
-    <div className="fu" style={{background:"linear-gradient(135deg,var(--ink3) 0%,rgba(58,100,89,.4) 100%)",borderRadius:16,padding:"20px",marginBottom:16,position:"relative",overflow:"hidden"}}>
-      <div style={{position:"absolute",top:-24,right:-24,width:110,height:110,borderRadius:"50%",background:"rgba(255,255,255,.05)"}}/>
-      <div style={{position:"absolute",bottom:-30,left:50,width:90,height:90,borderRadius:"50%",background:"rgba(255,255,255,.04)"}}/>
-      <button onClick={dismiss} style={{position:"absolute",top:12,right:12,background:"rgba(255,255,255,.15)",border:"none",borderRadius:"50%",width:24,height:24,display:"flex",alignItems:"center",justifyContent:"center",color:"var(--cream)",flexShrink:0}}><X size={12}/></button>
-      <p style={{fontSize:15,color:"rgba(255,255,255,.55)",fontWeight:700,textTransform:"uppercase",letterSpacing:".08em",marginBottom:5}}>Calla remembers everything</p>
-      <p style={{fontSize:20,fontWeight:800,color:"var(--cream)",marginBottom:14,letterSpacing:"-.3px",lineHeight:1.25,paddingRight:24}}>So you don't have to.</p>
+    <div className="fu" style={{background:"linear-gradient(135deg,#1a3a2a 0%,#2d5a3d 100%)",borderRadius:18,padding:"20px",marginBottom:16,position:"relative",overflow:"hidden",boxShadow:"0 4px 20px rgba(26,58,42,.25)"}}>
+      {/* Decorative circles */}
+      <div style={{position:"absolute",top:-28,right:-28,width:120,height:120,borderRadius:"50%",background:"rgba(255,255,255,.06)"}}/>
+      <div style={{position:"absolute",bottom:-32,left:40,width:100,height:100,borderRadius:"50%",background:"rgba(255,255,255,.04)"}}/>
+      <button onClick={dismiss} style={{position:"absolute",top:12,right:12,background:"rgba(255,255,255,.15)",border:"1px solid rgba(255,255,255,.2)",borderRadius:"50%",width:26,height:26,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",flexShrink:0}}><X size={12}/></button>
+      {/* Eyebrow */}
+      <p style={{fontSize:10,color:"rgba(255,255,255,.6)",fontWeight:700,textTransform:"uppercase",letterSpacing:".12em",marginBottom:6}}>Calla remembers everything</p>
+      {/* Headline */}
+      <p style={{fontSize:22,fontWeight:800,color:"#f5f0e8",marginBottom:16,letterSpacing:"-.4px",lineHeight:1.2,paddingRight:28,fontFamily:"'Playfair Display',Georgia,serif"}}>So you don't have to.</p>
+      {/* Feature pills */}
       <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
         {[["🎙","Voice"],["📬","Email Parser"],["⚡","Conflicts"],["🎒","Packing"]].map(([icon,label])=>(
-          <div key={label} style={{background:"rgba(255,255,255,.14)",borderRadius:99,padding:"5px 11px",display:"flex",alignItems:"center",gap:5,fontSize:15,fontWeight:600,color:"var(--cream)"}}>
-            <span style={{fontSize:15}}>{icon}</span>{label}
+          <div key={label} style={{background:"rgba(255,255,255,.14)",border:"1px solid rgba(255,255,255,.2)",borderRadius:99,padding:"6px 12px",display:"flex",alignItems:"center",gap:5,fontSize:13,fontWeight:600,color:"rgba(255,255,255,.92)"}}>
+            <span style={{fontSize:13}}>{icon}</span>{label}
           </div>
         ))}
       </div>
@@ -589,12 +823,12 @@ function Briefing({events,members,onSelect}) {
   const greet=h<12?"Good morning":h<17?"Good afternoon":"Good evening";
   const todayEvs=events.filter(e=>e.date===todayStr).sort((a,b)=>a.time.localeCompare(b.time));
   const tomEvs=events.filter(e=>e.date===addDays(todayStr,1));
-  const gm=id=>members.find(m=>m.id===id)||{emoji:"👤",color:"var(--muted)"};
+  const gm=id=>members.find(m=>m.id===id)||{emoji:"👤",color:"var(--cream3)"};
   const now=new Date().getHours()*60+new Date().getMinutes();
   const toM=t=>{const[hh,mm]=(t||"0:0").split(":").map(Number);return hh*60+mm;};
 
   if(!open) return (
-    <button onClick={()=>setOpen(true)} style={{width:"100%",background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:16,padding:"13px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,color:"var(--cream3)",fontSize:15,fontWeight:500}}>
+    <button onClick={()=>setOpen(true)} style={{width:"100%",background:"#fff",border:"1px solid var(--border2)",borderRadius:16,padding:"13px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,color:"var(--cream3)",fontSize:15,fontWeight:500,boxShadow:"0 1px 3px rgba(45,60,45,.06)"}}>
       <div style={{display:"flex",alignItems:"center",gap:8}}><Icon size={15}/><span>{greet}</span></div>
       <ChevronDown size={15}/>
     </button>
@@ -603,10 +837,10 @@ function Briefing({events,members,onSelect}) {
   return (
     <Card style={{marginBottom:16}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-        <div style={{display:"flex",alignItems:"center",gap:7}}><Icon size={15} color="#6B7280"/><span style={{fontSize:15,color:"var(--cream3)",fontWeight:500}}>{greet} · {new Date().toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"})}</span></div>
-        <button onClick={()=>setOpen(false)} style={{background:"none",border:"none",color:"var(--muted)",display:"flex"}}><ChevronUp size={15}/></button>
+        <div style={{display:"flex",alignItems:"center",gap:7}}><Icon size={15} color="var(--cream3)"/><span style={{fontSize:15,color:"#3d5a3d",fontWeight:500}}>{greet} · {new Date().toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"})}</span></div>
+        <button onClick={()=>setOpen(false)} style={{background:"none",border:"none",color:"var(--cream3)",display:"flex"}}><ChevronUp size={15}/></button>
       </div>
-      <p style={{fontSize:20,fontWeight:800,letterSpacing:"-.3px",marginBottom:todayEvs.length?14:0}}>
+      <p style={{fontSize:22,fontWeight:800,letterSpacing:"-.4px",color:"#1a2e1a",marginBottom:todayEvs.length?16:0}}>
         {todayEvs.length===0?"Your day is open ✨":todayEvs.length+" event"+(todayEvs.length>1?"s":"")+" today"}
       </p>
       {todayEvs.map((ev,i)=>{
@@ -616,22 +850,22 @@ function Briefing({events,members,onSelect}) {
           <Fragment key={ev.id}>
           {showNoonDivider&&(
             <div style={{display:"flex",alignItems:"center",gap:8,margin:"10px 0 8px"}}>
-              <div style={{flex:1,height:1,background:"var(--border)"}}/>
+              <div style={{flex:1,height:1,background:"var(--border2)"}}/>
               <span style={{fontSize:11,color:"var(--cream3)",fontWeight:600,letterSpacing:".06em"}}>AFTERNOON</span>
-              <div style={{flex:1,height:1,background:"var(--border)"}}/>
+              <div style={{flex:1,height:1,background:"var(--border2)"}}/>
             </div>
           )}
           <div
             onClick={()=>onSelect&&onSelect(ev)}
-            style={{display:"flex",alignItems:"center",gap:10,marginBottom:8,opacity:past?0.4:1,cursor:"pointer",borderRadius:12,padding:"6px 8px",margin:"0 -8px 6px",transition:"background .15s"}}
-            onMouseEnter={e=>e.currentTarget.style.background="#F9FAFB"}
+            style={{display:"flex",alignItems:"center",gap:10,marginBottom:8,opacity:past?0.5:1,cursor:"pointer",borderRadius:12,padding:"6px 8px",margin:"0 -8px 6px",transition:"background .15s"}}
+            onMouseEnter={e=>e.currentTarget.style.background="rgba(45,60,45,.04)"}
             onMouseLeave={e=>e.currentTarget.style.background="transparent"}
           >
-            <div style={{width:3,height:32,borderRadius:2,background:past?"var(--border2)":ev.color,flexShrink:0}}/>
+            <div style={{width:4,height:36,borderRadius:2,background:past?"var(--ink4)":ev.color,flexShrink:0}}/>
             <div style={{flex:1}}>
-              <p style={{fontSize:15,fontWeight:600,color:past?"#9CA3AF":"#111"}}>{m.emoji} {ev.title}</p>
+              <p style={{fontSize:16,fontWeight:700,color:past?"var(--cream3)":"#1a2e1a"}}>{m.emoji} {ev.title}</p>
               <div style={{display:"flex",alignItems:"center",gap:8,marginTop:2}}>
-                <p style={{fontSize:15,color:"var(--muted)"}}>{ev.time}{ev.location&&<span style={{color:"var(--cream3)"}}> · {ev.location}</span>}</p>
+                <p style={{fontSize:13,color:"#4a5e4a",fontWeight:400}}>{ev.time}{ev.location&&<span style={{color:"var(--cream3)"}}> · {ev.location}</span>}</p>
                 {ev.packingList&&ev.packingList.length>0&&!past&&(
                   <div style={{display:"flex",alignItems:"center",gap:3,background:ev.color+"12",borderRadius:99,padding:"1px 7px"}}>
                     <Package size={9} color={ev.color}/>
@@ -641,16 +875,16 @@ function Briefing({events,members,onSelect}) {
               </div>
             </div>
             {next&&<Pill color={ev.color} bg={ev.color+"15"} style={{animation:"pulse 2s infinite"}}>Next</Pill>}
-            {past?<Check size={13} color="#9CA3AF"/>:<ChevronRight size={14} color="#D1D5DB"/>}
+            {past?<Check size={13} color="var(--cream3)"/>:<ChevronRight size={14} color="var(--border3)"/>}
           </div>
           </Fragment>
         );
       })}
       {tomEvs.length>0&&(
         <div style={{marginTop:12,paddingTop:12,borderTop:"1px solid var(--border2)"}}>
-          <p style={{fontSize:15,color:"var(--muted)",fontWeight:600,textTransform:"uppercase",letterSpacing:".05em",marginBottom:8}}>Tomorrow</p>
+          <p style={{fontSize:15,color:"#2d4a2d",fontWeight:700,textTransform:"uppercase",letterSpacing:".05em",marginBottom:8}}>Tomorrow</p>
           <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-            {tomEvs.slice(0,3).map(ev=>{const m=gm(ev.memberId);return <Pill key={ev.id} color={ev.color} bg={ev.color+"12"}>{m.emoji} {ev.title}</Pill>;})}
+            {tomEvs.slice(0,3).map(ev=>{const m=gm(ev.memberId);return <Pill key={ev.id} color={ev.color} bg={ev.color+"22"} style={{border:"1.5px solid "+ev.color+"55",fontWeight:700}}>{m.emoji} {ev.title}</Pill>;})}
             {tomEvs.length>3&&<Pill color="var(--cream3)" bg="var(--ink4)">+{tomEvs.length-3}</Pill>}
           </div>
         </div>
@@ -664,12 +898,12 @@ function ConflictBanner({items,members,onSelect}) {
   const [open,setOpen]=useState(false),[dismissed,setDismissed]=useState([]);
   const visible=items.filter(c=>!dismissed.includes(c.a.id+"-"+c.b.id));
   if(!visible.length) return null;
-  const gm=id=>members.find(m=>m.id===id)||{name:"?",color:"var(--muted)",emoji:"👤"};
+  const gm=id=>members.find(m=>m.id===id)||{name:"?",color:"var(--cream3)",emoji:"👤"};
   return (
-    <div style={{background:"rgba(176,141,82,.1)",border:"1px solid rgba(176,141,82,.25)",borderRadius:16,marginBottom:16,overflow:"hidden"}}>
+    <div style={{background:"rgba(160,120,32,.08)",border:"1.5px solid rgba(160,120,32,.3)",borderRadius:16,marginBottom:16,overflow:"hidden"}}>
       <button onClick={()=>setOpen(o=>!o)} style={{width:"100%",background:"none",border:"none",padding:"14px 16px",display:"flex",alignItems:"center",gap:10,textAlign:"left"}}>
         <AlertTriangle size={15} color="#D97706"/>
-        <span style={{flex:1,fontWeight:600,fontSize:15,color:"var(--gold3)"}}>{visible.length} conflict{visible.length>1?"s":""} detected</span>
+        <span style={{flex:1,fontWeight:600,fontSize:15,color:"var(--amber)"}}>{visible.length} conflict{visible.length>1?"s":""} detected</span>
         {open?<ChevronUp size={15} color="#D97706"/>:<ChevronDown size={15} color="#D97706"/>}
       </button>
       {open&&visible.map(c=>{
@@ -692,8 +926,8 @@ function ConflictBanner({items,members,onSelect}) {
               </div>
             </div>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <p style={{fontSize:15,color:"var(--gold3)"}}>{c.type==="same"?"Double-booked · "+c.diff+"min":"Only "+c.diff+"min gap"}</p>
-              <button onClick={e=>{e.stopPropagation();setDismissed(d=>[...d,key]);}} style={{background:"none",border:"none",color:"var(--muted)",fontSize:15,fontWeight:500}}>Dismiss</button>
+              <p style={{fontSize:15,color:"var(--amber)"}}>{c.type==="same"?"Double-booked · "+c.diff+"min":"Only "+c.diff+"min gap"}</p>
+              <button onClick={e=>{e.stopPropagation();setDismissed(d=>[...d,key]);}} style={{background:"none",border:"none",color:"var(--cream3)",fontSize:15,fontWeight:500}}>Dismiss</button>
             </div>
           </div>
         );
@@ -761,8 +995,8 @@ const ShareSheet = ({ev,onClose}) => {
   };
 
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.5)",zIndex:600,display:"flex",alignItems:"flex-end"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className="fu sheet-scroll" style={{background:"rgba(18,18,22,.97)",borderRadius:"20px 20px 0 0",padding:"8px 20px calc(40px + env(safe-area-inset-bottom,0px))",width:"100%",maxHeight:"85vh",overflowY:"auto",overscrollBehavior:"contain"}}>
+    <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.35)",zIndex:600,display:"flex",alignItems:"flex-end"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="sheet-enter sheet-scroll" style={{background:"var(--ink2)",borderRadius:"20px 20px 0 0",padding:"8px 20px calc(env(safe-area-inset-bottom,20px) + 28px)",width:"100%",height:"85vh",overflowY:"scroll",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
         <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 20px"}}/>
 
         {/* Header */}
@@ -772,7 +1006,7 @@ const ShareSheet = ({ev,onClose}) => {
             <p style={{fontSize:15,color:"var(--cream3)",marginTop:2}}>{ev.title}</p>
           </div>
           <button onClick={onClose} style={{width:32,height:32,borderRadius:"50%",background:"var(--ink4)",border:"none",display:"flex",alignItems:"center",justifyContent:"center",minHeight:"auto",minWidth:"auto"}}>
-            <X size={16} color="#6B7280"/>
+            <X size={16} color="var(--cream3)"/>
           </button>
         </div>
 
@@ -791,7 +1025,7 @@ const ShareSheet = ({ev,onClose}) => {
               onMouseEnter={e=>e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,.08)"}
               onMouseLeave={e=>e.currentTarget.style.boxShadow="none"}
             >
-              <div style={{width:48,height:48,borderRadius:16,background:"rgba(46,107,94,.1)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:24}}>💬</div>
+              <div style={{width:48,height:48,borderRadius:16,background:"rgba(45,90,61,.07)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:24}}>💬</div>
               <div style={{flex:1}}>
                 <p style={{fontWeight:700,fontSize:15}}>Send as Text (SMS)</p>
                 <p style={{fontSize:15,color:"var(--cream3)",marginTop:2}}>Opens your Messages app · Enter any phone number</p>
@@ -847,14 +1081,14 @@ const ShareSheet = ({ev,onClose}) => {
             <button onClick={()=>setMode(null)} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",color:"var(--cream3)",fontWeight:600,fontSize:15,padding:"0 0 16px",minHeight:"auto",minWidth:"auto"}}>
               <ChevronLeft size={15}/>Back
             </button>
-            <div style={{background:"rgba(46,107,94,.1)",borderRadius:16,padding:"14px 16px",marginBottom:16,display:"flex",gap:10,alignItems:"flex-start"}}>
+            <div style={{background:"rgba(45,90,61,.07)",borderRadius:16,padding:"14px 16px",marginBottom:16,display:"flex",gap:10,alignItems:"flex-start"}}>
               <span style={{fontSize:20,flexShrink:0}}>💬</span>
               <div>
                 <p style={{fontWeight:700,fontSize:15,color:"var(--sage3)",marginBottom:3}}>Send via Text Message</p>
                 <p style={{fontSize:15,color:"var(--sage3)",lineHeight:1.6}}>Enter a phone number below. Your native Messages app will open with the event details pre-filled — just hit Send.</p>
               </div>
             </div>
-            <label style={{fontSize:15,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",letterSpacing:".06em",display:"block",marginBottom:8}}>Phone number</label>
+            <label style={{fontSize:15,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em",display:"block",marginBottom:8}}>Phone number</label>
             <div style={{display:"flex",gap:10,marginBottom:14}}>
               <div style={{display:"flex",alignItems:"center",gap:10,flex:1,background:"var(--ink3)",borderRadius:12,padding:"12px 14px",border:"1px solid var(--border2)"}}>
                 <span style={{fontSize:18,flexShrink:0}}>📱</span>
@@ -869,7 +1103,7 @@ const ShareSheet = ({ev,onClose}) => {
                 />
               </div>
             </div>
-            <p style={{fontSize:15,color:"var(--muted)",marginBottom:16}}>Works for anyone — grandparents, babysitters, coaches. No app needed on their end.</p>
+            <p style={{fontSize:15,color:"var(--cream3)",marginBottom:16}}>Works for anyone — grandparents, babysitters, coaches. No app needed on their end.</p>
             <Btn onClick={sendSMS} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontSize:15,opacity:phone.trim()?1:.5}}>
               <Send size={15}/>Open Messages & Send
             </Btn>
@@ -889,7 +1123,7 @@ const ShareSheet = ({ev,onClose}) => {
                 <p style={{fontSize:15,color:"var(--sage2)",lineHeight:1.6}}>Your Mail app will open with the event details and Google Maps link pre-filled. Just hit Send.</p>
               </div>
             </div>
-            <label style={{fontSize:15,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",letterSpacing:".06em",display:"block",marginBottom:8}}>Email address</label>
+            <label style={{fontSize:15,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em",display:"block",marginBottom:8}}>Email address</label>
             <div style={{display:"flex",alignItems:"center",gap:10,background:"var(--ink3)",borderRadius:12,padding:"12px 14px",border:"1px solid var(--border2)",marginBottom:14}}>
               <span style={{fontSize:18,flexShrink:0}}>✉️</span>
               <input
@@ -902,7 +1136,7 @@ const ShareSheet = ({ev,onClose}) => {
                 style={{background:"transparent",border:"none",padding:0,fontSize:16,flex:1}}
               />
             </div>
-            <p style={{fontSize:15,color:"var(--muted)",marginBottom:16}}>The subject line will say "Event: {ev.title} on {fd(ev.date)}".</p>
+            <p style={{fontSize:15,color:"var(--cream3)",marginBottom:16}}>The subject line will say "Event: {ev.title} on {fd(ev.date)}".</p>
             <Btn onClick={sendEmail} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontSize:15,opacity:email.includes("@")?1:.5}}>
               <Send size={15}/>Open Mail & Send
             </Btn>
@@ -942,7 +1176,7 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
   const [mentionSearch,setMentionSearch] = useState("");
   const [showShare,setShowShare] = useState(false);
   const commentInputRef = useRef();
-  const m=members.find(x=>x.id===ev.memberId)||{emoji:"👤",color:"var(--muted)",name:"?"};
+  const m=members.find(x=>x.id===ev.memberId)||{emoji:"👤",color:"var(--cream3)",name:"?"};
 
   const handleCommentInput = (val) => {
     setCommentText(val);
@@ -994,8 +1228,8 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
   const openDirs = loc=>window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(loc),"_blank");
 
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.7)",zIndex:500,display:"flex",alignItems:"flex-end"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className="sheet-enter sheet-scroll" style={{borderRadius:"20px 20px 0 0",padding:"8px 20px calc(40px + env(safe-area-inset-bottom,0px))",width:"100%",maxHeight:"92vh",overflowY:"auto",overscrollBehavior:"contain",background:"var(--ink2)"}}>
+    <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:600,display:"flex",alignItems:"flex-end"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="sheet-enter sheet-scroll" style={{borderRadius:"20px 20px 0 0",padding:"8px 20px calc(env(safe-area-inset-bottom,20px) + 32px)",width:"100%",height:"92vh",overflowY:"scroll",overscrollBehavior:"contain",background:"var(--ink2)",WebkitOverflowScrolling:"touch",willChange:"transform"}}>
         <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 16px"}}/>
 
         {/* Header */}
@@ -1010,7 +1244,7 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
             <h2 style={{fontSize:22,fontWeight:800,letterSpacing:"-.3px",lineHeight:1.2}}>{ev.title}</h2>
           </div>
           <button onClick={onClose} style={{width:32,height:32,borderRadius:"50%",background:"var(--ink4)",border:"none",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:12,minHeight:"auto",minWidth:"auto"}}>
-            <X size={16} color="#6B7280"/>
+            <X size={16} color="var(--cream3)"/>
           </button>
         </div>
 
@@ -1019,7 +1253,7 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
           {[[Calendar,fd(ev.date),"Date"],[Clock,ev.time||"No time","Time"],ev.cost?[DollarSign,"$"+ev.cost+" / "+(ev.costType||"one-time"),"Cost"]:null].filter(Boolean).map(([Icon,val,label])=>(
             <div key={label} style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderBottom:"1px solid #F3F4F6"}}>
               <div style={{width:34,height:34,background:"var(--sage-light)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Icon size={15} color="var(--sage)"/></div>
-              <div><p style={{fontSize:15,color:"var(--muted)",fontWeight:600,textTransform:"uppercase",letterSpacing:".04em"}}>{label}</p><p style={{fontSize:15,fontWeight:600,marginTop:1}}>{val}</p></div>
+              <div><p style={{fontSize:15,color:"#2d4a2d",fontWeight:700,textTransform:"uppercase",letterSpacing:".04em"}}>{label}</p><p style={{fontSize:15,fontWeight:600,marginTop:1}}>{val}</p></div>
             </div>
           ))}
         </div>
@@ -1030,7 +1264,7 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
             <div style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderBottom:"1px solid #F3F4F6",marginBottom:10}}>
               <div style={{width:34,height:34,background:"var(--sage-light)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><MapPin size={15} color="var(--sage)"/></div>
               <div style={{flex:1}}>
-                <p style={{fontSize:15,color:"var(--muted)",fontWeight:600,textTransform:"uppercase",letterSpacing:".04em"}}>Location</p>
+                <p style={{fontSize:15,color:"#2d4a2d",fontWeight:700,textTransform:"uppercase",letterSpacing:".04em"}}>Location</p>
                 <p style={{fontSize:15,fontWeight:600,color:"var(--sage3)",marginTop:1,cursor:"pointer"}} onClick={()=>openMaps(ev.location)}>{ev.location}</p>
               </div>
             </div>
@@ -1043,7 +1277,7 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
         ):(
           <div style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderBottom:"1px solid #F3F4F6",marginBottom:16}}>
             <div style={{width:34,height:34,background:"var(--ink4)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><MapPin size={15} color="#D1D5DB"/></div>
-            <div><p style={{fontSize:15,color:"var(--muted)",fontWeight:600,textTransform:"uppercase",letterSpacing:".04em"}}>Location</p><p style={{fontSize:15,color:"var(--border3)",marginTop:1}}>Not set</p></div>
+            <div><p style={{fontSize:15,color:"#2d4a2d",fontWeight:700,textTransform:"uppercase",letterSpacing:".04em"}}>Location</p><p style={{fontSize:15,color:"var(--border3)",marginTop:1}}>Not set</p></div>
           </div>
         )}
 
@@ -1273,8 +1507,8 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
   };
 
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.7)",zIndex:500,display:"flex",alignItems:"flex-start"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className="sheet-top" style={{borderRadius:"0 0 24px 24px",padding:"env(safe-area-inset-top,20px) 20px 32px",width:"100%",maxHeight:"92vh",overflowY:"auto",background:"var(--ink2)",marginTop:0}}>
+    <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:500,display:"flex",alignItems:"flex-start"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="sheet-top" style={{borderRadius:"0 0 24px 24px",padding:"env(safe-area-inset-top,20px) 20px 32px",width:"100%",height:"92vh",overflowY:"scroll",background:"var(--ink2)",WebkitOverflowScrolling:"touch",willChange:"transform"}}>
         <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 20px"}}/>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
           <h2 style={{fontSize:18,fontWeight:800}}>New Event</h2>
@@ -1290,14 +1524,14 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
             ))}
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-            <div><label style={{fontSize:15,color:"var(--muted)",fontWeight:600,display:"block",marginBottom:5}}>DATE *</label><input type="date" value={ev.date} onChange={e=>s("date")(e.target.value)}/></div>
-            <div><label style={{fontSize:15,color:"var(--muted)",fontWeight:600,display:"block",marginBottom:5}}>START TIME</label><input type="time" value={ev.time} onChange={e=>s("time")(e.target.value)}/></div>
-            <div style={{gridColumn:"1/-1"}}><label style={{fontSize:15,color:"var(--muted)",fontWeight:600,display:"block",marginBottom:5}}>END TIME <span style={{fontWeight:400}}>(optional)</span></label><input type="time" value={ev.endTime||""} onChange={e=>s("endTime")(e.target.value)}/></div>
+            <div><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>DATE *</label><input type="date" value={ev.date} onChange={e=>s("date")(e.target.value)}/></div>
+            <div><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>START TIME</label><input type="time" value={ev.time} onChange={e=>s("time")(e.target.value)}/></div>
+            <div style={{gridColumn:"1/-1"}}><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>END TIME <span style={{fontWeight:400}}>(optional)</span></label><input type="time" value={ev.endTime||""} onChange={e=>s("endTime")(e.target.value)}/></div>
           </div>
 
           {/* Location with autocomplete */}
           <div style={{position:"relative"}}>
-            <label style={{fontSize:15,color:"var(--muted)",fontWeight:600,display:"block",marginBottom:5}}>LOCATION</label>
+            <label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>LOCATION</label>
             <div style={{display:"flex",alignItems:"center",gap:10,background:"var(--ink3)",borderRadius:12,padding:"10px 14px",border:"1.5px solid "+(showLocDrop?"var(--sage)":"var(--border2)"),transition:"border-color .15s"}}>
               <MapPin size={15} color={showLocDrop?"var(--sage)":"#9CA3AF"}/>
               <input
@@ -1312,7 +1546,7 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
                 onBlur={()=>setTimeout(()=>setShowLocDrop(false),150)}
                 style={{background:"transparent",border:"none",padding:0,fontSize:15,flex:1}}
               />
-              {ev.location&&<button onClick={()=>{s("location")("");setLocQuery("");}} style={{background:"none",border:"none",color:"var(--muted)",display:"flex",padding:2,flexShrink:0}}><X size={13}/></button>}
+              {ev.location&&<button onClick={()=>{s("location")("");setLocQuery("");}} style={{background:"none",border:"none",color:"var(--cream3)",display:"flex",padding:2,flexShrink:0}}><X size={13}/></button>}
             </div>
             {showLocDrop&&(
               <div style={{position:"absolute",top:"100%",left:0,right:0,background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,.12)",zIndex:50,overflow:"hidden",marginTop:4}}>
@@ -1320,13 +1554,13 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
                 {getSuggestions().map((v,i)=>(
                   <div key={i} onClick={()=>{s("location")(v.label);setLocQuery("");setShowLocDrop(false);}}
                     style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",cursor:"pointer",borderBottom:i<getSuggestions().length-1?"1px solid #F3F4F6":"none"}}
-                    onMouseEnter={e=>e.currentTarget.style.background="var(--ink3)"}
+                    onMouseEnter={e=>e.currentTarget.style.background="rgba(45,60,45,.05)"}
                     onMouseLeave={e=>e.currentTarget.style.background="transparent"}
                   >
                     <span style={{fontSize:20,flexShrink:0}}>{v.icon}</span>
                     <div>
                       <p style={{fontSize:15,fontWeight:600,color:"var(--cream)"}}>{v.label}</p>
-                      <p style={{fontSize:15,color:"var(--muted)"}}>{v.keywords.slice(0,3).join(", ")}</p>
+                      <p style={{fontSize:15,color:"var(--cream3)"}}>{v.keywords.slice(0,3).join(", ")}</p>
                     </div>
                     <MapPin size={13} color="#D1D5DB" style={{marginLeft:"auto",flexShrink:0}}/>
                   </div>
@@ -1334,7 +1568,7 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
                 {/* Use typed text as-is */}
                 {locQuery.trim()&&(
                   <div onClick={()=>{s("location")(locQuery.trim());setShowLocDrop(false);}}
-                    style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",cursor:"pointer",background:"rgba(46,107,94,.1)",borderTop:"1px solid var(--border2)"}}
+                    style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",cursor:"pointer",background:"rgba(45,90,61,.07)",borderTop:"1px solid var(--border2)"}}
                   >
                     <Check size={15} color="var(--sage2)" style={{flexShrink:0}}/>
                     <p style={{fontSize:15,fontWeight:600,color:"var(--sage2)"}}>Use "{locQuery.trim()}"</p>
@@ -1357,8 +1591,8 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
           <Card style={{background:"var(--ink3)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <Repeat size={15} color="#6B7280"/>
-                <div><p style={{fontWeight:600,fontSize:15}}>Recurring</p><p style={{fontSize:15,color:"var(--muted)"}}>Repeat automatically</p></div>
+                <Repeat size={15} color="var(--cream3)"/>
+                <div><p style={{fontWeight:600,fontSize:15}}>Recurring</p><p style={{fontSize:15,color:"var(--cream3)"}}>Repeat automatically</p></div>
               </div>
               <Toggle on={ev.recurring} onChange={()=>s("recurring")(!ev.recurring)}/>
             </div>
@@ -1369,7 +1603,7 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
                     <button key={f} onClick={()=>s("recurFreq")(f)} style={{padding:"6px 14px",borderRadius:99,background:ev.recurFreq===f?"var(--sage)":"var(--ink4)",color:ev.recurFreq===f?"var(--cream)":"var(--cream3)",fontSize:15,fontWeight:600,border:"1.5px solid",borderColor:ev.recurFreq===f?"var(--sage2)":"var(--border2)",textTransform:"capitalize"}}>{f}</button>
                   ))}
                 </div>
-                <div><label style={{fontSize:15,color:"var(--muted)",fontWeight:600,display:"block",marginBottom:5}}>UNTIL</label><input type="date" value={ev.recurEnd} onChange={e=>s("recurEnd")(e.target.value)}/></div>
+                <div><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>UNTIL</label><input type="date" value={ev.recurEnd} onChange={e=>s("recurEnd")(e.target.value)}/></div>
                 <p style={{fontSize:15,color:"var(--sage2)",fontWeight:600}}>Creates ~{recurCount(ev.recurFreq,ev.date,ev.recurEnd)} events</p>
               </div>
             )}
@@ -1377,7 +1611,7 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
           <textarea rows={2} placeholder="Notes (optional)" value={ev.notes} onChange={e=>s("notes")(e.target.value)} style={{resize:"none",fontSize:15}}/>
           <Card style={{background:"var(--ink3)"}}>
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:ev.packingList&&ev.packingList.length?12:0}}>
-              <Package size={15} color="#6B7280"/><p style={{fontWeight:600,fontSize:15}}>Packing List</p>
+              <Package size={15} color="var(--cream3)"/><p style={{fontWeight:600,fontSize:15}}>Packing List</p>
               <div style={{display:"flex",gap:6,marginLeft:"auto"}}>
                 {[["⚽","cleats,water bottle,jersey,shin guards"],["🎵","instrument,sheet music,lesson book"]].map(([ico,items])=>(
                   <button key={ico} onClick={()=>{const ex=ev.packingList||[];const add=items.split(",").filter(i=>!ex.includes(i));setEv(p=>({...p,packingList:[...ex,...add]}));}} style={{background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:99,padding:"3px 10px",fontSize:15,fontWeight:500}}>{ico}</button>
@@ -1389,7 +1623,7 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
                 {ev.packingList.map((item,i)=>(
                   <div key={i} style={{display:"flex",alignItems:"center",gap:5,background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:99,padding:"4px 10px 4px 12px"}}>
                     <span style={{fontSize:15}}>{item}</span>
-                    <button onClick={()=>setEv(p=>({...p,packingList:p.packingList.filter((_,j)=>j!==i)}))} style={{background:"none",color:"var(--muted)",display:"flex",padding:2}}><X size={11}/></button>
+                    <button onClick={()=>setEv(p=>({...p,packingList:p.packingList.filter((_,j)=>j!==i)}))} style={{background:"none",color:"var(--cream3)",display:"flex",padding:2}}><X size={11}/></button>
                   </div>
                 ))}
               </div>
@@ -1518,7 +1752,7 @@ function VoiceSheet({members,onAdd,onClose}) {
   };
 
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.5)",zIndex:500,display:"flex",alignItems:"flex-start"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.35)",zIndex:500,display:"flex",alignItems:"flex-start"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
       <div className="sheet-top" style={{borderRadius:"0 0 24px 24px",padding:"env(safe-area-inset-top,20px) 24px 48px",width:"100%",background:"var(--ink2)"}}>
         <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 24px"}}/>
         {stage==="ready"&&(
@@ -1542,7 +1776,7 @@ function VoiceSheet({members,onAdd,onClose}) {
             </div>
             <p style={{fontWeight:700,fontSize:16,marginBottom:14}}>Listening…</p>
             <div style={{background:"var(--ink3)",border:"1px solid var(--border)",borderRadius:12,padding:14,minHeight:50,marginBottom:20}}>
-              {transcript?<p style={{fontSize:15,color:"var(--cream2)",fontStyle:"italic",lineHeight:1.6}}>"{transcript}"</p>:<p style={{color:"var(--muted)",fontSize:15}}>Start speaking…</p>}
+              {transcript?<p style={{fontSize:15,color:"var(--cream2)",fontStyle:"italic",lineHeight:1.6}}>"{transcript}"</p>:<p style={{color:"var(--cream3)",fontSize:15}}>Start speaking…</p>}
             </div>
             <Btn v="ghost" onClick={()=>rec.current&&rec.current.stop()} style={{display:"flex",alignItems:"center",gap:8,margin:"0 auto"}}><MicOff size={14}/>Done</Btn>
           </div>
@@ -1558,9 +1792,9 @@ function VoiceSheet({members,onAdd,onClose}) {
             <p style={{fontWeight:800,fontSize:18,marginBottom:4}}>Does this look right?</p>
             <p style={{color:"var(--cream3)",fontSize:15,marginBottom:18,fontStyle:"italic"}}>"{transcript}"</p>
             {parsed.memberWarning&&(
-              <div style={{background:"rgba(176,141,82,.1)",border:"1px solid rgba(176,141,82,.25)",borderRadius:12,padding:"10px 12px",marginBottom:12,display:"flex",gap:8,alignItems:"flex-start"}}>
+              <div style={{background:"rgba(160,120,32,.08)",border:"1.5px solid rgba(160,120,32,.3)",borderRadius:12,padding:"10px 12px",marginBottom:12,display:"flex",gap:8,alignItems:"flex-start"}}>
                 <AlertTriangle size={14} color="#D97706" style={{flexShrink:0,marginTop:1}}/>
-                <p style={{fontSize:15,color:"var(--gold3)",lineHeight:1.6}}>{parsed.memberWarning}</p>
+                <p style={{fontSize:15,color:"var(--gold)",lineHeight:1.6}}>{parsed.memberWarning}</p>
               </div>
             )}
             {parsed.dateWarning&&(
@@ -1578,8 +1812,8 @@ function VoiceSheet({members,onAdd,onClose}) {
             <Card style={{marginBottom:18,borderTopWidth:3,borderTopColor:parsed.color}}>
               <input value={parsed.title} onChange={e=>setParsed(p=>({...p,title:e.target.value}))} style={{fontSize:16,fontWeight:700,border:"none",borderBottom:"1px solid var(--border2)",borderRadius:0,padding:"2px 0",marginBottom:14,background:"transparent"}}/>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
-                <div><label style={{fontSize:15,color:"var(--muted)",fontWeight:600,display:"block",marginBottom:4}}>DATE</label><input type="date" value={parsed.date} onChange={e=>setParsed(p=>({...p,date:e.target.value}))} style={{fontSize:15,padding:"8px 10px"}}/></div>
-                <div><label style={{fontSize:15,color:"var(--muted)",fontWeight:600,display:"block",marginBottom:4}}>TIME</label><input type="time" value={parsed.time} onChange={e=>setParsed(p=>({...p,time:e.target.value}))} style={{fontSize:15,padding:"8px 10px"}}/></div>
+                <div><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:4}}>DATE</label><input type="date" value={parsed.date} onChange={e=>setParsed(p=>({...p,date:e.target.value}))} style={{fontSize:15,padding:"8px 10px"}}/></div>
+                <div><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:4}}>TIME</label><input type="time" value={parsed.time} onChange={e=>setParsed(p=>({...p,time:e.target.value}))} style={{fontSize:15,padding:"8px 10px"}}/></div>
               </div>
               <select value={parsed.memberId} onChange={e=>setParsed(p=>({...p,memberId:e.target.value}))} style={{fontSize:15}}>
                 {members.map(m=><option key={m.id} value={m.id}>{m.emoji} {m.name}</option>)}
@@ -1594,7 +1828,7 @@ function VoiceSheet({members,onAdd,onClose}) {
         )}
         {stage==="done"&&(
           <div style={{textAlign:"center",padding:"32px 0"}}>
-            <div style={{width:60,height:60,background:"rgba(83,136,122,.1)",border:"1px solid rgba(83,136,122,.4)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px"}}><Check size={26} color="var(--sage2)"/></div>
+            <div style={{width:60,height:60,background:"rgba(45,90,61,.06)",border:"1px solid rgba(83,136,122,.4)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px"}}><Check size={26} color="var(--sage2)"/></div>
             <p style={{fontWeight:800,fontSize:18,color:"var(--sage2)"}}>Added!</p>
           </div>
         )}
@@ -1614,25 +1848,25 @@ function VoiceSheet({members,onAdd,onClose}) {
 /* ─── Day Sheet ─────────────────────────────────────────────────────────── */
 function DaySheet({date,events,members,onClose,onSelect}) {
   const dayEvs=events.filter(function(e){return e.date===date;}).sort(function(a,b){return a.time.localeCompare(b.time);});
-  const gm=function(id){return members.find(function(m){return m.id===id;})||{emoji:"👤",color:"var(--muted)",name:"?"};};
+  const gm=function(id){return members.find(function(m){return m.id===id;})||{emoji:"👤",color:"var(--cream3)",name:"?"};};
   const dayNames=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   const d=new Date(date+"T12:00:00");
   const label=date===todayStr?"Today":date===addDays(todayStr,1)?"Tomorrow":dayNames[d.getDay()]+", "+MONTHS[d.getMonth()]+" "+d.getDate();
   return (
-    <div onClick={function(e){if(e.target===e.currentTarget)onClose();}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,.72)",zIndex:500,display:"flex",alignItems:"flex-end"}}>
-      <div className="sheet-enter sheet-scroll" style={{borderRadius:"20px 20px 0 0",padding:"8px 20px calc(40px + env(safe-area-inset-bottom,0px))",width:"100%",maxHeight:"80vh",overflowY:"auto",overscrollBehavior:"contain",background:"var(--ink2)"}}>
+    <div onClick={function(e){if(e.target===e.currentTarget)onClose();}} style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:500,display:"flex",alignItems:"flex-end"}}>
+      <div className="sheet-enter sheet-scroll" style={{borderRadius:"20px 20px 0 0",padding:"8px 20px calc(env(safe-area-inset-bottom,20px) + 28px)",width:"100%",height:"80vh",overflowY:"scroll",overscrollBehavior:"contain",background:"var(--ink2)",WebkitOverflowScrolling:"touch",willChange:"transform"}}>
         <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 20px"}}/>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
           <div>
             <h2 style={{fontSize:20,fontWeight:800,letterSpacing:"-.3px"}}>{label}</h2>
-            <p style={{fontSize:15,color:"var(--muted)",marginTop:2}}>{dayEvs.length} event{dayEvs.length!==1?"s":""}</p>
+            <p style={{fontSize:15,color:"var(--cream3)",marginTop:2}}>{dayEvs.length} event{dayEvs.length!==1?"s":""}</p>
           </div>
           <button onClick={onClose} style={{width:34,height:34,borderRadius:12,background:"var(--ink4)",border:"none",display:"flex",alignItems:"center",justifyContent:"center"}}><X size={16}/></button>
         </div>
         {dayEvs.length===0&&(
           <div style={{textAlign:"center",padding:"36px 0"}}>
             <Calendar size={38} color="#D1D5DB" style={{margin:"0 auto 12px"}}/>
-            <p style={{color:"var(--muted)",fontWeight:500}}>Nothing scheduled</p>
+            <p style={{color:"var(--cream3)",fontWeight:500}}>Nothing scheduled</p>
           </div>
         )}
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -1648,7 +1882,7 @@ function DaySheet({date,events,members,onClose,onSelect}) {
                   </div>
                   <div style={{flex:1}}>
                     <p style={{fontWeight:700,fontSize:15}}>{ev.title}</p>
-                    <p style={{fontSize:15,color:"var(--muted)",marginTop:1}}>{m.name}</p>
+                    <p style={{fontSize:15,color:"var(--cream3)",marginTop:1}}>{m.name}</p>
                   </div>
                   <ChevronRight size={16} color="#D1D5DB"/>
                 </div>
@@ -1676,7 +1910,7 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
   const [calView,setCalView]=useState("month");
   useEffect(()=>{if(initialSel){setSel(initialSel);if(onClearSel)onClearSel();}},[]); 
   const week=getWeek(anchor),cfls=conflicts(events);
-  const gm=id=>members.find(m=>m.id===id)||{emoji:"👤",color:"var(--muted)"};
+  const gm=id=>members.find(m=>m.id===id)||{emoji:"👤",color:"var(--cream3)"};
   const prev=()=>{const d=new Date(anchor);d.setDate(d.getDate()+(calView==="month"?-28:-7));setAnchor(d.toISOString().split("T")[0]);};
   const next=()=>{const d=new Date(anchor);d.setDate(d.getDate()+(calView==="month"?28:7));setAnchor(d.toISOString().split("T")[0]);};
 
@@ -1705,11 +1939,11 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
       {/* ── Action buttons — VERY TOP ── */}
       <div style={{display:"flex",gap:10,marginBottom:16}}>
         <button onClick={function(){setShowVoice(true);}}
-          style={{flex:1,background:"var(--ink3)",border:"1px solid var(--border2)",borderRadius:16,padding:"13px 10px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontWeight:600,fontSize:15,color:"var(--cream2)"}}>
+          style={{flex:1,background:"#fff",border:"1.5px solid var(--border2)",borderRadius:16,padding:"13px 10px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontWeight:600,fontSize:15,color:"var(--cream2)",boxShadow:"0 1px 4px rgba(45,60,45,.08)"}}>
           <Mic size={18} color="var(--sage3)"/>Voice
         </button>
         <button onClick={function(){setShowAdd(true);}}
-          style={{flex:2,background:"linear-gradient(135deg,var(--sage),var(--sage2))",borderRadius:16,padding:"13px 10px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontWeight:700,fontSize:15,color:"var(--cream)",boxShadow:"0 4px 20px rgba(46,107,94,.4)"}}>
+          style={{flex:2,background:"linear-gradient(135deg,var(--sage),var(--sage2))",borderRadius:16,padding:"13px 10px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontWeight:700,fontSize:15,color:"#fff",boxShadow:"0 4px 16px rgba(45,90,61,.3)"}}>
           <Plus size={18}/>New Event
         </button>
       </div>
@@ -1721,23 +1955,23 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
       {/* ── Calendar header ── */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <button onClick={prev} style={{background:"var(--ink3)",border:"1px solid var(--border2)",borderRadius:8,padding:"7px 9px",display:"flex",color:"var(--cream2)"}}><ChevronLeft size={15}/></button>
+          <button onClick={prev} style={{background:"#fff",border:"1px solid var(--border2)",borderRadius:8,padding:"7px 9px",display:"flex",color:"var(--cream2)",boxShadow:"0 1px 3px rgba(45,60,45,.06)"}}><ChevronLeft size={15}/></button>
           <span style={{fontSize:16,fontWeight:700,minWidth:120,textAlign:"center",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)"}}>
             {calView==="month"?monthLabel():(fd(week[0])+" – "+fd(week[6]))}
           </span>
-          <button onClick={next} style={{background:"var(--ink3)",border:"1px solid var(--border2)",borderRadius:8,padding:"7px 9px",display:"flex",color:"var(--cream2)"}}><ChevronRight size={15}/></button>
-          <button onClick={()=>setAnchor(todayStr)} style={{background:"none",border:"none",color:"var(--sage3)",fontSize:14,fontWeight:600,padding:"4px 6px"}}>Today</button>
+          <button onClick={next} style={{background:"#fff",border:"1px solid var(--border2)",borderRadius:8,padding:"7px 9px",display:"flex",color:"var(--cream2)",boxShadow:"0 1px 3px rgba(45,60,45,.06)"}}><ChevronRight size={15}/></button>
+          <button onClick={()=>setAnchor(todayStr)} style={{background:"none",border:"none",color:"var(--sage)",fontSize:14,fontWeight:600,padding:"4px 6px"}}>Today</button>
         </div>
         <div style={{display:"flex",gap:6,alignItems:"center"}}>
-          <div style={{display:"flex",background:"var(--ink4)",borderRadius:8,padding:2,gap:1}}>
+          <div style={{display:"flex",background:"var(--ink3)",borderRadius:8,padding:2,gap:1,border:"1px solid var(--border)"}}>
             {[["week","W"],["month","M"]].map(function(pair){
               var v=pair[0],lbl=pair[1];
               return <button key={v} onClick={function(){setCalView(v);}}
-                style={{padding:"5px 11px",borderRadius:6,background:calView===v?"var(--ink2)":"transparent",color:calView===v?"var(--cream)":"var(--cream3)",fontWeight:700,fontSize:13,border:"none",boxShadow:calView===v?"0 1px 4px rgba(0,0,0,.3)":"none"}}>{lbl}</button>;
+                style={{padding:"5px 11px",borderRadius:6,background:calView===v?"var(--sage)":"transparent",color:calView===v?"#fff":"var(--cream3)",color:calView===v?"#fff":"var(--cream3)",fontWeight:700,fontSize:13,border:"none",boxShadow:calView===v?"0 1px 4px rgba(0,0,0,.3)":"none"}}>{lbl}</button>;
             })}
           </div>
           <button onClick={()=>setMap(m=>!m)}
-            style={{background:map?"var(--sage)":"var(--ink3)",border:"1px solid",borderColor:map?"var(--sage2)":"var(--border2)",borderRadius:8,padding:"7px 11px",display:"flex",alignItems:"center",gap:5,color:map?"var(--cream)":"var(--cream2)",fontSize:13,fontWeight:600}}>
+            style={{background:map?"var(--sage)":"#fff",color:map?"#fff":"var(--cream2)",border:"1px solid",borderColor:map?"var(--sage2)":"var(--border2)",borderRadius:8,padding:"7px 11px",display:"flex",alignItems:"center",gap:5,color:map?"var(--cream)":"var(--cream2)",fontSize:13,fontWeight:600}}>
             <MapPin size={13}/>Map
           </button>
         </div>
@@ -1770,7 +2004,7 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
                 <div style={{borderRadius:16,overflow:"hidden",border:"1px solid var(--border2)",marginBottom:12,position:"relative",height:240}}>
                   <iframe title="Map" width="100%" height="240" style={{display:"block",border:"none"}} srcDoc={leafletHTML}/>
                   <button onClick={function(){openInGoogle(firstLoc);}}
-                    style={{position:"absolute",bottom:10,right:10,zIndex:10,background:"rgba(14,15,18,.9)",color:"var(--cream)",borderRadius:8,padding:"7px 13px",fontSize:13,fontWeight:600,border:"1px solid var(--border2)"}}>
+                    style={{position:"absolute",bottom:10,right:10,zIndex:10,background:"rgba(245,240,232,.97)",color:"var(--cream)",borderRadius:8,padding:"7px 13px",fontSize:13,fontWeight:600,border:"1px solid var(--border2)"}}>
                     Open in Google Maps ↗
                   </button>
                 </div>
@@ -1778,7 +2012,7 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
                   <div style={{background:"var(--ink2)",borderRadius:16,padding:"24px",textAlign:"center",border:"1px solid var(--border2)"}}>
                     <MapPin size={28} color="var(--cream3)" style={{margin:"0 auto 10px"}}/>
                     <p style={{fontSize:15,color:"var(--cream3)",fontWeight:500}}>No events with locations today</p>
-                    <p style={{fontSize:13,color:"var(--muted)",marginTop:4,fontWeight:300}}>Add a location to an event to see it here</p>
+                    <p style={{fontSize:13,color:"var(--cream3)",marginTop:4,fontWeight:300}}>Add a location to an event to see it here</p>
                   </div>
                 ):(
                   mapEvs.map(function(ev){
@@ -1831,7 +2065,7 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
                     padding:"4px 2px",
                     margin:"1px",
                     cursor:date?"pointer":"default",
-                    background:!date?"transparent":isT?"var(--sage)":"var(--ink3)",
+                    background:!date?"transparent":isT?"var(--sage)":"#fff",
                     border:date?"1px solid":"1px solid transparent",
                     borderColor:isT?"var(--sage2)":"var(--border)",
                     animation:isT?"todayGlow 3s ease-in-out infinite":"",
@@ -1879,7 +2113,7 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
           {week.map(function(date,i){
             var dayEvs=events.filter(function(e){return e.date===date;}),isT=date===todayStr;
             return (
-              <div key={date} style={{background:isT?"var(--sage)":"var(--ink3)",border:"1px solid",borderColor:isT?"var(--sage2)":"var(--border)",borderRadius:12,padding:"8px 5px",minHeight:96}}>
+              <div key={date} style={{background:isT?"var(--sage)":"var(--ink3)",border:"1px solid",borderColor:isT?"var(--sage2)":"var(--border3)",borderRadius:12,padding:"8px 5px",minHeight:96}}>
                 <p style={{fontSize:10,fontWeight:700,color:isT?"rgba(255,255,255,.6)":"var(--cream3)",textTransform:"uppercase",textAlign:"center",marginBottom:2,letterSpacing:".04em"}}>{WDAYS[i]}</p>
                 <p onClick={function(){setDayView(date);}} style={{fontSize:15,fontWeight:800,color:"var(--cream)",textAlign:"center",marginBottom:5,cursor:"pointer"}}>{new Date(date).getDate()}</p>
                 <div style={{display:"flex",flexDirection:"column",gap:2}}>
@@ -2195,7 +2429,7 @@ function InboxScreen({members,onAdd}) {
       <p style={{fontSize:15,color:"var(--cream3)",marginBottom:16}}>Extract events from emails — instantly.</p>
 
       {/* Privacy pledge */}
-      <div style={{background:"rgba(83,136,122,.08)",border:"1px solid rgba(83,136,122,.2)",borderRadius:16,padding:"12px 14px",marginBottom:16,display:"flex",gap:10,alignItems:"flex-start"}}>
+      <div style={{background:"rgba(45,90,61,.06)",border:"1px solid rgba(83,136,122,.2)",borderRadius:16,padding:"12px 14px",marginBottom:16,display:"flex",gap:10,alignItems:"flex-start"}}>
         <Check size={16} color="var(--sage2)" style={{flexShrink:0,marginTop:2}}/>
         <div>
           <p style={{fontWeight:700,fontSize:15,color:"var(--sage3)",marginBottom:2}}>Your privacy is protected</p>
@@ -2228,7 +2462,7 @@ function InboxScreen({members,onAdd}) {
         <div style={{textAlign:"center",padding:"32px 0"}}>
           <div style={{width:48,height:48,border:"3px solid #E5E7EB",borderTopColor:"#111",borderRadius:"50%",animation:"spin .7s linear infinite",margin:"0 auto 16px"}}/>
           <p style={{fontWeight:700,fontSize:15,marginBottom:4}}>Reading email…</p>
-          <p style={{fontSize:15,color:"var(--muted)"}}>Detecting events and sender</p>
+          <p style={{fontSize:15,color:"var(--cream3)"}}>Detecting events and sender</p>
         </div>
       )}
 
@@ -2252,7 +2486,7 @@ function InboxScreen({members,onAdd}) {
       {stage==="review"&&(
         <div>
           {/* Email deleted confirmation */}
-          <div style={{background:"rgba(83,136,122,.08)",border:"1px solid rgba(83,136,122,.2)",borderRadius:12,padding:"12px 14px",marginBottom:14,display:"flex",gap:10,alignItems:"center"}}>
+          <div style={{background:"rgba(45,90,61,.06)",border:"1px solid rgba(83,136,122,.2)",borderRadius:12,padding:"12px 14px",marginBottom:14,display:"flex",gap:10,alignItems:"center"}}>
             <Check size={16} color="var(--sage2)" style={{flexShrink:0}}/>
             <div style={{flex:1}}><p style={{fontWeight:700,color:"var(--sage3)",fontSize:15}}>Email permanently deleted ✓</p><p style={{fontSize:15,color:"var(--sage3)"}}>Only the events below will be saved</p></div>
           </div>
@@ -2280,9 +2514,9 @@ function InboxScreen({members,onAdd}) {
                 </div>
               )}
               {instructor.isReschedule&&!instructor.isCancelled&&(
-                <div style={{background:"rgba(196,149,58,.1)",borderRadius:8,padding:"8px 12px",display:"flex",gap:8,alignItems:"center"}}>
+                <div style={{background:"rgba(140,100,20,.08)",border:"1px solid rgba(140,100,20,.18)",borderRadius:8,padding:"8px 12px",display:"flex",gap:8,alignItems:"center"}}>
                   <AlertTriangle size={13} color="#D97706" style={{flexShrink:0}}/>
-                  <p style={{fontSize:15,color:"var(--gold3)",fontWeight:600}}>Time or location has changed — review the updated details below.</p>
+                  <p style={{fontSize:15,color:"var(--gold)",fontWeight:600}}>Time or location has changed — review the updated details below.</p>
                 </div>
               )}
             </div>
@@ -2304,7 +2538,7 @@ function InboxScreen({members,onAdd}) {
                     style={{flex:1,fontWeight:700,fontSize:15,border:"none",borderBottom:"1px solid var(--border2)",borderRadius:0,padding:"2px 0",background:"transparent",color:ev.isCancelled?"var(--rose)":"var(--cream)"}}/>
                   <div style={{display:"flex",alignItems:"center",gap:4}}>
                     <div style={{width:6,height:6,borderRadius:"50%",background:cd(ev.confidence)}}/>
-                    <span style={{fontSize:12,color:"var(--muted)"}}>{ev.confidence}</span>
+                    <span style={{fontSize:12,color:"var(--cream3)"}}>{ev.confidence}</span>
                   </div>
                 </div>
                 {/* Notes / warning banner */}
@@ -2355,22 +2589,22 @@ function InboxScreen({members,onAdd}) {
             <Btn v="ghost" onClick={()=>setChecked(new Set(extracted.map(e=>e.id)))} style={{flex:1,fontSize:15}}>Select All</Btn>
             <Btn onClick={confirmEmail} style={{flex:2,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}><Check size={14}/>Add {checked.size} event{checked.size===1?"":"s"} to my calendar</Btn>
           </div>
-          <p style={{textAlign:"center",fontSize:15,color:"var(--muted)",marginTop:10}}>Only selected events saved. Email is gone.</p>
+          <p style={{textAlign:"center",fontSize:15,color:"var(--cream3)",marginTop:10}}>Only selected events saved. Email is gone.</p>
         </div>
       )}
 
       {stage==="done"&&(
         <div style={{textAlign:"center",padding:"36px 0"}}>
-          <div style={{width:64,height:64,background:"rgba(83,136,122,.1)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px",border:"1px solid rgba(83,136,122,.4)"}}><Check size={28} color="var(--sage2)"/></div>
+          <div style={{width:64,height:64,background:"rgba(45,90,61,.06)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px",border:"1px solid rgba(83,136,122,.4)"}}><Check size={28} color="var(--sage2)"/></div>
           <p style={{fontWeight:800,fontSize:18,color:"var(--sage3)",marginBottom:6}}>Added to Calendar!</p>
-          <p style={{fontSize:15,color:"var(--muted)"}}>Email deleted · Events saved · Nothing else stored</p>
+          <p style={{fontSize:15,color:"var(--cream3)"}}>Email deleted · Events saved · Nothing else stored</p>
         </div>
       )}
 
       {/* Processed log */}
       {stage==="idle"&&log.length>0&&(
         <div style={{marginTop:24}}>
-          <p style={{fontSize:15,color:"var(--muted)",fontWeight:700,textTransform:"uppercase",letterSpacing:".05em",marginBottom:10}}>Processed & Deleted</p>
+          <p style={{fontSize:15,color:"var(--cream3)",fontWeight:700,textTransform:"uppercase",letterSpacing:".05em",marginBottom:10}}>Processed & Deleted</p>
           {log.map(function(l){return(
             <div key={l.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 0",borderBottom:"1px solid var(--border2)"}}>
               <div style={{display:"flex",alignItems:"center",gap:10}}>
@@ -2380,10 +2614,10 @@ function InboxScreen({members,onAdd}) {
                     <p style={{fontSize:15,fontWeight:600}}>{l.subject}</p>
                     {l.instructor&&<div style={{background:"rgba(59,130,246,.08)",borderRadius:99,padding:"1px 7px"}}><span style={{fontSize:15,fontWeight:700,color:"var(--sage3)"}}>Instructor</span></div>}
                   </div>
-                  <p style={{fontSize:15,color:"var(--muted)",marginTop:2}}>{fd(l.date)} · {l.count} event{l.count!==1?"s":""} extracted</p>
+                  <p style={{fontSize:15,color:"var(--cream3)",marginTop:2}}>{fd(l.date)} · {l.count} event{l.count!==1?"s":""} extracted</p>
                 </div>
               </div>
-              <div style={{display:"flex",alignItems:"center",gap:5,background:"rgba(46,107,94,.1)",border:"1px solid #A7F3D0",borderRadius:99,padding:"3px 10px"}}>
+              <div style={{display:"flex",alignItems:"center",gap:5,background:"rgba(45,90,61,.07)",border:"1px solid #A7F3D0",borderRadius:99,padding:"3px 10px"}}>
                 <Check size={10} color="var(--sage2)"/>
                 <span style={{fontSize:15,fontWeight:700,color:"var(--sage2)"}}>Deleted</span>
               </div>
@@ -2451,9 +2685,9 @@ function MembersScreen({members,setMembers,events,onBack}) {
           <p style={{fontSize:22,fontWeight:800,letterSpacing:"-.3px",color:"var(--cream)"}}>{m.name}</p>
           {m.age&&<p style={{fontSize:15,color:"var(--cream3)",marginTop:2}}>{m.age} years old</p>}
           <div style={{display:"flex",justifyContent:"center",gap:20,marginTop:12}}>
-            <div style={{textAlign:"center"}}><p style={{fontSize:20,fontWeight:800,color:m.color}}>{upcoming.length}</p><p style={{fontSize:15,color:"var(--muted)"}}>Upcoming</p></div>
+            <div style={{textAlign:"center"}}><p style={{fontSize:20,fontWeight:800,color:m.color}}>{upcoming.length}</p><p style={{fontSize:15,color:"var(--cream3)"}}>Upcoming</p></div>
             <div style={{width:1,background:"var(--ink5)"}}/>
-            <div style={{textAlign:"center"}}><p style={{fontSize:20,fontWeight:800,color:"var(--cream3)"}}>{past.length}</p><p style={{fontSize:15,color:"var(--muted)"}}>Past</p></div>
+            <div style={{textAlign:"center"}}><p style={{fontSize:20,fontWeight:800,color:"var(--cream3)"}}>{past.length}</p><p style={{fontSize:15,color:"var(--cream3)"}}>Past</p></div>
           </div>
         </div>
 
@@ -2469,7 +2703,7 @@ function MembersScreen({members,setMembers,events,onBack}) {
               <div key={field} style={{display:"flex",alignItems:"center",gap:12,padding:"13px 16px",borderBottom:i<arr.length-1?"1px solid #F3F4F6":"none"}}>
                 <span style={{fontSize:18,flexShrink:0,width:24,textAlign:"center"}}>{icon}</span>
                 <div style={{flex:1}}>
-                  <p style={{fontSize:15,color:"var(--muted)",fontWeight:600,marginBottom:2,textTransform:"uppercase",letterSpacing:".05em"}}>{label}</p>
+                  <p style={{fontSize:15,color:"var(--cream3)",fontWeight:600,marginBottom:2,textTransform:"uppercase",letterSpacing:".05em"}}>{label}</p>
                   <input
                     type={type}
                     value={m[field]||""}
@@ -2484,13 +2718,13 @@ function MembersScreen({members,setMembers,events,onBack}) {
 
           {/* Emoji + colour */}
           <div style={{background:"var(--ink2)",borderRadius:16,border:"1px solid var(--border2)",padding:"14px 16px"}}>
-            <p style={{fontSize:15,color:"var(--muted)",fontWeight:600,marginBottom:10,textTransform:"uppercase",letterSpacing:".05em"}}>Avatar</p>
+            <p style={{fontSize:15,color:"var(--cream3)",fontWeight:600,marginBottom:10,textTransform:"uppercase",letterSpacing:".05em"}}>Avatar</p>
             <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
               {EMOJIS.map(e=>(
-                <button key={e} onClick={()=>updateMember(m.id,{emoji:e})} style={{fontSize:20,width:38,height:38,borderRadius:12,background:m.emoji===e?m.color+"20":"#F9FAFB",border:m.emoji===e?"2px solid "+m.color:"2px solid transparent"}}>{e}</button>
+                <button key={e} onClick={()=>updateMember(m.id,{emoji:e})} style={{fontSize:20,width:38,height:38,borderRadius:12,background:m.emoji===e?m.color+"20":"rgba(45,60,45,.04)",border:m.emoji===e?"2px solid "+m.color:"2px solid transparent"}}>{e}</button>
               ))}
             </div>
-            <p style={{fontSize:15,color:"var(--muted)",fontWeight:600,marginBottom:8,textTransform:"uppercase",letterSpacing:".05em"}}>Colour</p>
+            <p style={{fontSize:15,color:"var(--cream3)",fontWeight:600,marginBottom:8,textTransform:"uppercase",letterSpacing:".05em"}}>Colour</p>
             <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
               {COLORS.map(c=>(
                 <button key={c} onClick={()=>updateMember(m.id,{color:c})} style={{width:30,height:30,borderRadius:"50%",background:c,border:m.color===c?"3px solid #111":"3px solid transparent",boxShadow:m.color===c?"0 0 0 2px #fff, 0 0 0 4px "+c:"none"}}/>
@@ -2502,13 +2736,13 @@ function MembersScreen({members,setMembers,events,onBack}) {
         {/* Upcoming events */}
         {upcoming.length>0&&(
           <div style={{marginBottom:16}}>
-            <p style={{fontSize:15,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",letterSpacing:".05em",marginBottom:10}}>Upcoming Events</p>
+            <p style={{fontSize:15,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".05em",marginBottom:10}}>Upcoming Events</p>
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
               {upcoming.slice(0,5).map(ev=>(
                 <div key={ev.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"var(--ink2)",borderRadius:12,border:"1px solid var(--border2)",borderLeft:"3px solid "+m.color}}>
                   <div style={{flex:1}}>
                     <p style={{fontSize:15,fontWeight:600}}>{ev.title}</p>
-                    <p style={{fontSize:15,color:"var(--muted)",marginTop:2}}>{fd(ev.date)}{ev.time?" · "+ev.time:""}{ev.location?" · "+ev.location:""}</p>
+                    <p style={{fontSize:15,color:"var(--cream3)",marginTop:2}}>{fd(ev.date)}{ev.time?" · "+ev.time:""}{ev.location?" · "+ev.location:""}</p>
                   </div>
                   <Pill color={m.color} bg={m.color+"12"}>{ev.date===todayStr?"Today":"Soon"}</Pill>
                 </div>
@@ -2518,7 +2752,7 @@ function MembersScreen({members,setMembers,events,onBack}) {
         )}
 
         {/* Remove member */}
-        <button onClick={()=>{if(members.length<=1){return;}setMembers(p=>p.filter(x=>x.id!==m.id));setProfile(null);}} style={{width:"100%",background:"none",border:"1.5px solid "+(members.length<=1?"var(--border)":"rgba(196,90,90,.35)"),borderRadius:12,padding:12,color:members.length<=1?"var(--muted)":"var(--rose)",fontWeight:600,fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+        <button onClick={()=>{if(members.length<=1){return;}setMembers(p=>p.filter(x=>x.id!==m.id));setProfile(null);}} style={{width:"100%",background:"none",border:"1.5px solid "+(members.length<=1?"var(--border)":"rgba(196,90,90,.35)"),borderRadius:12,padding:12,color:members.length<=1?"var(--cream3)":"var(--rose)",fontWeight:600,fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
           <X size={14}/>Remove {m.name} from family
         </button>
       </div>
@@ -2550,7 +2784,7 @@ function MembersScreen({members,setMembers,events,onBack}) {
         </div>
       )}
       {partnerSent&&(
-        <Card style={{marginBottom:16,background:"rgba(83,136,122,.1)",border:"1px solid rgba(83,136,122,.25)"}}>
+        <Card style={{marginBottom:16,background:"rgba(45,90,61,.06)",border:"1px solid rgba(83,136,122,.25)"}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <div style={{width:36,height:36,borderRadius:"50%",background:"var(--sage2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Check size={18} color="#fff"/></div>
             <div><p style={{fontWeight:700,color:"var(--sage3)"}}>Partner invited!</p><p style={{fontSize:15,color:"var(--sage3)",marginTop:2}}>When they join, both calendars sync in real time.</p></div>
@@ -2564,7 +2798,7 @@ function MembersScreen({members,setMembers,events,onBack}) {
           const upcoming=events.filter(e=>e.memberId===m.id&&e.date>=todayStr).length;
           return (
             <div key={m.id} onClick={()=>setProfile(m)} style={{background:"var(--ink2)",border:"1px solid var(--border2)",borderLeft:"4px solid "+m.color,borderRadius:16,padding:"14px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:14}}
-              onMouseEnter={e=>e.currentTarget.style.background="var(--ink3)"}
+              onMouseEnter={e=>e.currentTarget.style.background="rgba(45,60,45,.05)"}
               onMouseLeave={e=>e.currentTarget.style.background="#fff"}
             >
               <div style={{width:52,height:52,borderRadius:"50%",background:m.color+"15",border:"2px solid "+m.color+"40",display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,flexShrink:0,overflow:"hidden"}}>
@@ -2573,14 +2807,14 @@ function MembersScreen({members,setMembers,events,onBack}) {
               <div style={{flex:1}}>
                 <p style={{fontWeight:700,fontSize:16}}>{m.name}</p>
                 <div style={{display:"flex",gap:8,marginTop:3,flexWrap:"wrap"}}>
-                  {m.age&&<span style={{fontSize:15,color:"var(--muted)"}}>{m.age}y</span>}
-                  {m.email&&<span style={{fontSize:15,color:"var(--muted)"}}>{m.email}</span>}
+                  {m.age&&<span style={{fontSize:15,color:"var(--cream3)"}}>{m.age}y</span>}
+                  {m.email&&<span style={{fontSize:15,color:"var(--cream3)"}}>{m.email}</span>}
                   {!m.age&&!m.email&&<span style={{fontSize:15,color:"#C4B5FD"}}>Tap to add profile →</span>}
                 </div>
               </div>
               <div style={{textAlign:"center",flexShrink:0}}>
                 <p style={{fontSize:20,fontWeight:800,color:m.color}}>{upcoming}</p>
-                <p style={{fontSize:15,color:"var(--muted)"}}>upcoming</p>
+                <p style={{fontSize:15,color:"var(--cream3)"}}>upcoming</p>
               </div>
               <ChevronRight size={15} color="#D1D5DB"/>
             </div>
@@ -2590,8 +2824,8 @@ function MembersScreen({members,setMembers,events,onBack}) {
 
       {/* Add member sheet */}
       {showAdd&&(
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.7)",zIndex:500,display:"flex",alignItems:"flex-end"}} onClick={e=>e.target===e.currentTarget&&setShowAdd(false)}>
-          <div className="fu" style={{background:"rgba(18,18,22,.97)",borderRadius:"20px 20px 0 0",padding:"8px 20px 40px",width:"100%",maxHeight:"85vh",overflowY:"auto"}}>
+        <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:500,display:"flex",alignItems:"flex-end"}} onClick={e=>e.target===e.currentTarget&&setShowAdd(false)}>
+          <div className="fu" style={{background:"#f5f0e8",borderRadius:"20px 20px 0 0",padding:"8px 20px 40px",width:"100%",maxHeight:"85vh",overflowY:"auto"}}>
             <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 20px"}}/>
             <h2 style={{fontWeight:800,fontSize:18,marginBottom:18}}>Add Family Member</h2>
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
@@ -2600,13 +2834,13 @@ function MembersScreen({members,setMembers,events,onBack}) {
               <input placeholder="Phone (optional)" type="tel" value={newM.phone||""} onChange={e=>setNewM(p=>({...p,phone:e.target.value}))}/>
               <input placeholder="Age (optional)" type="number" value={newM.age||""} onChange={e=>setNewM(p=>({...p,age:e.target.value}))}/>
               <div>
-                <p style={{fontSize:15,color:"var(--muted)",fontWeight:600,marginBottom:8}}>AVATAR</p>
+                <p style={{fontSize:15,color:"var(--cream3)",fontWeight:600,marginBottom:8}}>AVATAR</p>
                 <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                   {EMOJIS.map(e=><button key={e} onClick={()=>setNewM(p=>({...p,emoji:e}))} style={{fontSize:20,width:38,height:38,borderRadius:12,background:newM.emoji===e?"var(--ink4)":"transparent",border:newM.emoji===e?"2px solid var(--sage2)":"2px solid transparent"}}>{e}</button>)}
                 </div>
               </div>
               <div>
-                <p style={{fontSize:15,color:"var(--muted)",fontWeight:600,marginBottom:8}}>COLOUR</p>
+                <p style={{fontSize:15,color:"var(--cream3)",fontWeight:600,marginBottom:8}}>COLOUR</p>
                 <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                   {COLORS.map(c=><button key={c} onClick={()=>setNewM(p=>({...p,color:c}))} style={{width:30,height:30,borderRadius:"50%",background:c,border:newM.color===c?"3px solid #111":"3px solid transparent"}}/>)}
                 </div>
@@ -2818,14 +3052,14 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
 
       {/* Group 1: Family */}
       <p style={{fontSize:15,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"var(--cream3)",marginBottom:8,paddingLeft:4}}>Family</p>
-      <div style={{background:"var(--ink2)",borderRadius:16,border:"1px solid var(--border2)",overflow:"hidden",marginBottom:24}}>
+      <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--border2)",overflow:"hidden",marginBottom:24,boxShadow:"0 1px 4px rgba(45,60,45,.06)"}}>
         <Row Icon={Users}      iconBg="rgba(83,136,122,.25)"  label="Family Members" desc={members.length+" members"} onTap={()=>setSec("family")}/>
         <Row Icon={Share2}     iconBg="rgba(59,130,246,.2)"   label="Family Sharing" desc="Invite partner & sync" onTap={()=>setSec("sharing")} last/>
       </div>
 
       {/* Group 2: Tools */}
       <p style={{fontSize:15,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"var(--cream3)",marginBottom:8,paddingLeft:4}}>Tools</p>
-      <div style={{background:"var(--ink2)",borderRadius:16,border:"1px solid var(--border2)",overflow:"hidden",marginBottom:24}}>
+      <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--border2)",overflow:"hidden",marginBottom:24,boxShadow:"0 1px 4px rgba(45,60,45,.06)"}}>
         <Row Icon={Sun}        iconBg="rgba(176,141,82,.25)"  label="Morning Text"   desc="Daily SMS digest"     onTap={()=>setSec("digest")}/>
         <Row Icon={Folder}     iconBg="rgba(139,92,246,.2)"   label="Document Vault" desc="Slips, records, cards" onTap={()=>setSec("vault")}/>
         <Row Icon={DollarSign} iconBg="rgba(16,185,129,.2)"   label="Budget Tracker" desc={"$"+tot.toFixed(0)+"/mo estimated"} onTap={()=>setSec("budget")} last/>
@@ -2833,7 +3067,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
 
       {/* Group 3: Settings */}
       <p style={{fontSize:15,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"var(--cream3)",marginBottom:8,paddingLeft:4}}>Settings</p>
-      <div style={{background:"var(--ink2)",borderRadius:16,border:"1px solid var(--border2)",overflow:"hidden",marginBottom:24}}>
+      <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--border2)",overflow:"hidden",marginBottom:24,boxShadow:"0 1px 4px rgba(45,60,45,.06)"}}>
         <Row Icon={Bell}   iconBg="rgba(59,130,246,.2)"   label="Notifications"      desc="Reminders, quiet hours"  onTap={()=>setSec("notif_settings")}/>
         <Row Icon={LogOut} iconBg="rgba(220,80,80,.15)"   label="Sign Out"            danger                         onTap={()=>setConfirmSignOut(true)} last/>
       </div>
@@ -2864,7 +3098,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
         {docs.map(d=>{const m=gm(d.memberId);return(
           <Card key={d.id} style={{display:"flex",alignItems:"center",gap:12}}>
             <div style={{width:42,height:42,background:"var(--ink4)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{d.emoji}</div>
-            <div style={{flex:1}}><p style={{fontWeight:700,fontSize:15}}>{d.name}</p><div style={{display:"flex",gap:8,marginTop:3}}><span style={{fontSize:15,color:m.color}}>{m.emoji} {m.name}</span><span style={{fontSize:15,color:"var(--muted)"}}>{fd(d.date)}</span></div></div>
+            <div style={{flex:1}}><p style={{fontWeight:700,fontSize:15}}>{d.name}</p><div style={{display:"flex",gap:8,marginTop:3}}><span style={{fontSize:15,color:m.color}}>{m.emoji} {m.name}</span><span style={{fontSize:15,color:"var(--cream3)"}}>{fd(d.date)}</span></div></div>
             <button onClick={()=>setDocs(x=>x.filter(i=>i.id!==d.id))} style={{background:"none",border:"none",color:"var(--border3)"}}><X size={15}/></button>
           </Card>
         );})}
@@ -2875,19 +3109,19 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
     <div><Back/>
       <h2 style={{fontSize:20,fontWeight:800,marginBottom:18}}>Budget Tracker</h2>
       <Card style={{marginBottom:14,background:"var(--ink3)"}}>
-        <p style={{fontSize:15,color:"var(--muted)",fontWeight:600,textTransform:"uppercase",letterSpacing:".05em",marginBottom:10}}>Monthly Estimate</p>
+        <p style={{fontSize:15,color:"#2d4a2d",fontWeight:700,textTransform:"uppercase",letterSpacing:".05em",marginBottom:10}}>Monthly Estimate</p>
         <div style={{display:"flex",alignItems:"flex-end",gap:10,marginBottom:10}}>
           <p style={{fontSize:34,fontWeight:800,color:tot>budget?"#DC2626":"var(--sage2)"}}>${tot.toFixed(0)}</p>
-          <p style={{fontSize:15,color:"var(--muted)",marginBottom:6}}>of</p>
+          <p style={{fontSize:15,color:"var(--cream3)",marginBottom:6}}>of</p>
           <div style={{display:"flex",alignItems:"center",gap:3}}><span style={{fontSize:15,fontWeight:700}}>$</span><input type="number" value={budget} onChange={e=>setBudget(Number(e.target.value))} style={{width:76,fontSize:22,fontWeight:800,background:"transparent",border:"none",borderBottom:"1px solid var(--border2)",borderRadius:0,padding:"2px 4px"}}/></div>
         </div>
         <div style={{background:"var(--ink5)",borderRadius:6,height:7,overflow:"hidden"}}><div style={{height:"100%",width:Math.min(100,(tot/budget)*100)+"%",background:tot>budget?"#DC2626":"var(--sage2)",borderRadius:6,transition:"width .5s"}}/></div>
         <p style={{fontSize:15,color:tot>budget?"#DC2626":"var(--sage2)",marginTop:7,fontWeight:600}}>{tot>budget?"$"+(tot-budget).toFixed(0)+" over budget":"$"+(budget-tot).toFixed(0)+" remaining"}</p>
       </Card>
-      {ce.length===0&&<div style={{textAlign:"center",padding:"36px 0"}}><DollarSign size={34} color="#D1D5DB" style={{margin:"0 auto 10px"}}/><p style={{color:"var(--muted)"}}>No costs tracked yet</p></div>}
+      {ce.length===0&&<div style={{textAlign:"center",padding:"36px 0"}}><DollarSign size={34} color="#D1D5DB" style={{margin:"0 auto 10px"}}/><p style={{color:"var(--cream3)"}}>No costs tracked yet</p></div>}
       {members.map(m=>{const me=ce.filter(e=>e.memberId===m.id);if(!me.length)return null;const mt=me.reduce((s,e)=>{const c=parseFloat(e.cost)||0;return s+(e.costType==="monthly"?c:e.costType==="session"?c*4:e.costType==="season"?c/3:c);},0);return(
         <Card key={m.id} style={{marginBottom:10,borderLeft:"4px solid "+m.color}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:18}}>{m.emoji}</span><p style={{fontWeight:700}}>{m.name}</p></div><p style={{fontSize:18,fontWeight:800,color:m.color}}>${mt.toFixed(0)}<span style={{fontSize:15,color:"var(--muted)",fontWeight:400}}>/mo</span></p></div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:18}}>{m.emoji}</span><p style={{fontWeight:700}}>{m.name}</p></div><p style={{fontSize:18,fontWeight:800,color:m.color}}>${mt.toFixed(0)}<span style={{fontSize:15,color:"var(--cream3)",fontWeight:400}}>/mo</span></p></div>
           {me.map(e=><div key={e.id} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",borderTop:"1px solid var(--border2)"}}><p style={{fontSize:15}}>{e.title}</p><p style={{fontSize:15,color:"var(--cream3)"}}>${e.cost}/{e.costType}</p></div>)}
         </Card>
       );})}
@@ -2899,7 +3133,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
       <Card style={{marginBottom:12,background:"var(--ink3)",borderColor:"#BFDBFE"}}>
         <p style={{fontWeight:700,fontSize:15,marginBottom:4}}>Invite Your Partner</p>
         <p style={{fontSize:15,color:"var(--cream3)",marginBottom:12}}>Full access to view & edit</p>
-        {invited?<div style={{background:"rgba(83,136,122,.1)",border:"1px solid rgba(83,136,122,.25)",borderRadius:12,padding:11,display:"flex",gap:8,alignItems:"center"}}><Check size={15} color="var(--sage2)"/><p style={{fontWeight:600,color:"var(--sage3)",fontSize:15}}>Invite sent to {invite}</p></div>:<div style={{display:"flex",gap:8}}><input placeholder="partner@email.com" type="email" value={invite} onChange={e=>setInvite(e.target.value)} style={{flex:1,fontSize:15}}/><Btn onClick={()=>{if(invite.includes("@"))setInvited(true);}} style={{padding:"0 16px",flexShrink:0}}>Invite</Btn></div>}
+        {invited?<div style={{background:"rgba(45,90,61,.06)",border:"1px solid rgba(83,136,122,.25)",borderRadius:12,padding:11,display:"flex",gap:8,alignItems:"center"}}><Check size={15} color="var(--sage2)"/><p style={{fontWeight:600,color:"var(--sage3)",fontSize:15}}>Invite sent to {invite}</p></div>:<div style={{display:"flex",gap:8}}><input placeholder="partner@email.com" type="email" value={invite} onChange={e=>setInvite(e.target.value)} style={{flex:1,fontSize:15}}/><Btn onClick={()=>{if(invite.includes("@"))setInvited(true);}} style={{padding:"0 16px",flexShrink:0}}>Invite</Btn></div>}
       </Card>
       <Card style={{marginBottom:12}}>
         <p style={{fontWeight:700,fontSize:15,marginBottom:4}}>Babysitter / Grandparent</p>
@@ -2908,8 +3142,8 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
       </Card>
       <Card>
         <p style={{fontWeight:700,marginBottom:12}}>Access</p>
-        <div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0"}}><div style={{width:34,height:34,borderRadius:"50%",background:"var(--ink4)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>👤</div><div style={{flex:1}}><p style={{fontWeight:600,fontSize:15}}>{user&&user.name||"You"}</p><p style={{fontSize:15,color:"var(--muted)"}}>{user&&user.email}</p></div><Pill color="var(--sage2)" bg="#ECFDF5">Owner</Pill></div>
-        {invited&&<div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderTop:"1px solid var(--border2)"}}><div style={{width:34,height:34,borderRadius:"50%",background:"var(--ink3)",border:"2px solid #BFDBFE",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>👤</div><div style={{flex:1}}><p style={{fontWeight:600,fontSize:15}}>{invite}</p><p style={{fontSize:15,color:"var(--muted)"}}>Invite pending</p></div><Pill color="#D97706" bg="#FFFBEB">Pending</Pill></div>}
+        <div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0"}}><div style={{width:34,height:34,borderRadius:"50%",background:"var(--ink4)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>👤</div><div style={{flex:1}}><p style={{fontWeight:600,fontSize:15}}>{user&&user.name||"You"}</p><p style={{fontSize:15,color:"var(--cream3)"}}>{user&&user.email}</p></div><Pill color="var(--sage2)" bg="#ECFDF5">Owner</Pill></div>
+        {invited&&<div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderTop:"1px solid var(--border2)"}}><div style={{width:34,height:34,borderRadius:"50%",background:"var(--ink3)",border:"2px solid #BFDBFE",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>👤</div><div style={{flex:1}}><p style={{fontWeight:600,fontSize:15}}>{invite}</p><p style={{fontSize:15,color:"var(--cream3)"}}>Invite pending</p></div><Pill color="#D97706" bg="#FFFBEB">Pending</Pill></div>}
       </Card>
     </div>
   );
@@ -2964,18 +3198,18 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
   };
 
   if (done) return (
-    <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:"var(--ink)", padding:32, textAlign:"center" }}>
+    <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:"var(--ink2)", padding:32, textAlign:"center" }}>
       <div className="fu">
         <div style={{ fontSize:72, marginBottom:20 }}>🎉</div>
         <h2 style={{ fontSize:26, fontWeight:800, letterSpacing:"-.5px", marginBottom:10 }}>Welcome to Calla Family!</h2>
         <p style={{ fontSize:15, color:"var(--cream3)", lineHeight:1.7, marginBottom:8 }}>Your family is covered for a full year.</p>
-        <p style={{ fontSize:15, color:"var(--muted)" }}>No ads. No data selling. Just your family, organised.</p>
+        <p style={{ fontSize:15, color:"var(--cream3)" }}>No ads. No data selling. Just your family, organised.</p>
       </div>
     </div>
   );
 
   return (
-    <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", background:"var(--ink)" }}>
+    <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", background:"var(--ink2)" }}>
       {/* Header */}
       <div style={{ background:"var(--sage)", padding:"48px 28px 36px", textAlign:"center", position:"relative" }}>
         {/* Decorative circles */}
@@ -3009,7 +3243,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
       <div style={{ flex:1, padding:"28px 24px" }}>
 
         {/* What's included */}
-        <p style={{ fontSize:15, fontWeight:700, color:"var(--muted)", textTransform:"uppercase", letterSpacing:".07em", marginBottom:14 }}>Everything included — no limits</p>
+        <p style={{ fontSize:15, fontWeight:700, color:"var(--cream3)", textTransform:"uppercase", letterSpacing:".07em", marginBottom:14 }}>Everything included — no limits</p>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:28 }}>
           {[
             ["🎙","Voice Add","Say it, it's added"],
@@ -3024,13 +3258,13 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
             <div key={title} style={{ background:"var(--ink2)", border:"1px solid var(--border2)", borderRadius:12, padding:"12px" }}>
               <div style={{ fontSize:22, marginBottom:6 }}>{icon}</div>
               <p style={{ fontWeight:700, fontSize:15, marginBottom:2 }}>{title}</p>
-              <p style={{ fontSize:15, color:"var(--muted)" }}>{desc}</p>
+              <p style={{ fontSize:15, color:"var(--cream3)" }}>{desc}</p>
             </div>
           ))}
         </div>
 
         {/* Plan picker */}
-        <p style={{ fontSize:15, fontWeight:700, color:"var(--muted)", textTransform:"uppercase", letterSpacing:".07em", marginBottom:12 }}>Choose your plan</p>
+        <p style={{ fontSize:15, fontWeight:700, color:"var(--cream3)", textTransform:"uppercase", letterSpacing:".07em", marginBottom:12 }}>Choose your plan</p>
         <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:20 }}>
           {PLANS.map(p => (
             <div
@@ -3067,7 +3301,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
         </div>
 
         {/* Per-month equivalent callout */}
-        <div style={{ background:"rgba(46,107,94,.1)", border:"1px solid rgba(83,136,122,.25)", borderRadius:12, padding:"12px 16px", marginBottom:20, display:"flex", alignItems:"center", gap:10 }}>
+        <div style={{ background:"rgba(45,90,61,.07)", border:"1px solid rgba(83,136,122,.25)", borderRadius:12, padding:"12px 16px", marginBottom:20, display:"flex", alignItems:"center", gap:10 }}>
           <Check size={16} color="var(--sage2)" style={{ flexShrink:0 }}/>
           <p style={{ fontSize:15, color:"var(--sage3)", fontWeight:600 }}>
             {plan==="year20"
@@ -3089,7 +3323,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
 
         {/* Privacy micro-copy */}
         <div style={{ textAlign:"center", display:"flex", flexDirection:"column", gap:5 }}>
-          <p style={{ fontSize:15, color:"var(--muted)" }}>Secure payment · Cancel anytime · No auto-renewal surprises</p>
+          <p style={{ fontSize:15, color:"var(--cream3)" }}>Secure payment · Cancel anytime · No auto-renewal surprises</p>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:5 }}>
             <div style={{ width:10, height:10, borderRadius:"50%", background:"var(--sage2)", display:"flex", alignItems:"center", justifyContent:"center" }}><Check size={6} color="#fff"/></div>
             <p style={{ fontSize:15, color:"var(--cream3)" }}>No ads · No data selling · Emails deleted after extraction</p>
@@ -3097,7 +3331,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
         </div>
 
         {!hard && onDismiss && (
-          <button onClick={onDismiss} style={{ background:"none", border:"none", color:"var(--muted)", fontSize:15, display:"block", margin:"16px auto 0", padding:"8px" }}>
+          <button onClick={onDismiss} style={{ background:"none", border:"none", color:"var(--cream3)", fontSize:15, display:"block", margin:"16px auto 0", padding:"8px" }}>
             Maybe later — remind me in 7 days
           </button>
         )}
@@ -3136,7 +3370,7 @@ function TrialBanner({ daysLeft, onUpgrade }) {
         Upgrade
       </button>
       {!urgent && (
-        <button onClick={()=>setDismissed(true)} style={{ background:"none", border:"none", color:"var(--muted)", display:"flex", padding:4, flexShrink:0 }}>
+        <button onClick={()=>setDismissed(true)} style={{ background:"none", border:"none", color:"var(--cream3)", display:"flex", padding:4, flexShrink:0 }}>
           <X size={13}/>
         </button>
       )}
@@ -3195,10 +3429,10 @@ function DigestScreen({members,onBack}) {
             <input placeholder={m.name+"'s phone"} value={phones[m.id]||""} onChange={function(e){var v=e.target.value;setPhones(function(p){var n={};Object.keys(p).forEach(function(k){n[k]=p[k];});n[m.id]=v;return n;});}} style={{flex:1,fontSize:15}}/>
           </div>
         );})}
-        <p style={{fontSize:15,color:"var(--muted)",marginTop:4}}>Powered by Twilio · Standard SMS rates apply</p>
+        <p style={{fontSize:15,color:"var(--cream3)",marginTop:4}}>Powered by Twilio · Standard SMS rates apply</p>
       </Card>
       {digestError&&<div style={{background:"rgba(196,90,90,.1)",border:"1px solid rgba(196,90,90,.25)",borderRadius:12,padding:"12px 14px",marginBottom:12,fontSize:14,color:"var(--rose)",lineHeight:1.6}}>{digestError}</div>}
-      <button onClick={save} style={{width:"100%",background:"var(--ink)",color:"var(--cream)",borderRadius:12,padding:14,fontWeight:700,fontSize:15,border:"none",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+      <button onClick={save} style={{width:"100%",background:"var(--ink2)",color:"var(--cream)",borderRadius:12,padding:14,fontWeight:700,fontSize:15,border:"none",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
         {saved?"✓ Saved!":active?"Update Settings":"Turn on Morning Text"}
       </button>
     </div>
@@ -3270,14 +3504,14 @@ function ListsScreen({members}) {
         <div style={{flex:1,display:"flex",alignItems:"center",gap:10,background:"var(--ink3)",borderRadius:12,padding:"10px 14px",border:"1px solid var(--border2)"}}>
           <span style={{fontSize:18,flexShrink:0}}>{cur.icon}</span>
           <input ref={inputRef} placeholder={"Add to "+cur.name+"..."} value={input} onChange={function(e){setInput(e.target.value.slice(0,100));}} maxLength={100} onKeyDown={function(e){if(e.key==="Enter")addItem();}} style={{background:"transparent",border:"none",padding:0,fontSize:15,flex:1,fontWeight:500}}/>
-          {members.length>0&&<select value={assignTo} onChange={function(e){setAssignTo(e.target.value);}} style={{background:"transparent",border:"none",fontSize:15,color:"var(--muted)",padding:0,width:"auto",backgroundImage:"none",minWidth:0}}>
+          {members.length>0&&<select value={assignTo} onChange={function(e){setAssignTo(e.target.value);}} style={{background:"transparent",border:"none",fontSize:15,color:"var(--cream3)",padding:0,width:"auto",backgroundImage:"none",minWidth:0}}>
             <option value="">Anyone</option>
             {members.map(function(m){return <option key={m.id} value={m.id}>{m.emoji} {m.name}</option>;})}
           </select>}
         </div>
         <button onClick={addItem} style={{width:46,height:46,borderRadius:12,background:"var(--sage)",display:"flex",alignItems:"center",justifyContent:"center",border:"none",flexShrink:0,minHeight:"auto",minWidth:"auto"}}><Plus size={20} color="#fff"/></button>
       </div>
-      {cur.items.length===0&&<div style={{textAlign:"center",padding:"48px 20px"}}><div style={{fontSize:52,marginBottom:12}}>{cur.icon}</div><p style={{fontWeight:700,fontSize:16,marginBottom:6}}>{cur.name} list is empty</p><p style={{fontSize:15,color:"var(--muted)"}}>Type above and press Enter to add items.</p></div>}
+      {cur.items.length===0&&<div style={{textAlign:"center",padding:"48px 20px"}}><div style={{fontSize:52,marginBottom:12}}>{cur.icon}</div><p style={{fontWeight:700,fontSize:16,marginBottom:6}}>{cur.name} list is empty</p><p style={{fontSize:15,color:"var(--cream3)"}}>Type above and press Enter to add items.</p></div>}
       {pending.length>0&&<div style={{display:"flex",flexDirection:"column",gap:2,marginBottom:12}}>
         {pending.map(function(item){
           const m=gm(item.assignTo);
@@ -3292,20 +3526,20 @@ function ListsScreen({members}) {
         })}
       </div>}
       {done.length>0&&<div>
-        <button onClick={function(){setShowDone(function(s){return !s;});}} style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"none",color:"var(--muted)",fontSize:15,fontWeight:600,padding:"4px 0",marginBottom:8,minHeight:"auto",minWidth:"auto"}}>
+        <button onClick={function(){setShowDone(function(s){return !s;});}} style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"none",color:"var(--cream3)",fontSize:15,fontWeight:600,padding:"4px 0",marginBottom:8,minHeight:"auto",minWidth:"auto"}}>
           {showDone?<ChevronUp size={14}/>:<ChevronDown size={14}/>}{done.length} completed
           {showDone&&<button onClick={function(e){e.stopPropagation();clearDone();}} style={{marginLeft:8,background:"rgba(220,80,80,.08)",border:"1px solid #FECACA",borderRadius:6,padding:"2px 8px",fontSize:15,fontWeight:600,color:"var(--red)",minHeight:"auto",minWidth:"auto"}}>Clear</button>}
         </button>
         {showDone&&done.map(function(item){return (
           <div key={item.id} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",background:"var(--ink3)",borderRadius:12,border:"1.5px solid #F3F4F6",marginBottom:4,opacity:.7}}>
             <div onClick={function(){toggle(item.id);}} style={{width:24,height:24,borderRadius:8,border:"2px solid "+cur.color,background:cur.color,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0}}><Check size={12} color="#fff"/></div>
-            <p style={{flex:1,fontSize:15,color:"var(--muted)",textDecoration:"line-through"}}>{item.text}</p>
+            <p style={{flex:1,fontSize:15,color:"var(--cream3)",textDecoration:"line-through"}}>{item.text}</p>
             <button onClick={function(){deleteItem(item.id);}} style={{background:"none",border:"none",color:"var(--border3)",display:"flex",padding:4,minHeight:"auto",minWidth:"auto",flexShrink:0}}><X size={14}/></button>
           </div>
         );})}
       </div>}
-      {addingList&&<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.7)",zIndex:500,display:"flex",alignItems:"flex-end"}} onClick={function(e){if(e.target===e.currentTarget)setAddingList(false);}}>
-        <div className="fu" style={{background:"rgba(18,18,22,.97)",borderRadius:"20px 20px 0 0",padding:"20px 20px 40px",width:"100%"}}>
+      {addingList&&<div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:500,display:"flex",alignItems:"flex-end"}} onClick={function(e){if(e.target===e.currentTarget)setAddingList(false);}}>
+        <div className="fu" style={{background:"#f5f0e8",borderRadius:"20px 20px 0 0",padding:"20px 20px 40px",width:"100%"}}>
           <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"0 auto 20px"}}/>
           <h3 style={{fontSize:17,fontWeight:800,marginBottom:16}}>New List</h3>
           <div style={{display:"flex",gap:10}}>
@@ -3329,7 +3563,7 @@ function Nav({active,setActive,inboxBadge,notifBadge}) {
     {id:"more",  Icon:Settings,     label:"More"},
   ];
   return (
-    <div style={{position:"fixed",bottom:0,left:0,right:0,background:"rgba(22,22,26,.97)",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",borderTop:"1px solid rgba(240,236,226,.07)",display:"flex",alignItems:"center",padding:"6px 4px",paddingBottom:"calc(10px + env(safe-area-inset-bottom,0px))",zIndex:200,gap:0}}>
+    <div style={{position:"fixed",bottom:0,left:0,right:0,background:"#f0ebe2",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",borderTop:"1px solid var(--border2)",display:"flex",alignItems:"center",padding:"8px 4px",paddingBottom:"calc(12px + env(safe-area-inset-bottom,0px))",zIndex:200,gap:0,boxShadow:"0 -2px 20px rgba(45,60,45,.08)"}}>
       {items.map(function(item){
         var isActive=active===item.id;
         return (
@@ -3337,12 +3571,12 @@ function Nav({active,setActive,inboxBadge,notifBadge}) {
             style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"2px 0",background:"transparent",border:"none",position:"relative"}}
           >
             {/* Wide pill — matches Willow style */}
-            <div style={{width:isActive?56:38,height:34,borderRadius:99,background:isActive?"rgba(83,136,122,.2)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",transition:"width .3s cubic-bezier(.34,1.56,.64,1),background .22s",position:"relative"}}>
-              {isActive&&<div style={{position:"absolute",inset:0,borderRadius:99,border:"1px solid rgba(133,191,177,.25)"}}/>}
-              <item.Icon size={21} strokeWidth={isActive?2.1:1.5} color={isActive?"#85bfb1":"rgba(240,236,226,.35)"}/>
-              {item.badge>0&&<div style={{position:"absolute",top:0,right:isActive?0:"-2px",background:"#e05050",color:"#fff",borderRadius:99,minWidth:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:800,border:"2px solid rgba(22,22,26,.97)",padding:"0 3px"}}>{item.badge>9?"9+":item.badge}</div>}
+            <div style={{width:isActive?56:38,height:34,borderRadius:99,background:isActive?"rgba(45,90,61,.14)":"transparent",boxShadow:isActive?"0 1px 3px rgba(45,90,61,.15)":"none",display:"flex",alignItems:"center",justifyContent:"center",transition:"width .3s cubic-bezier(.34,1.56,.64,1),background .22s",position:"relative"}}>
+              {isActive&&<div style={{position:"absolute",inset:0,borderRadius:99,border:"1px solid rgba(45,90,61,.2)"}}/>}
+              <item.Icon size={21} strokeWidth={isActive?2.2:1.8} color={isActive?"var(--sage)":"rgba(45,60,45,.55)"}/>
+              {item.badge>0&&<div style={{position:"absolute",top:0,right:isActive?0:"-2px",background:"var(--red)",color:"#fff",borderRadius:99,minWidth:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:800,border:"2px solid var(--ink2)",padding:"0 3px"}}>{item.badge>9?"9+":item.badge}</div>}
             </div>
-            <span style={{fontSize:15,fontWeight:isActive?700:400,letterSpacing:".01em",color:isActive?"#85bfb1":"rgba(240,236,226,.32)",transition:"color .2s"}}>{item.label}</span>
+            <span style={{fontSize:10,fontWeight:isActive?700:500,letterSpacing:".01em",color:isActive?"var(--sage)":"rgba(45,60,45,.65)",transition:"color .2s"}}>{item.label}</span>
           </button>
         );
       })}
@@ -3423,14 +3657,14 @@ export default function App() {
     <>
       <GS/>
       <Toasts toasts={toasts}/>
-      <div style={{minHeight:"100vh",paddingBottom:90,background:"var(--ink)"}}>
+      <div style={{minHeight:"100vh",paddingBottom:90,background:"#f0ebe2"}}>
         <div style={{maxWidth:480,margin:"0 auto",padding:"20px 18px"}}>
 
           {/* ── Header ── */}
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20,position:"relative"}}>
             {/* Logo */}
             <div style={{display:"flex",alignItems:"center",gap:11}}>
-              <div style={{width:36,height:36,background:"linear-gradient(145deg,var(--sage),var(--sage2))",borderRadius:11,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 0 20px rgba(58,100,89,.4)",flexShrink:0}}>
+              <div style={{width:36,height:36,background:"linear-gradient(135deg,#2d5a3d,#3d7a52)",borderRadius:11,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 12px rgba(45,90,61,.25)",flexShrink:0}}>
                 <span style={{fontSize:17}}>🌸</span>
               </div>
               <div>
