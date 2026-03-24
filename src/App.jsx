@@ -2815,12 +2815,15 @@ function InboxScreen({members,onAdd}) {
 }
 
 /* ─── Members ───────────────────────────────────────────────────────────── */
-function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember}) {
-  const [profile,setProfile]=useState(null); // member being viewed/edited
+function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember,sendInvite}) {
+  const [profile,setProfile]=useState(null);
   const [showAdd,setShowAdd]=useState(false);
   const [newM,setNewM]=useState({name:"",color:COLORS[0],emoji:EMOJIS[0],email:"",phone:"",age:""});
   const [partnerEmail,setPartnerEmail]=useState("");
   const [partnerSent,setPartnerSent]=useState(false);
+  const [inviteLink,setInviteLink]=useState("");
+  const [inviting,setInviting]=useState(false);
+  const [inviteError,setInviteError]=useState("");
   const [showPartner,setShowPartner]=useState(true);
   const photoRef=useRef();
   const profilePhotoRef=useRef();
@@ -2976,16 +2979,35 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
           </div>
           <div style={{display:"flex",gap:8}}>
             <input placeholder="Partner's email" type="email" value={partnerEmail} onChange={e=>setPartnerEmail(e.target.value)} style={{flex:1,fontSize:15,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.2)",color:"var(--cream)",borderRadius:8,padding:"9px 12px"}}/>
-            <button onClick={()=>{if(partnerEmail.includes("@"))setPartnerSent(true);}} style={{background:"rgba(245,240,232,.9)",color:"#1a3a2a",borderRadius:8,padding:"0 16px",fontWeight:700,fontSize:15,flexShrink:0}}>Send</button>
+            <button onClick={function(){
+              if(!partnerEmail.includes("@")){setInviteError("Please enter a valid email.");return;}
+              setInviting(true);setInviteError("");
+              if(sendInvite){
+                sendInvite(partnerEmail,function(link){
+                  setInviteLink(link);setPartnerSent(true);setInviting(false);
+                },function(err){
+                  setInviteError(err||"Something went wrong.");setInviting(false);
+                });
+              } else {
+                setPartnerSent(true);setInviting(false);
+              }
+            }} style={{background:"rgba(245,240,232,.9)",color:"#1a3a2a",borderRadius:8,padding:"0 16px",fontWeight:700,fontSize:15,flexShrink:0}}>{inviting?"Sending...":"Send"}</button>
           </div>
         </div>
       )}
       {partnerSent&&(
         <Card style={{marginBottom:16,background:"rgba(45,90,61,.06)",border:"1px solid rgba(83,136,122,.25)"}}>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:inviteLink?12:0}}>
             <div style={{width:36,height:36,borderRadius:"50%",background:"var(--sage2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Check size={18} color="#fff"/></div>
-            <div><p style={{fontWeight:700,color:"var(--sage)"}}>Partner invited!</p><p style={{fontSize:14,color:"var(--sage2)",marginTop:2}}>When they join, both calendars sync in real time.</p></div>
+            <div><p style={{fontWeight:700,color:"var(--sage)"}}>Invite created!</p><p style={{fontSize:13,color:"var(--sage2)",marginTop:2}}>Share this link with your partner:</p></div>
           </div>
+          {inviteLink&&(
+            <div style={{background:"#fff",borderRadius:10,padding:"10px 12px",border:"1px solid var(--border2)",display:"flex",alignItems:"center",gap:8}}>
+              <p style={{flex:1,fontSize:12,color:"var(--cream2)",wordBreak:"break-all",lineHeight:1.4}}>{inviteLink}</p>
+              <button onClick={function(){navigator.clipboard&&navigator.clipboard.writeText(inviteLink);}} style={{background:"var(--sage)",color:"#fff",border:"none",borderRadius:6,padding:"5px 10px",fontSize:11,fontWeight:700,flexShrink:0}}>Copy</button>
+            </div>
+          )}
+          {!inviteLink&&<p style={{fontSize:13,color:"var(--sage2)"}}>When they open the link and sign up, both calendars sync in real time.</p>}
         </Card>
       )}
 
@@ -3188,11 +3210,11 @@ function NotifSettingsScreen({settings,setSettings,members,onBack}) {
 }
 
 /* ─── More ──────────────────────────────────────────────────────────────── */
-function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onSignOut,notifSettings,setNotifSettings,saveMember,deleteMember,toast}) {
+function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onSignOut,notifSettings,setNotifSettings,saveMember,deleteMember,toast,familyId,sendInvite}) {
   const fr=useRef();
   const [confirmSignOut,setConfirmSignOut]=useState(false);
   const [sec,setSec]=useState(null),[docs,setDocs]=useState([{id:"d1",name:"Emma's Vaccination Record",memberId:"m3",emoji:"💉",date:addDays(todayStr,-30)},{id:"d2",name:"Soccer Permission Slip",memberId:"m3",emoji:"⚽",date:addDays(todayStr,-5)},{id:"d3",name:"Insurance Card",memberId:null,emoji:"🏥",date:addDays(todayStr,-60)}]);
-  const [budget,setBudget]=useState(500),[invite,setInvite]=useState(""),[invited,setInvited]=useState(false),[link,setLink]=useState("");
+  const [budget,setBudget]=useState(500),[invite,setInvite]=useState(""),[invited,setInvited]=useState(false),[link,setLink]=useState(""),[inviteLink,setInviteLink]=useState("");
   const gm=id=>id?members.find(m=>m.id===id)||{name:"Family",color:"var(--cream3)",emoji:"👨‍👩‍👧‍👦"}:{name:"Family",color:"var(--cream3)",emoji:"👨‍👩‍👧‍👦"};
   const ce=events.filter(e=>e.cost&&parseFloat(e.cost)>0);
   const tot=ce.reduce((s,e)=>{const c=parseFloat(e.cost)||0;return s+(e.costType==="monthly"?c:e.costType==="session"?c*4:e.costType==="season"?c/3:c);},0);
@@ -3338,7 +3360,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
       </div>
     </div>
   );
-  if(sec==="family") return <MembersScreen members={members} setMembers={setMembers} events={events} saveMember={saveMember} deleteMember={deleteMember} onBack={()=>setSec(null)}/>;
+  if(sec==="family") return <MembersScreen members={members} setMembers={setMembers} events={events} saveMember={saveMember} deleteMember={deleteMember} sendInvite={sendInvite} onBack={()=>setSec(null)}/>;
   if(sec==="digest") return <DigestScreen members={members} onBack={()=>setSec(null)}/>;
   if(sec==="notif_settings") return <NotifSettingsScreen settings={notifSettings} setSettings={setNotifSettings} members={members} onBack={()=>setSec(null)}/>;
   if(sec==="vault") return (
@@ -3380,21 +3402,65 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
   );
   if(sec==="sharing") return (
     <div><Back/>
-      <h2 style={{fontSize:20,fontWeight:800,marginBottom:18}}>Family Sharing</h2>
-      <Card style={{marginBottom:12,background:"var(--ink3)",borderColor:"#BFDBFE"}}>
-        <p style={{fontWeight:700,fontSize:15,marginBottom:4}}>Invite Your Partner</p>
-        <p style={{fontSize:15,color:"var(--cream3)",marginBottom:12}}>Full access to view & edit</p>
-        {invited?<div style={{background:"rgba(45,90,61,.06)",border:"1px solid rgba(83,136,122,.25)",borderRadius:12,padding:11,display:"flex",gap:8,alignItems:"center"}}><Check size={15} color="var(--sage2)"/><p style={{fontWeight:600,color:"var(--sage3)",fontSize:15}}>Invite sent to {invite}</p></div>:<div style={{display:"flex",gap:8}}><input placeholder="partner@email.com" type="email" value={invite} onChange={e=>setInvite(e.target.value)} style={{flex:1,fontSize:15}}/><Btn onClick={()=>{if(invite.includes("@"))setInvited(true);}} style={{padding:"0 16px",flexShrink:0}}>Invite</Btn></div>}
-      </Card>
+      <h2 style={{fontSize:28,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",marginBottom:20}}>Family Sharing</h2>
+
+      {/* Partner invite */}
       <Card style={{marginBottom:12}}>
-        <p style={{fontWeight:700,fontSize:15,marginBottom:4}}>Babysitter / Grandparent</p>
-        <p style={{fontSize:15,color:"var(--cream3)",marginBottom:12}}>Read-only · no login · expires 24h</p>
-        {!link?<Btn v="ghost" onClick={()=>setLink("https://getcalla.ca/s/"+genId().slice(0,8))} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}><Link size={13}/>Generate Link</Btn>:<div style={{display:"flex",gap:8}}><code style={{flex:1,fontSize:15,color:"var(--sage3)",background:"var(--ink3)",border:"1px solid rgba(59,130,246,.25)",borderRadius:8,padding:"10px 12px",wordBreak:"break-all"}}>{link}</code><button onClick={()=>navigator.clipboard&&navigator.clipboard.writeText(link)} style={{background:"var(--ink4)",border:"1px solid var(--border2)",borderRadius:8,padding:"0 12px",flexShrink:0,display:"flex",alignItems:"center"}}><Copy size={14} color="#374151"/></button></div>}
+        <p style={{fontWeight:700,fontSize:16,marginBottom:4,color:"var(--cream)"}}>Invite Your Partner</p>
+        <p style={{fontSize:14,color:"var(--cream3)",marginBottom:14}}>Full access to view &amp; edit your family calendar</p>
+        {invited?(
+          <div>
+            <div style={{background:"rgba(45,90,61,.06)",border:"1px solid rgba(83,136,122,.25)",borderRadius:12,padding:"11px 14px",display:"flex",gap:8,alignItems:"center",marginBottom:inviteLink?10:0}}>
+              <Check size={15} color="var(--sage2)"/>
+              <p style={{fontWeight:600,color:"var(--sage)",fontSize:14,flex:1}}>Invite created for {invite}</p>
+            </div>
+            {inviteLink&&(
+              <div>
+                <p style={{fontSize:12,color:"var(--cream3)",marginBottom:6,marginTop:10}}>Share this link with your partner:</p>
+                <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                  <div style={{flex:1,background:"var(--ink3)",borderRadius:10,padding:"10px 12px",border:"1px solid var(--border2)"}}>
+                    <p style={{fontSize:12,color:"var(--sage)",wordBreak:"break-all",lineHeight:1.4}}>{inviteLink}</p>
+                  </div>
+                  <button onClick={function(){navigator.clipboard&&navigator.clipboard.writeText(inviteLink);toast({icon:"✓",title:"Link copied!",color:"var(--sage2)"});}} style={{background:"var(--sage)",color:"#fff",border:"none",borderRadius:10,width:44,height:44,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <Copy size={16}/>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ):(
+          <div>
+            <div style={{display:"flex",gap:8}}><input placeholder="partner@email.com" type="email" value={invite} onChange={function(e){setInvite(e.target.value);}} style={{flex:1,fontSize:15}}/><Btn onClick={function(){
+              if(!invite.includes("@")) return;
+              setInvited(true);
+              if(sendInvite){
+                sendInvite(invite,function(link){setInviteLink(link);},function(){});
+              }
+            }} style={{padding:"0 16px",flexShrink:0}}>Invite</Btn></div>
+          </div>
+        )}
       </Card>
+
+      {/* Babysitter link */}
+      <Card style={{marginBottom:12}}>
+        <p style={{fontWeight:700,fontSize:16,marginBottom:4,color:"var(--cream)"}}>Babysitter / Grandparent</p>
+        <p style={{fontSize:14,color:"var(--cream3)",marginBottom:12}}>Read-only · no login · expires 24h</p>
+        {!link?<Btn v="ghost" onClick={()=>setLink("https://getcalla.ca/s/"+genId().slice(0,8))} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}><Link size={13}/>Generate Link</Btn>:<div style={{display:"flex",gap:8,alignItems:"center"}}><div style={{flex:1,background:"var(--ink3)",borderRadius:10,padding:"10px 12px",border:"1px solid var(--border2)"}}><p style={{fontSize:12,color:"var(--sage3)",wordBreak:"break-all"}}>{link}</p></div><button onClick={()=>navigator.clipboard&&navigator.clipboard.writeText(link)} style={{background:"var(--ink4)",border:"1px solid var(--border2)",borderRadius:10,width:44,height:44,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Copy size={14} color="var(--cream2)"/></button></div>}
+      </Card>
+
+      {/* Current access */}
       <Card>
-        <p style={{fontWeight:700,marginBottom:12}}>Access</p>
-        <div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0"}}><div style={{width:34,height:34,borderRadius:"50%",background:"var(--ink4)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>👤</div><div style={{flex:1}}><p style={{fontWeight:600,fontSize:15}}>{user&&user.name||"You"}</p><p style={{fontSize:15,color:"var(--cream3)"}}>{user&&user.email}</p></div><Pill color="var(--sage2)" bg="#ECFDF5">Owner</Pill></div>
-        {invited&&<div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderTop:"1px solid var(--border2)"}}><div style={{width:34,height:34,borderRadius:"50%",background:"var(--ink3)",border:"2px solid #BFDBFE",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>👤</div><div style={{flex:1}}><p style={{fontWeight:600,fontSize:15}}>{invite}</p><p style={{fontSize:15,color:"var(--cream3)"}}>Invite pending</p></div><Pill color="#D97706" bg="#FFFBEB">Pending</Pill></div>}
+        <p style={{fontWeight:700,marginBottom:12,color:"var(--cream)"}}>Access</p>
+        <div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0"}}>
+          <div style={{width:36,height:36,borderRadius:"50%",background:"var(--sage4)",border:"2px solid var(--sage2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>👤</div>
+          <div style={{flex:1}}><p style={{fontWeight:600,fontSize:15,color:"var(--cream)"}}>{user&&user.name||"You"}</p><p style={{fontSize:13,color:"var(--cream3)"}}>{user&&user.email}</p></div>
+          <Pill color="var(--sage)" bg="rgba(45,90,61,.1)">Owner</Pill>
+        </div>
+        {invited&&<div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderTop:"1px solid var(--border2)"}}>
+          <div style={{width:36,height:36,borderRadius:"50%",background:"var(--ink3)",border:"2px solid var(--border2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>👤</div>
+          <div style={{flex:1}}><p style={{fontWeight:600,fontSize:15,color:"var(--cream)"}}>{invite}</p><p style={{fontSize:13,color:"var(--cream3)"}}>Invite pending</p></div>
+          <Pill color="var(--gold)" bg="rgba(160,120,32,.08)">Pending</Pill>
+        </div>}
       </Card>
     </div>
   );
@@ -3832,6 +3898,8 @@ export default function App() {
   const [showBanner,setShowBanner] = useState(true);
   const [paid,setPaid]           = useState(false);
   const [showPaywall,setShowPaywall] = useState(false);
+  const [familyId,setFamilyId]   = useState(null);
+  const [pendingInvite,setPendingInvite] = useState(null);
 
   // ── Trial scrubber ────────────────────────────────────────────────────────
   const [simDay,setSimDay] = useState(0);
@@ -3839,6 +3907,13 @@ export default function App() {
   const trial = paid ? null : trialStatus(fakeStart);
 
   const toast=t=>{const id=genId();setToasts(p=>[...p,{...t,id}]);setTimeout(()=>setToasts(p=>p.filter(x=>x.id!==id)),3000);};
+
+  // ── Check for invite token in URL on load ─────────────────────────────────
+  useEffect(function(){
+    var params=new URLSearchParams(window.location.search);
+    var token=params.get("invite");
+    if(token) setPendingInvite(token);
+  },[]);
 
   // ── Restore session on page load ──────────────────────────────────────────
   useEffect(function(){
@@ -3855,27 +3930,143 @@ export default function App() {
       setAuthLoading(false);
     });
     var sub=supabase.auth.onAuthStateChange(function(event,session){
-      if(event==="SIGNED_OUT"){setUser(null);setSetupDone(false);setEvents([]);setMembers(M0);}
+      if(event==="SIGNED_OUT"){setUser(null);setSetupDone(false);setEvents([]);setMembers(M0);setFamilyId(null);}
     });
     return function(){sub.data.subscription.unsubscribe();};
   },[]);
 
   // ── Load events + members from Supabase ───────────────────────────────────
   function loadUserData(userId){
-    supabase.from("events").select("*").eq("user_id",userId).then(function(res){
-      if(res.data){
-        setEvents(res.data.map(function(e){return{
-          id:e.id,title:e.title,memberId:e.member_id,date:e.date,time:e.time,
-          endTime:e.end_time,location:e.location,color:e.color,recurring:e.recurring,
-          recurFreq:e.recur_freq,recurEnd:e.recur_end,notes:e.notes,
-          cost:e.cost,costType:e.cost_type,packingList:e.packing_list||[],
-        };}));
+    // Check if user belongs to a family
+    supabase.from("family_members").select("family_id").eq("user_id",userId).then(function(res){
+      if(res.data&&res.data.length>0){
+        var fid=res.data[0].family_id;
+        setFamilyId(fid);
+        // Load ALL events for the family (both parents)
+        supabase.from("events").select("*").eq("family_id",fid).then(function(r){
+          if(r.data&&r.data.length>0){
+            setEvents(r.data.map(function(e){return{
+              id:e.id,title:e.title,memberId:e.member_id,date:e.date,time:e.time,
+              endTime:e.end_time,location:e.location,color:e.color,recurring:e.recurring,
+              recurFreq:e.recur_freq,recurEnd:e.recur_end,notes:e.notes,
+              cost:e.cost,costType:e.cost_type,packingList:e.packing_list||[],
+            };}));
+          }
+        });
+        supabase.from("members").select("*").eq("family_id",fid).then(function(r){
+          if(r.data&&r.data.length>0){
+            setMembers(r.data.map(function(m){return{id:m.id,name:m.name,color:m.color,emoji:m.emoji};}));
+          }
+        });
+      } else {
+        // No family yet — load personal data
+        supabase.from("events").select("*").eq("user_id",userId).then(function(r){
+          if(r.data){
+            setEvents(r.data.map(function(e){return{
+              id:e.id,title:e.title,memberId:e.member_id,date:e.date,time:e.time,
+              endTime:e.end_time,location:e.location,color:e.color,recurring:e.recurring,
+              recurFreq:e.recur_freq,recurEnd:e.recur_end,notes:e.notes,
+              cost:e.cost,costType:e.cost_type,packingList:e.packing_list||[],
+            };}));
+          }
+        });
+        supabase.from("members").select("*").eq("user_id",userId).then(function(r){
+          if(r.data&&r.data.length>0){
+            setMembers(r.data.map(function(m){return{id:m.id,name:m.name,color:m.color,emoji:m.emoji};}));
+          }
+        });
       }
     });
-    supabase.from("members").select("*").eq("user_id",userId).then(function(res){
-      if(res.data&&res.data.length>0){
-        setMembers(res.data.map(function(m){return{id:m.id,name:m.name,color:m.color,emoji:m.emoji};}));
+  }
+
+  // ── Create family + send invite ───────────────────────────────────────────
+  function sendInvite(partnerEmail,onSuccess,onError){
+    if(!user||!user.id) return;
+    var doInvite=function(fid){
+      supabase.from("invites").insert({
+        family_id:fid,
+        invited_by:user.id,
+        invited_email:partnerEmail.trim().toLowerCase(),
+        status:"pending",
+      }).select().then(function(res){
+        if(res.error){
+          console.error("Invite insert error:",res.error);
+          onError&&onError(res.error.message);
+          return;
+        }
+        if(!res.data||res.data.length===0){
+          console.error("No data returned from invite insert");
+          onError&&onError("No invite data returned");
+          return;
+        }
+        var invite=res.data[0];
+        var link=window.location.origin+"?invite="+invite.token;
+        console.log("Invite created:",link);
+        // Send email via Edge Function
+        supabase.functions.invoke("send-invite",{
+          body:{
+            to:partnerEmail.trim(),
+            inviterName:user.name||"Your partner",
+            inviteLink:link,
+            familyName:user.family||"My Family",
+          }
+        }).then(function(r){
+          if(r.error) console.error("Email send error:",r.error);
+          else console.log("Email sent successfully");
+        });
+        onSuccess&&onSuccess(link,invite.token);
+      });
+    };
+    if(familyId){
+      doInvite(familyId);
+    } else {
+      // Create family first
+      supabase.from("families").insert({
+        name:user.family||"My Family",
+        created_by:user.id,
+      }).select().then(function(res){
+        if(res.error){
+          console.error("Family insert error:",res.error);
+          onError&&onError(res.error.message);
+          return;
+        }
+        var fid=res.data[0].id;
+        setFamilyId(fid);
+        // Add current user to family
+        supabase.from("family_members").insert({family_id:fid,user_id:user.id,role:"parent"}).then(function(){
+          // Migrate existing events to family
+          supabase.from("events").update({family_id:fid}).eq("user_id",user.id).then(function(){});
+          supabase.from("members").update({family_id:fid}).eq("user_id",user.id).then(function(){});
+          doInvite(fid);
+        });
+      });
+    }
+  }
+
+  // ── Accept invite ─────────────────────────────────────────────────────────
+  function acceptInvite(token){
+    if(!user||!user.id||!token) return;
+    supabase.from("invites").select("*").eq("token",token).eq("status","pending").then(function(res){
+      if(!res.data||res.data.length===0){
+        toast({icon:"⚠️",title:"Invite not found or expired",color:"var(--rose)"});
+        return;
       }
+      var invite=res.data[0];
+      var fid=invite.family_id;
+      // Join the family
+      supabase.from("family_members").upsert({family_id:fid,user_id:user.id,role:"parent"}).then(function(){
+        // Mark invite as accepted
+        supabase.from("invites").update({status:"accepted"}).eq("id",invite.id).then(function(){});
+        // Update profile family_id
+        supabase.from("profiles").update({family_id:fid}).eq("id",user.id).then(function(){});
+        setFamilyId(fid);
+        setPendingInvite(null);
+        // Clear URL
+        window.history.replaceState({},"",window.location.pathname);
+        // Reload shared data
+        loadUserData(user.id);
+        toast({icon:"🎉",title:"You joined the family calendar!",color:"var(--sage2)"});
+      });
     });
   }
 
@@ -3885,7 +4076,7 @@ export default function App() {
     toast({icon:"✓",title:"Event added",body:ev.title,color:"var(--sage2)"});
     if(user&&user.id){
       supabase.from("events").upsert({
-        id:ev.id,user_id:user.id,title:ev.title,member_id:ev.memberId,
+        id:ev.id,user_id:user.id,family_id:familyId||null,title:ev.title,member_id:ev.memberId,
         date:ev.date,time:ev.time,end_time:ev.endTime,location:ev.location,
         color:ev.color,recurring:ev.recurring,recur_freq:ev.recurFreq,
         recur_end:ev.recurEnd,notes:ev.notes,cost:ev.cost,
@@ -3904,7 +4095,7 @@ export default function App() {
   const saveMember=function(m){
     if(user&&user.id){
       supabase.from("members").upsert({
-        id:m.id,user_id:user.id,name:m.name,color:m.color,emoji:m.emoji,
+        id:m.id,user_id:user.id,family_id:familyId||null,name:m.name,color:m.color,emoji:m.emoji,
       }).then(function(){});
     }
   };
@@ -3921,6 +4112,24 @@ export default function App() {
       <div style={{textAlign:"center"}}>
         <div style={{fontSize:40,marginBottom:16}}>🌸</div>
         <div style={{width:24,height:24,border:"2px solid var(--border2)",borderTopColor:"var(--sage2)",borderRadius:"50%",animation:"spin .7s linear infinite",margin:"0 auto"}}/>
+      </div>
+    </div></>
+  );
+
+  // ── Step 0b: Pending invite — user is logged in, invite in URL ────────────
+  if(user&&pendingInvite) return (
+    <><GS/><Toasts toasts={toasts}/>
+    <div style={{height:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28,background:"var(--ink2)",textAlign:"center"}}>
+      <div className="fu">
+        <div style={{fontSize:52,marginBottom:16}}>👨‍👩‍👧</div>
+        <h2 style={{fontSize:26,fontWeight:700,marginBottom:10,fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",letterSpacing:"-.5px"}}>You've been invited!</h2>
+        <p style={{fontSize:15,color:"var(--cream3)",marginBottom:28,lineHeight:1.7}}>Someone shared their Calla family calendar with you. Accept to see all their events and stay in sync.</p>
+        <Btn onClick={function(){acceptInvite(pendingInvite);}} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:12}}>
+          <Check size={16}/>Accept &amp; Join Family
+        </Btn>
+        <button onClick={function(){setPendingInvite(null);window.history.replaceState({},"",window.location.pathname);}} style={{background:"none",border:"none",color:"var(--cream3)",fontSize:14,cursor:"pointer"}}>
+          Decline for now
+        </button>
       </div>
     </div></>
   );
@@ -3956,7 +4165,7 @@ export default function App() {
     if(tab==="lists")   return <ListsScreen members={members}/>;
     if(tab==="members") return <MembersScreen members={members} setMembers={setMembers} events={events}/>;
     if(tab==="notif")   return <NotifScreen events={events} members={members} onSelectEvent={ev=>{setGlobalSel(ev);setTab("home");}}/>;
-    if(tab==="more")    return <MoreScreen members={members} setMembers={setMembers} events={events} user={user} paid={paid} trialLeft={trial?trial.left:null} onUpgrade={()=>setShowPaywall(true)} notifSettings={notif} setNotifSettings={setNotif} saveMember={saveMember} deleteMember={deleteMember} toast={toast} onSignOut={()=>{supabase.auth.signOut();setUser(null);setSetupDone(false);setTab("home");setEvents([]);setMembers(M0);setPaid(false);setShowPaywall(false);toast({icon:"👋",title:"Signed out",color:"var(--cream3)"});}}/>;
+    if(tab==="more")    return <MoreScreen members={members} setMembers={setMembers} events={events} user={user} paid={paid} trialLeft={trial?trial.left:null} onUpgrade={()=>setShowPaywall(true)} notifSettings={notif} setNotifSettings={setNotif} saveMember={saveMember} deleteMember={deleteMember} toast={toast} familyId={familyId} sendInvite={sendInvite} onSignOut={()=>{supabase.auth.signOut();setUser(null);setSetupDone(false);setTab("home");setEvents([]);setMembers(M0);setPaid(false);setShowPaywall(false);setFamilyId(null);toast({icon:"👋",title:"Signed out",color:"var(--cream3)"});}}/>;
   };
 
   return (
