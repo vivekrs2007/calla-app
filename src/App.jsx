@@ -1,5 +1,19 @@
 import { useState, useEffect, useRef, Fragment } from "react";
 import { supabase } from "./supabase.js";
+import { initializeApp } from "firebase/app";
+import { getMessaging, getToken } from "firebase/messaging";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyChkyg2JBvXkRkoFF5-aE_cY21EdZ-RNLM",
+  authDomain: "calla-notifications.firebaseapp.com",
+  projectId: "calla-notifications",
+  storageBucket: "calla-notifications.firebasestorage.app",
+  messagingSenderId: "537577069849",
+  appId: "1:537577069849:web:994097c1c8bb677d0ab988"
+};
+const firebaseApp = initializeApp(firebaseConfig);
+const messaging = getMessaging(firebaseApp);
+
 import {
   Home, Inbox, Users, Bell, Settings, Plus, Mic, MicOff,
   ChevronLeft, ChevronRight, ChevronDown, ChevronUp,
@@ -987,14 +1001,14 @@ function ConflictBanner({items,members,onSelect}) {
         return (
           <div key={key} style={{borderTop:"1px solid rgba(196,149,58,.3)",padding:"12px 16px"}}>
             <div style={{display:"flex",gap:8,marginBottom:10}}>
-              <div onClick={()=>onSelect&&onSelect(c.a)} style={{flex:1,background:"var(--ink2)",borderRadius:12,padding:10,border:"1px solid rgba(196,149,58,.3)",cursor:"pointer"}}>
+              <div onClick={()=>onSelect&&onSelect(c.a)} style={{flex:1,background:"#fff",borderRadius:12,padding:10,border:"1px solid rgba(160,120,32,.25)",cursor:"pointer",boxShadow:"0 1px 3px rgba(45,60,45,.06)"}}>
                 <p style={{fontSize:15,color:c.a.color,fontWeight:700,marginBottom:2}}>{ma.emoji} {ma.name}</p>
                 <p style={{fontSize:15,fontWeight:600}}>{c.a.title}</p>
                 <p style={{fontSize:15,color:"var(--cream3)"}}>{c.a.time}</p>
                 <span style={{fontSize:15,color:"var(--sage3)",fontWeight:600}}>View event</span>
               </div>
               <div style={{display:"flex",alignItems:"center"}}><Zap size={13} color="#D97706"/></div>
-              <div onClick={()=>onSelect&&onSelect(c.b)} style={{flex:1,background:"var(--ink2)",borderRadius:12,padding:10,border:"1px solid rgba(196,149,58,.3)",cursor:"pointer"}}>
+              <div onClick={()=>onSelect&&onSelect(c.b)} style={{flex:1,background:"#fff",borderRadius:12,padding:10,border:"1px solid rgba(160,120,32,.25)",cursor:"pointer",boxShadow:"0 1px 3px rgba(45,60,45,.06)"}}>
                 <p style={{fontSize:15,color:c.b.color,fontWeight:700,marginBottom:2}}>{mb.emoji} {mb.name}</p>
                 <p style={{fontSize:15,fontWeight:600}}>{c.b.title}</p>
                 <p style={{fontSize:15,color:"var(--cream3)"}}>{c.b.time}</p>
@@ -2004,8 +2018,10 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
   const [map,setMap]=useState(false);
   const [dayView,setDayView]=useState(null);
   const [calView,setCalView]=useState("month");
+  const [selMember,setSelMember]=useState(null);
   useEffect(()=>{if(initialSel){setSel(initialSel);if(onClearSel)onClearSel();}},[]); 
-  const week=getWeek(anchor),cfls=conflicts(events);
+  const filteredEvents=selMember?events.filter(function(e){return e.memberId===selMember;}):events;
+  const week=getWeek(anchor),cfls=conflicts(filteredEvents);
   const gm=id=>members.find(m=>m.id===id)||{emoji:"👤",color:"var(--cream3)"};
   const prev=()=>{const d=new Date(anchor);d.setDate(d.getDate()+(calView==="month"?-28:-7));setAnchor(d.toISOString().split("T")[0]);};
   const next=()=>{const d=new Date(anchor);d.setDate(d.getDate()+(calView==="month"?28:7));setAnchor(d.toISOString().split("T")[0]);};
@@ -2045,7 +2061,14 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
       </div>
 
       {showBanner&&<ValueBanner onDismiss={onBannerDismiss}/>}
-      <Briefing events={events} members={members} onSelect={ev=>setSel(ev)}/>
+          {selMember&&(
+            <div style={{display:"flex",alignItems:"center",gap:8,background:"#fff",borderRadius:10,padding:"8px 12px",marginBottom:12,border:"1px solid var(--border2)"}}>
+              <span style={{fontSize:14}}>{(members.find(function(m){return m.id===selMember;})||{}).emoji}</span>
+              <p style={{flex:1,fontSize:14,fontWeight:600,color:"var(--cream)"}}>{(members.find(function(m){return m.id===selMember;})||{name:"Member"}).name}'s events</p>
+              <button onClick={function(){setSelMember(null);}} style={{background:"none",border:"none",color:"var(--cream3)",fontSize:12,cursor:"pointer",padding:0}}>Show all</button>
+            </div>
+          )}
+      <Briefing events={filteredEvents} members={members} onSelect={function(ev){setSel(ev);}} selMember={selMember}/>
       <ConflictBanner items={cfls} members={members} onSelect={ev=>setSel(ev)}/>
 
       {/* ── Calendar header ── */}
@@ -2100,7 +2123,7 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
                 <div style={{borderRadius:16,overflow:"hidden",border:"1px solid var(--border2)",marginBottom:12,position:"relative",height:240}}>
                   <iframe title="Map" width="100%" height="240" style={{display:"block",border:"none"}} srcDoc={leafletHTML}/>
                   <button onClick={function(){openInGoogle(firstLoc);}}
-                    style={{position:"absolute",bottom:10,right:10,zIndex:10,background:"rgba(245,240,232,.97)",color:"var(--cream)",borderRadius:8,padding:"7px 13px",fontSize:13,fontWeight:600,border:"1px solid var(--border2)"}}>
+                    style={{position:"absolute",bottom:10,right:10,zIndex:10,background:"#1a3a2a",color:"#f5f0e8",borderRadius:8,padding:"7px 13px",fontSize:13,fontWeight:600,border:"none",boxShadow:"0 2px 8px rgba(0,0,0,.2)"}}>
                     Open in Google Maps ↗
                   </button>
                 </div>
@@ -2964,7 +2987,7 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
     <div>
       {onBack&&<button onClick={onBack} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",color:"var(--cream2)",fontWeight:600,fontSize:15,marginBottom:12,padding:0}}><ChevronLeft size={15}/>Back</button>}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-        <div><h1 style={{fontSize:22,fontWeight:800}}>Family</h1><p style={{fontSize:14,color:"var(--cream3)",marginTop:2}}>{members.length} member{members.length===1?"":"s"} · tap to edit profile</p></div>
+        <div><h1 style={{fontSize:28,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)"}}>Family</h1><p style={{fontSize:14,color:"var(--cream3)",marginTop:2}}>{members.length} member{members.length===1?"":"s"} · tap to edit profile</p></div>
         <Btn onClick={()=>setShowAdd(true)} style={{display:"flex",alignItems:"center",gap:6,padding:"10px 16px",fontSize:15}}><Plus size={14}/>Add Member</Btn>
       </div>
 
@@ -3148,7 +3171,7 @@ function NotifSettingsScreen({settings,setSettings,members,onBack}) {
   );
   return (
     <div>
-      <button onClick={onBack} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",color:"var(--cream3)",fontWeight:600,fontSize:15,marginBottom:20,padding:0}}><ChevronLeft size={16}/>Back</button>
+      <button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,marginBottom:20,padding:"7px 14px"}}><ChevronLeft size={16}/>Back</button>
       <div style={{marginBottom:22}}>
         <h2 style={{fontSize:26,fontWeight:700,letterSpacing:"-.3px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)"}}>Notifications</h2>
         <p style={{fontSize:15,color:"var(--cream3)",marginTop:4,fontWeight:300}}>Reminders & quiet hours</p>
@@ -3157,7 +3180,7 @@ function NotifSettingsScreen({settings,setSettings,members,onBack}) {
       {/* Push toggle */}
       <p style={{fontSize:12,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--cream3)",marginBottom:8,paddingLeft:2}}>General</p>
       <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--border2)",overflow:"hidden",boxShadow:"0 1px 4px rgba(45,60,45,.06)",marginBottom:22}}>
-        <Row label="Push Notifications" desc="Enable alerts on this device" right={<Toggle on={settings.enabled} onChange={()=>setSettings(p=>({...p,enabled:!p.enabled}))}/>}/>
+        <Row label="Push Notifications" desc="Enable alerts on this device" right={<Toggle on={settings.enabled} onChange={function(){if(!settings.enabled&&requestPermission)requestPermission();setSettings(function(p){return{...p,enabled:!p.enabled};});}}/>}/>
       </div>
 
       {settings.enabled&&(<>
@@ -3210,7 +3233,7 @@ function NotifSettingsScreen({settings,setSettings,members,onBack}) {
 }
 
 /* ─── More ──────────────────────────────────────────────────────────────── */
-function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onSignOut,notifSettings,setNotifSettings,saveMember,deleteMember,toast,familyId,sendInvite}) {
+function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onSignOut,notifSettings,setNotifSettings,saveMember,deleteMember,toast,familyId,sendInvite,requestPermission}) {
   const fr=useRef();
   const [confirmSignOut,setConfirmSignOut]=useState(false);
   const [sec,setSec]=useState(null),[docs,setDocs]=useState([{id:"d1",name:"Emma's Vaccination Record",memberId:"m3",emoji:"💉",date:addDays(todayStr,-30)},{id:"d2",name:"Soccer Permission Slip",memberId:"m3",emoji:"⚽",date:addDays(todayStr,-5)},{id:"d3",name:"Insurance Card",memberId:null,emoji:"🏥",date:addDays(todayStr,-60)}]);
@@ -3218,7 +3241,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
   const gm=id=>id?members.find(m=>m.id===id)||{name:"Family",color:"var(--cream3)",emoji:"👨‍👩‍👧‍👦"}:{name:"Family",color:"var(--cream3)",emoji:"👨‍👩‍👧‍👦"};
   const ce=events.filter(e=>e.cost&&parseFloat(e.cost)>0);
   const tot=ce.reduce((s,e)=>{const c=parseFloat(e.cost)||0;return s+(e.costType==="monthly"?c:e.costType==="session"?c*4:e.costType==="season"?c/3:c);},0);
-  const Back=()=><button onClick={()=>setSec(null)} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",color:"var(--cream3)",fontWeight:600,fontSize:15,marginBottom:18,padding:0}}><ChevronLeft size={15}/>Back</button>;
+  const Back=()=><button onClick={()=>setSec(null)} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,marginBottom:20,padding:"7px 14px"}}><ChevronLeft size={16}/>Back</button>;
   const SECS=[
     {id:"family",Icon:Users,label:"Family Members",desc:members.length+" members"},
     {id:"digest",Icon:Sun,label:"Morning Text",desc:"Daily SMS with your schedule"},
@@ -3309,7 +3332,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
   );
   if(sec==="account") return (
     <div>
-      <button onClick={()=>setSec(null)} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",color:"var(--cream2)",fontWeight:600,fontSize:15,marginBottom:20,padding:0}}><ChevronLeft size={15}/>Back</button>
+      <button onClick={()=>setSec(null)} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,marginBottom:20,padding:"7px 14px"}}><ChevronLeft size={16}/>Back</button>
       <h1 style={{fontSize:28,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",marginBottom:6}}>Account</h1>
       <p style={{fontSize:14,color:"var(--cream3)",marginBottom:24}}>Manage your family name, email and password.</p>
 
@@ -3321,6 +3344,8 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
         onSave={function(val){
           if(!val.trim()) return;
           supabase.from("profiles").update({family_name:val.trim()}).eq("id",user.id).then(function(){});
+          supabase.auth.updateUser({data:{family_name:val.trim()}}).then(function(){});
+          setUser(function(u){return{...u,family:val.trim()};});
           toast({icon:"✓",title:"Family name updated",color:"var(--sage2)"});
         }}
       />
@@ -3362,7 +3387,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
   );
   if(sec==="family") return <MembersScreen members={members} setMembers={setMembers} events={events} saveMember={saveMember} deleteMember={deleteMember} sendInvite={sendInvite} onBack={()=>setSec(null)}/>;
   if(sec==="digest") return <DigestScreen members={members} onBack={()=>setSec(null)}/>;
-  if(sec==="notif_settings") return <NotifSettingsScreen settings={notifSettings} setSettings={setNotifSettings} members={members} onBack={()=>setSec(null)}/>;
+  if(sec==="notif_settings") return <NotifSettingsScreen settings={notifSettings} setSettings={setNotifSettings} members={members} requestPermission={requestPermission} onBack={()=>setSec(null)}/>;
   if(sec==="vault") return (
     <div><Back/>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}><h2 style={{fontSize:20,fontWeight:800}}>Document Vault</h2><Btn onClick={()=>fr.current&&fr.current.click()} style={{display:"flex",alignItems:"center",gap:6,padding:"10px 14px",fontSize:15}}><Plus size={13}/>Upload</Btn></div>
@@ -3402,7 +3427,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
   );
   if(sec==="sharing") return (
     <div><Back/>
-      <h2 style={{fontSize:28,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",marginBottom:20}}>Family Sharing</h2>
+      <h2 style={{fontSize:28,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",textAlign:"center",marginBottom:20}}>Family Sharing</h2>
 
       {/* Partner invite */}
       <Card style={{marginBottom:12}}>
@@ -3560,7 +3585,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
       <div style={{ flex:1, padding:"28px 24px" }}>
 
         {/* What's included */}
-        <p style={{ fontSize:15, fontWeight:700, color:"var(--cream3)", textTransform:"uppercase", letterSpacing:".07em", marginBottom:14 }}>Everything included — no limits</p>
+        <p style={{ fontSize:15, fontWeight:700, color:"#1a2e1a", textTransform:"uppercase", letterSpacing:".07em", marginBottom:14 }}>Everything included — no limits</p>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:28 }}>
           {[
             ["🎙","Voice Add","Say it, it's added"],
@@ -3572,7 +3597,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
             ["💰","Budget Tracker","All costs in one place"],
             ["🔒","Privacy First","Emails deleted instantly"],
           ].map(([icon, title, desc]) => (
-            <div key={title} style={{ background:"var(--ink2)", border:"1px solid var(--border2)", borderRadius:12, padding:"12px" }}>
+            <div key={title} style={{ background:"#fff", border:"1px solid var(--border2)", borderRadius:12, padding:"12px", boxShadow:"0 1px 3px rgba(45,60,45,.05)" }}>
               <div style={{ fontSize:22, marginBottom:6 }}>{icon}</div>
               <p style={{ fontWeight:700, fontSize:15, marginBottom:2 }}>{title}</p>
               <p style={{ fontSize:15, color:"var(--cream3)" }}>{desc}</p>
@@ -3581,7 +3606,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
         </div>
 
         {/* Plan picker */}
-        <p style={{ fontSize:15, fontWeight:700, color:"var(--cream3)", textTransform:"uppercase", letterSpacing:".07em", marginBottom:12 }}>Choose your plan</p>
+        <p style={{ fontSize:15, fontWeight:700, color:"#1a2e1a", textTransform:"uppercase", letterSpacing:".07em", marginBottom:12 }}>Choose your plan</p>
         <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:20 }}>
           {PLANS.map(p => (
             <div
@@ -3666,9 +3691,9 @@ function TrialBanner({ daysLeft, onUpgrade }) {
   const bg     = urgent ? "rgba(196,90,90,.08)" : daysLeft <= 14 ? "rgba(160,120,32,.06)" : "rgba(45,90,61,.06)";
   const border = urgent ? "rgba(196,90,90,.2)"  : daysLeft <= 14 ? "rgba(160,120,32,.2)"  : "rgba(45,90,61,.15)";
   return (
-    <div style={{background:bg,border:"1px solid "+border,borderRadius:10,padding:"8px 12px",marginBottom:12,display:"flex",alignItems:"center",gap:8}}>
+    <div style={{background:"#fff",border:"1.5px solid "+border,borderRadius:10,padding:"9px 14px",marginBottom:12,boxShadow:"0 1px 4px rgba(45,60,45,.06)",display:"flex",alignItems:"center",gap:8}}>
       <div style={{width:7,height:7,borderRadius:"50%",background:color,flexShrink:0}}/>
-      <p style={{flex:1,fontSize:13,fontWeight:500,color:color}}>{urgent?"Only ":""}{daysLeft} day{daysLeft!==1?"s":""} left on your free trial</p>
+      <p style={{flex:1,fontSize:13,fontWeight:600,color:"#1a2e1a"}}><span style={{color:color,fontWeight:700}}>{urgent?"Only ":""}{daysLeft} day{daysLeft!==1?"s":""} left</span>{" "}on your free trial</p>
       <button onClick={onUpgrade} style={{background:color,color:"#fff",border:"none",borderRadius:6,padding:"4px 10px",fontSize:12,fontWeight:700,flexShrink:0}}>Upgrade</button>
       {!urgent&&<button onClick={function(){setDismissed(true);}} style={{background:"none",border:"none",color:"var(--cream3)",display:"flex",padding:2,flexShrink:0}}><X size={12}/></button>}
     </div>
@@ -3681,6 +3706,7 @@ function DigestScreen({members,onBack}) {
   const [sendTime,setSendTime]=useState("07:00");
   const [active,setActive]=useState(false);
   const [saved,setSaved]=useState(false);
+  const [digestError,setDigestError]=useState("");
   const PRESETS=[["06:30","6:30 AM"],["07:00","7:00 AM"],["07:30","7:30 AM"],["08:00","8:00 AM"]];
   const sampleMsg="Good morning! Today: Soccer Practice 4pm Riverside Field (Liam), Piano Lesson 3:20pm Music Academy (Emma). Tomorrow: Team Meeting 9am.\n\n— Calla Family Calendar";
   const save=function(){
@@ -3692,7 +3718,7 @@ function DigestScreen({members,onBack}) {
   };
   return (
     <div>
-      <button onClick={onBack} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",color:"var(--cream3)",fontWeight:600,fontSize:15,marginBottom:18,padding:0}}><ChevronLeft size={15}/>Back</button>
+      <button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,marginBottom:20,padding:"7px 14px"}}><ChevronLeft size={15}/>Back</button>
       <h2 style={{fontSize:20,fontWeight:800,marginBottom:4}}>Morning Text</h2>
       <p style={{fontSize:15,color:"var(--cream3)",marginBottom:18}}>Get a daily SMS with your family schedule</p>
       <Card style={{marginBottom:14,background:"#111",padding:0,overflow:"hidden"}}>
@@ -3903,6 +3929,44 @@ export default function App() {
 
   // ── Trial scrubber ────────────────────────────────────────────────────────
   const [simDay,setSimDay] = useState(0);
+
+  // ── Request push notification permission ─────────────────────────────────
+  const requestNotificationPermission=function(){
+    if(!("Notification" in window)){
+      toast({icon:"⚠️",title:"Notifications not supported on this browser",color:"var(--rose)"});
+      return;
+    }
+    Notification.requestPermission().then(function(permission){
+      if(permission!=="granted"){
+        toast({icon:"⚠️",title:"Notifications blocked",body:"Enable in your browser settings.",color:"var(--rose)"});
+        return;
+      }
+      if(!("serviceWorker" in navigator)){
+        toast({icon:"⚠️",title:"Service worker not supported",color:"var(--rose)"});
+        return;
+      }
+      navigator.serviceWorker.register("/firebase-messaging-sw.js").then(function(registration){
+        getToken(messaging,{
+          vapidKey:"BE2BP72xGAKQ-Tb1jd1ltsbVrXsD4AG8VqdMnvVQ4w2FNhzLrwe-tXnTeGNeD5BjVDZcLsSIzEitwLwdpGAtcxs",
+          serviceWorkerRegistration:registration
+        }).then(function(currentToken){
+          if(currentToken){
+            supabase.from("user_push_tokens").upsert({user_id:user.id,token:currentToken}).then(function(){
+              toast({icon:"🔔",title:"Notifications enabled!",color:"var(--sage2)"});
+            });
+          } else {
+            toast({icon:"⚠️",title:"Could not get notification token",color:"var(--rose)"});
+          }
+        }).catch(function(err){
+          console.error("getToken failed:",err);
+          toast({icon:"⚠️",title:"Notification setup failed",color:"var(--rose)"});
+        });
+      }).catch(function(err){
+        console.error("SW registration failed:",err);
+        toast({icon:"⚠️",title:"Service worker failed",color:"var(--rose)"});
+      });
+    });
+  };
   const fakeStart = new Date(Date.now() - simDay * 86400000).toISOString();
   const trial = paid ? null : trialStatus(fakeStart);
 
@@ -4165,7 +4229,7 @@ export default function App() {
     if(tab==="lists")   return <ListsScreen members={members}/>;
     if(tab==="members") return <MembersScreen members={members} setMembers={setMembers} events={events}/>;
     if(tab==="notif")   return <NotifScreen events={events} members={members} onSelectEvent={ev=>{setGlobalSel(ev);setTab("home");}}/>;
-    if(tab==="more")    return <MoreScreen members={members} setMembers={setMembers} events={events} user={user} paid={paid} trialLeft={trial?trial.left:null} onUpgrade={()=>setShowPaywall(true)} notifSettings={notif} setNotifSettings={setNotif} saveMember={saveMember} deleteMember={deleteMember} toast={toast} familyId={familyId} sendInvite={sendInvite} onSignOut={()=>{supabase.auth.signOut();setUser(null);setSetupDone(false);setTab("home");setEvents([]);setMembers(M0);setPaid(false);setShowPaywall(false);setFamilyId(null);toast({icon:"👋",title:"Signed out",color:"var(--cream3)"});}}/>;
+    if(tab==="more")    return <MoreScreen members={members} setMembers={setMembers} events={events} user={user} paid={paid} trialLeft={trial?trial.left:null} onUpgrade={()=>setShowPaywall(true)} notifSettings={notif} setNotifSettings={setNotif} saveMember={saveMember} deleteMember={deleteMember} toast={toast} familyId={familyId} sendInvite={sendInvite} requestPermission={requestNotificationPermission} onSignOut={()=>{supabase.auth.signOut();setUser(null);setSetupDone(false);setTab("home");setEvents([]);setMembers(M0);setPaid(false);setShowPaywall(false);setFamilyId(null);toast({icon:"👋",title:"Signed out",color:"var(--cream3)"});}}/>;
   };
 
   return (
