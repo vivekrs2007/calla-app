@@ -3160,7 +3160,7 @@ function NotifScreen({events,members,onSelectEvent}) {
 }
 
 /* ─── Notification Settings Screen ─────────────────────────────────────── */
-function NotifSettingsScreen({settings,setSettings,members,onBack}) {
+function NotifSettingsScreen({settings,setSettings,members,onBack,requestPermission}) {
   const RL={"5":"5 min","15":"15 min","30":"30 min","60":"1 hr","120":"2 hr","1440":"1 day","2880":"2 days","10080":"1 week"};
   const DG=[{v:"none",l:"Off"},{v:"daily_morning",l:"Daily 8am"},{v:"daily_evening",l:"Daily 7pm"},{v:"weekly_sunday",l:"Weekly Sunday"},{v:"weekly_monday",l:"Weekly Monday"}];
   const Row=({label,desc,right})=>(
@@ -3180,7 +3180,31 @@ function NotifSettingsScreen({settings,setSettings,members,onBack}) {
       {/* Push toggle */}
       <p style={{fontSize:12,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--cream3)",marginBottom:8,paddingLeft:2}}>General</p>
       <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--border2)",overflow:"hidden",boxShadow:"0 1px 4px rgba(45,60,45,.06)",marginBottom:22}}>
-        <Row label="Push Notifications" desc="Enable alerts on this device" right={<Toggle on={settings.enabled} onChange={function(){if(!settings.enabled&&requestPermission)requestPermission();setSettings(function(p){return{...p,enabled:!p.enabled};});}}/>}/>
+        <Row label="Push Notifications" desc="Enable alerts on this device" right={<Toggle on={settings.enabled} onChange={function(){
+          if(!settings.enabled){
+            // Turning ON — check current permission state first
+            if(!("Notification" in window)){
+              alert("Push notifications are not supported on this browser.");
+              return;
+            }
+            if(Notification.permission==="denied"){
+              alert("Notifications are blocked. To enable:\n\n1. Click the lock icon in your browser address bar\n2. Set Notifications to Allow\n3. Refresh the page");
+              return;
+            }
+            if(requestPermission) requestPermission();
+          }
+          setSettings(function(p){
+            var next={...p,enabled:!p.enabled};
+            localStorage.setItem("calla_notif",JSON.stringify(next));
+            return next;
+          });
+        }}/>}/>
+        {"Notification" in window && Notification.permission==="denied" && (
+          <div style={{padding:"10px 18px",background:"rgba(168,56,56,.06)",borderTop:"1px solid rgba(168,56,56,.1)"}}>
+            <p style={{fontSize:13,color:"var(--rose)",lineHeight:1.6}}>⚠️ Notifications are blocked in your browser. Click the lock icon in the address bar → set Notifications to <strong>Allow</strong> → refresh.</p>
+          </div>
+        )}
+
       </div>
 
       {settings.enabled&&(<>
@@ -3918,7 +3942,10 @@ export default function App() {
   const [globalSel,setGlobalSel] = useState(null);
   const [members,setMembers]     = useState(M0);
   const [events,setEvents]       = useState([]);
-  const [notif,setNotif]         = useState(DN);
+  const [notif,setNotif] = useState(function(){
+    try{var s=localStorage.getItem("calla_notif");return s?JSON.parse(s):DN;}
+    catch(e){return DN;}
+  });
   const [toasts,setToasts]       = useState([]);
   const [inboxBadge,setInboxBadge] = useState(2);
   const [showBanner,setShowBanner] = useState(true);
