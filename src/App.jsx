@@ -3702,31 +3702,41 @@ function NotifSettingsScreen({settings,setSettings,members,onBack,requestPermiss
 /* ─── More ──────────────────────────────────────────────────────────────── */
 /* --- Morning Text Digest Screen --- */
 function DigestScreen({members, user, onBack, toast}) {
-  var saved = {};
-  try { saved = JSON.parse(localStorage.getItem("calla_digest") || "{}"); } catch(e) {}
-  var [enabled,    setEnabled]    = useState(saved.enabled    || false);
-  var [sendTime,   setSendTime]   = useState(saved.sendTime   || "07:30");
-  var [recipients, setRecipients] = useState(saved.recipients || {});
+  // ── Load persisted prefs from localStorage on mount ──────────────────────
+  function loadPrefs() {
+    try { return JSON.parse(localStorage.getItem("calla_digest") || "{}"); }
+    catch(e) { return {}; }
+  }
+  var prefs = loadPrefs();
+
+  var [enabled,    setEnabled]    = useState(prefs.enabled    || false);
+  var [sendTime,   setSendTime]   = useState(prefs.sendTime   || "07:30");
+  var [recipients, setRecipients] = useState(prefs.recipients || {});
+  var [include,    setInclude]    = useState(prefs.include    || {todayEvents:true, conflicts:true, tomorrowEvents:false, packingList:false});
   var [saving,     setSaving]     = useState(false);
   var [wasSaved,   setWasSaved]   = useState(false);
+  var [hasChanges, setHasChanges] = useState(false);
+
+  // Mark unsaved changes whenever anything changes
+  function markChanged() { setHasChanges(true); setWasSaved(false); }
 
   function save() {
     setSaving(true);
-    var prefs = { enabled: enabled, sendTime: sendTime, recipients: recipients };
-    localStorage.setItem("calla_digest", JSON.stringify(prefs));
+    var toSave = { enabled: enabled, sendTime: sendTime, recipients: recipients, include: include };
+    localStorage.setItem("calla_digest", JSON.stringify(toSave));
     if (user && user.id) {
       supabase.from("profiles")
-        .update({ digest_enabled: enabled, digest_time: sendTime, digest_recipients: JSON.stringify(recipients) })
+        .update({ digest_enabled: enabled, digest_time: sendTime, digest_recipients: JSON.stringify(recipients), digest_include: JSON.stringify(include) })
         .eq("id", user.id)
         .then(function() {
-          setSaving(false); setWasSaved(true);
-          toast({ icon: "✓", title: "Morning Text saved!", color: "var(--sage2)" });
-          setTimeout(function() { setWasSaved(false); }, 2500);
+          setSaving(false); setWasSaved(true); setHasChanges(false);
+          toast({ icon: "\u2713", title: "Morning Text saved!", color: "var(--sage2)" });
+          setTimeout(function() { setWasSaved(false); }, 3000);
         });
     } else {
-      setSaving(false); setWasSaved(true);
-      toast({ icon: "✓", title: "Saved!", color: "var(--sage2)" });
-      setTimeout(function() { setWasSaved(false); }, 2500);
+      setSaving(false); setWasSaved(true); setHasChanges(false);
+      toast({ icon: "\u2713", title: "Saved!", color: "var(--sage2)" });
+      setTimeout(function() { setWasSaved(false); }, 3000);
     }
   }
 
@@ -3734,9 +3744,10 @@ function DigestScreen({members, user, onBack, toast}) {
     setRecipients(function(prev) {
       var next = Object.assign({}, prev);
       if (next[memberId] !== undefined) { delete next[memberId]; }
-      else { next[memberId] = existingPhone || ''; }
+      else { next[memberId] = existingPhone || ""; }
       return next;
     });
+    markChanged();
   }
 
   function updatePhone(memberId, phone) {
@@ -3745,12 +3756,22 @@ function DigestScreen({members, user, onBack, toast}) {
       next[memberId] = phone;
       return next;
     });
+    markChanged();
+  }
+
+  function toggleInclude(key) {
+    setInclude(function(prev) {
+      var next = Object.assign({}, prev);
+      next[key] = !prev[key];
+      return next;
+    });
+    markChanged();
   }
 
   function fmtTime(t) {
-    var parts = t.split(':'); var h = parseInt(parts[0]); var m = parts[1] || '00';
-    var ap = h >= 12 ? 'PM' : 'AM'; var h12 = h % 12 || 12;
-    return h12 + ':' + m + ' ' + ap;
+    var parts = t.split(":"); var h = parseInt(parts[0]); var m = parts[1] || "00";
+    var ap = h >= 12 ? "PM" : "AM"; var h12 = h % 12 || 12;
+    return h12 + ":" + m + " " + ap;
   }
 
   var anyRecipient = Object.keys(recipients).length > 0;
@@ -3758,6 +3779,23 @@ function DigestScreen({members, user, onBack, toast}) {
   var canSave = !enabled || (anyRecipient && allHavePhone);
   var TIMES = ["06:00","06:30","07:00","07:30","08:00","08:30","09:00"];
   var TIME_LABELS = {"06:00":"6:00 AM","06:30":"6:30 AM","07:00":"7:00 AM","07:30":"7:30 AM","08:00":"8:00 AM","08:30":"8:30 AM","09:00":"9:00 AM"};
+  var INCLUDE_OPTIONS = [
+    {key:"todayEvents",    icon:"\ud83d\udcc5", label:"Today\'s events",     desc:"All events scheduled for today"},
+    {key:"tomorrowEvents", icon:"\u23ed\ufe0f",  label:"Tomorrow\'s events",  desc:"A heads-up for what\'s coming"},
+    {key:"conflicts",      icon:"\u26a1",         label:"Conflicts detected",   desc:"Any scheduling overlaps flagged"},
+    {key:"packingList",    icon:"\ud83c\udf92",  label:"Packing reminders",    desc:"Items to bring for today\'s events"},
+  ];
+
+  // Build dynamic preview based on selections
+  function buildPreview() {
+    var lines = ["Good morning! Here\'s your day:",""];
+    if (include.todayEvents) { lines.push("Emma: Soccer 3:30 PM @ Riverside Field"); lines.push("Liam: Piano 4:00 PM @ Music Studio"); }
+    if (include.tomorrowEvents) { lines.push(""); lines.push("Tomorrow: Team meeting 9:00 AM"); }
+    if (include.conflicts) { lines.push(""); lines.push("Conflict: Soccer & Piano overlap 4-4:30 PM"); }
+    if (include.packingList) { lines.push(""); lines.push("Bring: Shin guards, water bottle (Emma)"); }
+    lines.push(""); lines.push("-- Calla");
+    return lines.join("\n");
+  }
 
   return (
     <div>
@@ -3766,33 +3804,17 @@ function DigestScreen({members, user, onBack, toast}) {
       </button>
 
       <div style={{marginBottom:22}}>
-        <h2 style={{fontSize:26,fontWeight:700,letterSpacing:"-.3px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)"}}>Morning Text</h2>
-        <p style={{fontSize:14,color:"var(--cream3)",marginTop:4,fontWeight:300}}>Daily SMS with today's schedule and any conflicts.</p>
+        <h2 style={{fontSize:26,fontWeight:700,letterSpacing:"-.3px",fontFamily:"\'Playfair Display\',Georgia,serif",color:"var(--cream)"}}>Morning Text</h2>
+        <p style={{fontSize:14,color:"var(--cream3)",marginTop:4,fontWeight:300}}>Daily SMS digest — customise what you receive.</p>
       </div>
 
-      {/* SMS example preview */}
-      <div style={{background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:16,padding:16,marginBottom:22}}>
-        <p style={{fontSize:12,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:10}}>Example Text</p>
-        <div style={{background:"#fff",borderRadius:12,padding:"14px 16px",border:"1px solid var(--border)"}}>
-          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
-            <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,var(--sage),var(--sage2))",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}}>{"\uD83C\uDF38"[0]}</div>
-            <div>
-              <p style={{fontSize:12,fontWeight:700,color:"var(--cream)"}}>Calla Family</p>
-              <p style={{fontSize:11,color:"var(--cream3)"}}>+1 (260) 236-6760</p>
-            </div>
-          </div>
-          <p style={{fontSize:13,color:"var(--cream)",lineHeight:1.8}}>
-            {"Good morning! Here's today:"}<br/>
-            <br/>
-            {"Emma: Soccer 3:30pm @ Riverside Field"}<br/>
-            {"Liam: Piano 4:00pm @ Music Studio"}<br/>
-            <br/>
-            {"Conflict: Both overlap 4-4:30pm"}<br/>
-            <br/>
-            {"-- Calla"}
-          </p>
+      {/* Unsaved changes banner */}
+      {hasChanges && (
+        <div style={{background:"rgba(160,120,32,.1)",border:"1px solid rgba(160,120,32,.3)",borderRadius:12,padding:"10px 14px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+          <p style={{fontSize:13,color:"var(--gold)",fontWeight:600}}>You have unsaved changes</p>
+          <button onClick={save} style={{background:"var(--gold)",color:"var(--ink)",border:"none",borderRadius:8,padding:"6px 14px",fontSize:13,fontWeight:700,cursor:"pointer"}}>Save now</button>
         </div>
-      </div>
+      )}
 
       {/* Enable toggle */}
       <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--border2)",overflow:"hidden",boxShadow:"0 1px 4px rgba(45,60,45,.06)",marginBottom:22}}>
@@ -3801,7 +3823,7 @@ function DigestScreen({members, user, onBack, toast}) {
             <p style={{fontSize:16,fontWeight:600,color:"var(--cream)"}}>Enable Morning Text</p>
             <p style={{fontSize:13,color:"var(--cream3)",marginTop:2,fontWeight:300}}>Send a daily SMS each morning</p>
           </div>
-          <Toggle on={enabled} onChange={function() { setEnabled(function(p) { return !p; }); }}/>
+          <Toggle on={enabled} onChange={function() { setEnabled(function(p){return !p;}); markChanged(); }}/>
         </div>
       </div>
 
@@ -3814,25 +3836,60 @@ function DigestScreen({members, user, onBack, toast}) {
               {TIMES.map(function(t) {
                 var isOn = sendTime === t;
                 return (
-                  <button key={t} onClick={function() { setSendTime(t); }}
+                  <button key={t} onClick={function() { setSendTime(t); markChanged(); }}
                     style={{padding:"8px 14px",borderRadius:99,background:isOn?"var(--sage)":"var(--ink3)",color:isOn?"var(--ink)":"var(--cream3)",fontSize:13,fontWeight:600,border:"1px solid "+(isOn?"transparent":"var(--border2)"),transition:"all .2s"}}>
-                    {isOn ? '> ' : ''}{TIME_LABELS[t]}
+                    {isOn ? "\u2713 " : ""}{TIME_LABELS[t]}
                   </button>
                 );
               })}
             </div>
             <div>
               <label style={{fontSize:12,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:6,letterSpacing:".05em"}}>CUSTOM TIME</label>
-              <input type="time" value={sendTime} onChange={function(e) { setSendTime(e.target.value); }} style={{fontSize:16,padding:"10px 14px",width:"auto"}}/>
+              <input type="time" value={sendTime} onChange={function(e) { setSendTime(e.target.value); markChanged(); }} style={{fontSize:16,padding:"10px 14px",width:"auto"}}/>
+            </div>
+          </div>
+
+          {/* What to include */}
+          <p style={{fontSize:12,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--cream3)",marginBottom:8,paddingLeft:2}}>What to Include</p>
+          <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--border2)",overflow:"hidden",boxShadow:"0 1px 4px rgba(45,60,45,.06)",marginBottom:22}}>
+            {INCLUDE_OPTIONS.map(function(opt, i) {
+              var isOn = include[opt.key];
+              return (
+                <div key={opt.key} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 18px",borderBottom:i < INCLUDE_OPTIONS.length-1?"1px solid rgba(240,236,226,.06)":"none"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:12}}>
+                    <span style={{fontSize:20,flexShrink:0}}>{opt.icon}</span>
+                    <div>
+                      <p style={{fontWeight:600,fontSize:15,color:"var(--cream)"}}>{opt.label}</p>
+                      <p style={{fontSize:12,color:"var(--cream3)",marginTop:1,fontWeight:300}}>{opt.desc}</p>
+                    </div>
+                  </div>
+                  <Toggle on={isOn} onChange={function() { toggleInclude(opt.key); }}/>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Live preview */}
+          <p style={{fontSize:12,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--cream3)",marginBottom:8,paddingLeft:2}}>Live Preview</p>
+          <div style={{background:"#111",borderRadius:16,padding:16,marginBottom:22}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+              <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,var(--sage),var(--sage2))",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}}>C</div>
+              <div>
+                <p style={{fontSize:12,fontWeight:700,color:"rgba(255,255,255,.9)"}}>Calla</p>
+                <p style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>+1 (260) 236-6760</p>
+              </div>
+            </div>
+            <div style={{background:"#3A3A3C",borderRadius:"14px 14px 14px 4px",padding:"10px 14px",maxWidth:"85%"}}>
+              <p style={{fontSize:13,color:"rgba(255,255,255,.9)",lineHeight:1.8,whiteSpace:"pre-line"}}>{buildPreview()}</p>
             </div>
           </div>
 
           {/* Recipients */}
           <p style={{fontSize:12,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--cream3)",marginBottom:8,paddingLeft:2}}>Who Gets the Text</p>
-          <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--border2)",overflow:"hidden",boxShadow:"0 1px 4px rgba(45,60,45,.06)",marginBottom:22}}>
+          <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--border2)",overflow:"hidden",boxShadow:"0 1px 4px rgba(45,60,45,.06)",marginBottom:8}}>
             {members.map(function(m, i) {
               var isOn = recipients[m.id] !== undefined;
-              var phone = isOn ? recipients[m.id] : (m.phone || '');
+              var phone = isOn ? recipients[m.id] : (m.phone || "");
               return (
                 <div key={m.id} style={{borderBottom:i < members.length - 1 ? "1px solid rgba(240,236,226,.06)" : "none"}}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 18px"}}>
@@ -3844,7 +3901,7 @@ function DigestScreen({members, user, onBack, toast}) {
                         {isOn && !phone && <p style={{fontSize:12,color:"var(--gold)",marginTop:1}}>Add phone number below</p>}
                       </div>
                     </div>
-                    <Toggle on={isOn} onChange={function() { toggleRecipient(m.id, m.phone || ''); }}/>
+                    <Toggle on={isOn} onChange={function() { toggleRecipient(m.id, m.phone || ""); }}/>
                   </div>
                   {isOn && (
                     <div style={{padding:"0 18px 14px"}}>
@@ -3858,32 +3915,18 @@ function DigestScreen({members, user, onBack, toast}) {
               );
             })}
           </div>
-
-          {/* Included items */}
-          <p style={{fontSize:12,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--cream3)",marginBottom:8,paddingLeft:2}}>What's Included</p>
-          <div style={{background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:16,padding:"14px 16px",marginBottom:22}}>
-            <div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:10}}>
-              <span style={{fontSize:18,flexShrink:0}}>{"\ud83d\udcc5"[0]}</span>
-              <div><p style={{fontWeight:600,fontSize:14,color:"var(--cream)"}}>{"Today's events"}</p>
-              <p style={{fontSize:13,color:"var(--cream3)",marginTop:2,fontWeight:300}}>All events for every family member</p></div>
-            </div>
-            <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
-              <span style={{fontSize:18,flexShrink:0}}>{"\u26a1"}</span>
-              <div><p style={{fontWeight:600,fontSize:14,color:"var(--cream)"}}>Conflicts detected</p>
-              <p style={{fontSize:13,color:"var(--cream3)",marginTop:2,fontWeight:300}}>Any scheduling overlaps flagged clearly</p></div>
-            </div>
-          </div>
+          <p style={{fontSize:12,color:"var(--cream3)",marginBottom:22,paddingLeft:4,fontWeight:300}}>Tap Save below to confirm phone numbers.</p>
         </div>
       )}
 
-      {/* Save button */}
+      {/* Save button — always visible */}
       <button onClick={save} disabled={saving || !canSave}
-        style={{width:"100%",background:(saving||!canSave)?"var(--ink4)":"linear-gradient(135deg,var(--sage),var(--sage2))",color:(saving||!canSave)?"var(--cream3)":"var(--ink)",border:"none",borderRadius:14,padding:"15px",fontFamily:"'DM Sans','Helvetica Neue',sans-serif",fontSize:16,fontWeight:700,cursor:(saving||!canSave)?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,transition:"all .2s"}}>
-        {saving ? 'Saving...' : wasSaved ? 'Saved!' : !canSave ? 'Add phone numbers first' : 'Save Morning Text Settings'}
+        style={{width:"100%",background:wasSaved?"var(--sage3)":(saving||!canSave)?"var(--ink4)":"linear-gradient(135deg,var(--sage),var(--sage2))",color:(saving||!canSave)&&!wasSaved?"var(--cream3)":"var(--ink)",border:"none",borderRadius:14,padding:"16px",fontFamily:"\'DM Sans\',\'Helvetica Neue\',sans-serif",fontSize:16,fontWeight:700,cursor:(saving||!canSave)?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:(saving||!canSave)?"none":"0 4px 16px rgba(45,90,61,.28)",transition:"all .2s"}}>
+        {saving ? "Saving..." : wasSaved ? "\u2713 Settings Saved!" : !canSave ? "Add phone numbers to save" : "Save Morning Text Settings"}
       </button>
 
-      {enabled && anyRecipient && allHavePhone && (
-        <p style={{textAlign:"center",fontSize:13,color:"var(--cream3)",marginTop:12,fontWeight:300}}>{'Text arrives daily at ' + fmtTime(sendTime) + ' via Twilio'}</p>
+      {enabled && anyRecipient && allHavePhone && wasSaved && (
+        <p style={{textAlign:"center",fontSize:13,color:"var(--sage3)",marginTop:12,fontWeight:500}}>{"\u2713 Text will arrive daily at " + fmtTime(sendTime)}</p>
       )}
     </div>
   );
