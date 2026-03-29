@@ -1,7 +1,13 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  publicDir: 'public',
+  build: {
+    target: 'es2020',
+  },
+  define: {
+    'self.FIREBASE_MESSAGING_SW': false,
+  },
 })
