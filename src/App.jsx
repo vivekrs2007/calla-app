@@ -4,15 +4,26 @@ import { initializeApp } from "firebase/app";
 import { getMessaging, getToken } from "firebase/messaging";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyChkyg2JBvXkRkoFF5-aE_cY21EdZ-RNLM",
-  authDomain: "calla-notifications.firebaseapp.com",
-  projectId: "calla-notifications",
-  storageBucket: "calla-notifications.firebasestorage.app",
-  messagingSenderId: "537577069849",
-  appId: "1:537577069849:web:994097c1c8bb677d0ab988"
+  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY        || "",
+  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN    || "calla-notifications.firebaseapp.com",
+  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID     || "calla-notifications",
+  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "calla-notifications.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_SENDER_ID      || "537577069849",
+  appId:             import.meta.env.VITE_FIREBASE_APP_ID         || "1:537577069849:web:994097c1c8bb677d0ab988"
 };
-const firebaseApp = initializeApp(firebaseConfig);
-const messaging = getMessaging(firebaseApp);
+
+// Initialize Firebase only on web, not on iOS/Capacitor
+let firebaseApp = null;
+let messaging = null;
+const isCapacitor = typeof window !== "undefined" && window.location.protocol === "capacitor:";
+
+if (!isCapacitor && typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+  firebaseApp = initializeApp(firebaseConfig);
+  messaging = getMessaging(firebaseApp);
+} else if (!isCapacitor) {
+  firebaseApp = initializeApp(firebaseConfig);
+  messaging = null;
+}
 
 import {
   Home, Inbox, Users, Bell, Settings, Plus, Mic, MicOff,
@@ -58,6 +69,11 @@ const GS = () => (
       --sage-mid:  rgba(45,90,61,.2);
       --terra:     #8b5a2a;
       --terra-light:rgba(139,90,42,.1);
+      /* iOS Safe Area Tokens (requires viewport-fit=cover in index.html) */
+      --safe-top:    env(safe-area-inset-top,    0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left:   env(safe-area-inset-left,   0px);
+      --safe-right:  env(safe-area-inset-right,  0px);
     }
     body{
       background:var(--ink2);
@@ -65,7 +81,10 @@ const GS = () => (
       font-family:'DM Sans','Helvetica Neue',sans-serif;
       -webkit-font-smoothing:antialiased;
       -moz-osx-font-smoothing:grayscale;
-      min-height:100vh;
+      min-height:100dvh;
+      overscroll-behavior:none;
+      -webkit-text-size-adjust:100%;
+      text-size-adjust:100%;
     }
     /* ── Inputs ── */
     input,textarea,select{
@@ -76,7 +95,7 @@ const GS = () => (
       font-family:'DM Sans','Helvetica Neue',sans-serif;
       border-radius:10px;
       padding:12px 14px;
-      font-size:14px;
+      font-size:16px;
       outline:none;
       width:100%;
       transition:border-color .18s,background .18s,box-shadow .18s;
@@ -1936,7 +1955,7 @@ function VoiceSheet({members,onAdd,onClose}) {
             </div>
           </div>
         )}
-        {stage==="done"&&(
+        {tab==="email"&&stage==="done"&&(
           <div style={{textAlign:"center",padding:"32px 0"}}>
             <div style={{width:60,height:60,background:"rgba(45,90,61,.06)",border:"1px solid rgba(83,136,122,.4)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px"}}><Check size={26} color="var(--sage2)"/></div>
             <p style={{fontWeight:800,fontSize:18,color:"var(--sage2)"}}>Added!</p>
@@ -2259,6 +2278,417 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
 
 
 /* ─── Inbox ─────────────────────────────────────────────────────────────── */
+
+/* ─── Flyer Scanner ─────────────────────────────────────────────────────── */
+function FlyerScanner({members, onAdd}) {
+  var [scanStage, setScanStage]         = useState("idle");      // idle | loading | review | done | error
+  var [previewSrc, setPreviewSrc]       = useState(null);
+  var [fileName, setFileName]           = useState("");
+  var [extractedEvs, setExtractedEvs]   = useState([]);
+  var [selectedIds, setSelectedIds]     = useState(new Set());
+  var [errorMsg, setErrorMsg]           = useState("");
+  var [loadingStep, setLoadingStep]     = useState(0);           // 0,1,2
+  var fileRef                           = useRef();
+  var stepTimerRef                      = useRef(null);
+
+  // ── Step animator ──────────────────────────────────────────────────────────
+  function startStepAnim() {
+    setLoadingStep(0);
+    var step = 0;
+    stepTimerRef.current = setInterval(function() {
+      step = step + 1;
+      if (step >= 2) { clearInterval(stepTimerRef.current); }
+      setLoadingStep(step);
+    }, 1800);
+  }
+  function stopStepAnim() {
+    if (stepTimerRef.current) clearInterval(stepTimerRef.current);
+  }
+
+  // ── File pick ─────────────────────────────────────────────────────────────
+  function handleFilePick(e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    setErrorMsg("");
+    setFileName(file.name);
+
+    if (file.type === "application/pdf") {
+      setPreviewSrc("pdf");
+      setScanStage("preview");
+      return;
+    }
+
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      setPreviewSrc(ev.target.result);
+      setScanStage("preview");
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ── Scan via Claude Vision API ────────────────────────────────────────────
+  function doScan() {
+    var file = fileRef.current && fileRef.current.files && fileRef.current.files[0];
+    if (!file) return;
+
+    if (file.type === "application/pdf") {
+      setErrorMsg("PDF upload: take a screenshot of the PDF and upload that image instead — works perfectly!");
+      setScanStage("error");
+      return;
+    }
+
+    setScanStage("loading");
+    startStepAnim();
+
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      var base64 = ev.target.result.split(",")[1];
+      var mediaType = file.type || "image/jpeg";
+      callClaude(base64, mediaType);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function callClaude(base64, mediaType) {
+    var apiKey = typeof import_meta_env !== "undefined"
+      ? import_meta_env.VITE_ANTHROPIC_KEY
+      : (typeof window !== "undefined" && window.__VITE_ANTHROPIC_KEY__) || "";
+
+    // Access via Vite env — injected at build time
+    var key = "";
+    try { key = __VITE_ANTHROPIC_KEY__; } catch(e) {}
+
+    var prompt = "You are a helpful assistant that extracts calendar events from school flyers, newsletters, and notices." +
+      " Extract ALL events from this image. Respond ONLY with a valid JSON array, no markdown, no extra text." +
+      " Each object must have: title (string), date (string YYYY-MM-DD, guess year 2026 if not shown)," +
+      " time (string HH:MM 24hr or null), location (string or null), notes (string or null)." +
+      " If no events found return [].";
+
+    fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": import.meta.env.VITE_ANTHROPIC_KEY || "",
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-client-side-allow-unsafe-eval": "true"
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [{
+          role: "user",
+          content: [
+            { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } },
+            { type: "text",  text: prompt }
+          ]
+        }]
+      })
+    }).then(function(res) {
+      return res.json();
+    }).then(function(data) {
+      stopStepAnim();
+      if (data.error) {
+        setErrorMsg(data.error.message || "API error — please try again.");
+        setScanStage("error");
+        return;
+      }
+      var raw = "";
+      if (data.content && data.content.length > 0) {
+        data.content.forEach(function(block) {
+          if (block.type === "text") raw += block.text;
+        });
+      }
+      var events = [];
+      try {
+        var clean = raw.replace(/```json|```/g, "").trim();
+        events = JSON.parse(clean);
+      } catch(e) {
+        setErrorMsg("Couldn't read the response. Try a clearer photo.");
+        setScanStage("error");
+        return;
+      }
+      if (!events || events.length === 0) {
+        setErrorMsg("No events found in this image. Try a clearer photo of the flyer.");
+        setScanStage("error");
+        return;
+      }
+      // Attach ids and default memberId
+      var withIds = events.map(function(ev) {
+        return {
+          id: genId(),
+          title:    ev.title    || "Untitled Event",
+          date:     ev.date     || todayStr,
+          time:     ev.time     || "",
+          location: ev.location || "",
+          notes:    ev.notes    || "",
+          memberId: members && members[0] ? members[0].id : ""
+        };
+      });
+      var allIds = new Set(withIds.map(function(e) { return e.id; }));
+      setExtractedEvs(withIds);
+      setSelectedIds(allIds);
+      setScanStage("review");
+    }).catch(function(err) {
+      stopStepAnim();
+      setErrorMsg("Connection failed. Check your internet and try again.");
+      setScanStage("error");
+    });
+  }
+
+  // ── Confirm add ───────────────────────────────────────────────────────────
+  function confirmAdd() {
+    extractedEvs.forEach(function(ev) {
+      if (!selectedIds.has(ev.id)) return;
+      var m = members && members.find(function(x) { return x.id === ev.memberId; });
+      onAdd({
+        id:       genId(),
+        title:    ev.title,
+        date:     ev.date,
+        time:     ev.time,
+        location: ev.location,
+        notes:    ev.notes,
+        memberId: ev.memberId,
+        color:    m ? m.color : "#2d5a3d"
+      });
+    });
+    setScanStage("done");
+    setTimeout(function() { resetScanner(); }, 2400);
+  }
+
+  function resetScanner() {
+    setScanStage("idle");
+    setPreviewSrc(null);
+    setFileName("");
+    setExtractedEvs([]);
+    setSelectedIds(new Set());
+    setErrorMsg("");
+    setLoadingStep(0);
+    if (fileRef.current) fileRef.current.value = "";
+  }
+
+  function toggleEvent(id) {
+    setSelectedIds(function(prev) {
+      var next = new Set(prev);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    if (selectedIds.size === extractedEvs.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(extractedEvs.map(function(e) { return e.id; })));
+    }
+  }
+
+  function updateEv(id, fields) {
+    setExtractedEvs(function(prev) {
+      return prev.map(function(ev) { return ev.id === id ? Object.assign({}, ev, fields) : ev; });
+    });
+  }
+
+  var stepLabels = ["Analysing image", "Finding events & dates", "Formatting for calendar"];
+
+  // ── Render ────────────────────────────────────────────────────────────────
+  return (
+    <div>
+      {/* Hidden file input */}
+      <input ref={fileRef} type="file" accept="image/*,application/pdf"
+        style={{display:"none"}} onChange={handleFilePick}/>
+
+      {/* ── IDLE: upload zone ── */}
+      {(scanStage === "idle") && (
+        <div onClick={function() { if(fileRef.current) fileRef.current.click(); }}
+          style={{background:"var(--ink)",border:"2px dashed var(--border2)",borderRadius:18,padding:"32px 20px",textAlign:"center",cursor:"pointer",transition:"border-color .2s,background .2s"}}>
+          <div style={{fontSize:42,marginBottom:12}}>📄</div>
+          <p style={{fontFamily:"'Playfair Display',Georgia,serif",fontSize:19,fontWeight:700,color:"var(--cream)",marginBottom:8}}>Scan a school flyer</p>
+          <p style={{fontSize:14,color:"var(--cream3)",lineHeight:1.65,marginBottom:18}}>Take a photo, upload a screenshot,<br/>or drop any school notice here</p>
+          <div style={{display:"flex",gap:7,justifyContent:"center",flexWrap:"wrap"}}>
+            {["📸 Camera photo","🖼️ Screenshot","📄 PDF (screenshot it)"].map(function(t) {
+              return (
+                <span key={t} style={{background:"var(--ink3)",border:"1px solid var(--border2)",borderRadius:99,padding:"5px 12px",fontSize:12,fontWeight:600,color:"var(--cream3)"}}>{t}</span>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── PREVIEW: show image + scan button ── */}
+      {(scanStage === "preview") && (
+        <div>
+          <div style={{background:"var(--ink)",border:"1px solid var(--border2)",borderRadius:16,overflow:"hidden",marginBottom:12}}>
+            {previewSrc !== "pdf"
+              ? <img src={previewSrc} alt="Flyer" style={{width:"100%",maxHeight:260,objectFit:"cover",display:"block"}}/>
+              : <div style={{padding:"32px 20px",textAlign:"center"}}>
+                  <div style={{fontSize:44,marginBottom:10}}>📄</div>
+                  <p style={{fontWeight:600,color:"var(--cream)",fontSize:15,marginBottom:4}}>{fileName}</p>
+                  <p style={{fontSize:13,color:"var(--cream3)"}}>PDF ready</p>
+                </div>
+            }
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",borderTop:"1px solid var(--border)"}}>
+              <span style={{fontSize:13,fontWeight:500,color:"var(--cream3)",maxWidth:200,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{fileName}</span>
+              <button onClick={resetScanner} style={{fontSize:12,fontWeight:600,color:"var(--sage2)",background:"none",border:"none",cursor:"pointer"}}>Change</button>
+            </div>
+          </div>
+          <button onClick={doScan}
+            style={{width:"100%",background:"linear-gradient(135deg,var(--sage),var(--sage2))",color:"var(--ink)",border:"none",borderRadius:14,padding:"15px",fontFamily:"'DM Sans','Helvetica Neue',sans-serif",fontSize:16,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 4px 20px rgba(45,90,61,.28)"}}>
+            🔍 Extract Events with AI
+          </button>
+        </div>
+      )}
+
+      {/* ── LOADING ── */}
+      {(scanStage === "loading") && (
+        <div style={{background:"var(--ink)",border:"1px solid var(--border)",borderRadius:18,padding:"32px 20px",textAlign:"center"}}>
+          <div style={{width:36,height:36,border:"3px solid var(--border2)",borderTopColor:"var(--sage2)",borderRadius:"50%",animation:"spin .7s linear infinite",margin:"0 auto 16px"}}/>
+          <p style={{fontFamily:"'Playfair Display',Georgia,serif",fontSize:18,fontWeight:700,color:"var(--cream)",marginBottom:5}}>Reading your flyer…</p>
+          <p style={{fontSize:13,color:"var(--cream3)",marginBottom:20}}>Claude AI is extracting all events</p>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {stepLabels.map(function(label, i) {
+              var isDone   = i < loadingStep;
+              var isActive = i === loadingStep;
+              return (
+                <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:isActive?"rgba(45,90,61,.08)":"var(--ink2)",borderRadius:10,transition:"all .3s"}}>
+                  <div style={{width:8,height:8,borderRadius:"50%",flexShrink:0,background:isDone?"var(--sage3)":isActive?"var(--sage2)":"var(--border2)",transition:"background .3s"}}/>
+                  <span style={{fontSize:13,fontWeight:500,color:isDone?"var(--sage3)":isActive?"var(--sage2)":"var(--cream3)",transition:"color .3s"}}>{label}</span>
+                  {isDone && <span style={{marginLeft:"auto",fontSize:12,color:"var(--sage3)"}}>✓</span>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── ERROR ── */}
+      {(scanStage === "error") && (
+        <div>
+          <div style={{background:"rgba(168,56,56,.06)",border:"1px solid rgba(168,56,56,.2)",borderRadius:14,padding:"16px",marginBottom:14,display:"flex",gap:12,alignItems:"flex-start"}}>
+            <span style={{fontSize:20,flexShrink:0}}>⚠️</span>
+            <div>
+              <p style={{fontWeight:700,fontSize:14,color:"var(--rose)",marginBottom:3}}>Couldn't scan this flyer</p>
+              <p style={{fontSize:13,color:"var(--rose)",lineHeight:1.6}}>{errorMsg}</p>
+            </div>
+          </div>
+          <button onClick={resetScanner}
+            style={{width:"100%",background:"var(--ink)",border:"1.5px solid var(--border2)",borderRadius:14,padding:"14px",fontFamily:"'DM Sans','Helvetica Neue',sans-serif",fontSize:15,fontWeight:600,color:"var(--cream3)",cursor:"pointer"}}>
+            Try a different image
+          </button>
+        </div>
+      )}
+
+      {/* ── REVIEW ── */}
+      {(scanStage === "review") && (
+        <div>
+          {/* Header row */}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+            <div>
+              <p style={{fontFamily:"'Playfair Display',Georgia,serif",fontSize:18,fontWeight:700,color:"var(--cream)",lineHeight:1}}>Found {extractedEvs.length} event{extractedEvs.length !== 1 ? "s" : ""}</p>
+              <p style={{fontSize:13,color:"var(--cream3)",marginTop:3}}>{selectedIds.size} selected</p>
+            </div>
+            <button onClick={toggleAll}
+              style={{fontSize:13,fontWeight:600,color:"var(--sage2)",background:"none",border:"none",cursor:"pointer",fontFamily:"'DM Sans','Helvetica Neue',sans-serif"}}>
+              {selectedIds.size === extractedEvs.length ? "Deselect All" : "Select All"}
+            </button>
+          </div>
+
+          {/* Event cards */}
+          {extractedEvs.map(function(ev) {
+            var isOn = selectedIds.has(ev.id);
+            return (
+              <div key={ev.id} style={{background:"var(--ink)",border:"1px solid var(--border2)",borderLeft:"3px solid "+(isOn?"var(--sage2)":"var(--border3)"),borderRadius:16,padding:16,marginBottom:10,opacity:isOn?1:.55,transition:"opacity .2s,border-color .2s"}}>
+                {/* Title + toggle */}
+                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+                  <div onClick={function() { toggleEvent(ev.id); }}
+                    style={{width:24,height:24,borderRadius:7,border:"2px solid "+(isOn?"var(--sage2)":"var(--border3)"),background:isOn?"var(--sage2)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0,transition:"all .2s"}}>
+                    {isOn && <Check size={13} color="var(--ink)"/>}
+                  </div>
+                  <input value={ev.title}
+                    onChange={function(e) { updateEv(ev.id, {title: e.target.value}); }}
+                    style={{flex:1,fontWeight:700,fontSize:15,border:"none",borderBottom:"1px solid var(--border2)",borderRadius:0,padding:"2px 0",background:"transparent",color:"var(--cream)"}}/>
+                </div>
+
+                {/* Date / Time / Location */}
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+                  <div>
+                    <label style={{fontSize:12,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5,letterSpacing:".04em"}}>DATE</label>
+                    <input type="date" value={ev.date}
+                      onChange={function(e) { updateEv(ev.id, {date: e.target.value}); }}
+                      style={{fontSize:14,padding:"8px 10px"}}/>
+                  </div>
+                  <div>
+                    <label style={{fontSize:12,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5,letterSpacing:".04em"}}>TIME</label>
+                    <input type="time" value={ev.time}
+                      onChange={function(e) { updateEv(ev.id, {time: e.target.value}); }}
+                      style={{fontSize:14,padding:"8px 10px"}}/>
+                  </div>
+                  <div style={{gridColumn:"1/-1"}}>
+                    <label style={{fontSize:12,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5,letterSpacing:".04em"}}>LOCATION</label>
+                    <input value={ev.location}
+                      onChange={function(e) { updateEv(ev.id, {location: e.target.value}); }}
+                      placeholder="Add location…"
+                      style={{fontSize:14,padding:"8px 10px"}}/>
+                  </div>
+                  {ev.notes ? (
+                    <div style={{gridColumn:"1/-1"}}>
+                      <label style={{fontSize:12,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5,letterSpacing:".04em"}}>NOTES</label>
+                      <input value={ev.notes}
+                        onChange={function(e) { updateEv(ev.id, {notes: e.target.value}); }}
+                        style={{fontSize:14,padding:"8px 10px"}}/>
+                    </div>
+                  ) : null}
+                  {/* For which member */}
+                  <div style={{gridColumn:"1/-1"}}>
+                    <label style={{fontSize:12,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:7,letterSpacing:".04em"}}>FOR</label>
+                    <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
+                      {members && members.map(function(m) {
+                        var active = ev.memberId === m.id;
+                        return (
+                          <button key={m.id}
+                            onClick={function() { updateEv(ev.id, {memberId: m.id}); }}
+                            style={{display:"flex",alignItems:"center",gap:5,padding:"6px 12px",borderRadius:99,border:"1.5px solid",borderColor:active?m.color:"var(--border2)",background:active?m.color+"22":"transparent",cursor:"pointer"}}>
+                            <span style={{fontSize:15}}>{m.emoji}</span>
+                            <span style={{fontSize:14,fontWeight:active?700:400,color:active?m.color:"var(--cream2)"}}>{m.name}</span>
+                            {active && <Check size={11} color={m.color}/>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Action buttons */}
+          <div style={{display:"flex",gap:10,marginTop:4}}>
+            <button onClick={resetScanner}
+              style={{flex:1,background:"var(--ink)",border:"1.5px solid var(--border2)",borderRadius:12,padding:"13px",fontFamily:"'DM Sans','Helvetica Neue',sans-serif",fontSize:15,fontWeight:600,color:"var(--cream3)",cursor:"pointer"}}>
+              Cancel
+            </button>
+            <button onClick={confirmAdd} disabled={selectedIds.size === 0}
+              style={{flex:2,background:selectedIds.size===0?"var(--ink4)":"linear-gradient(135deg,var(--sage),var(--sage2))",color:selectedIds.size===0?"var(--cream3)":"var(--ink)",border:"none",borderRadius:12,padding:"13px",fontFamily:"'DM Sans','Helvetica Neue',sans-serif",fontSize:15,fontWeight:700,cursor:selectedIds.size===0?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:7,boxShadow:selectedIds.size===0?"none":"0 4px 16px rgba(45,90,61,.28)"}}>
+              <Check size={15}/> Add {selectedIds.size} event{selectedIds.size !== 1 ? "s" : ""} to Calendar
+            </button>
+          </div>
+          <p style={{textAlign:"center",fontSize:13,color:"var(--cream3)",marginTop:10}}>You can edit any field before adding.</p>
+        </div>
+      )}
+
+      {/* ── DONE ── */}
+      {(scanStage === "done") && (
+        <div style={{textAlign:"center",padding:"36px 0"}}>
+          <div style={{width:64,height:64,background:"rgba(45,90,61,.06)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px",border:"1px solid rgba(83,136,122,.4)"}}>
+            <Check size={28} color="var(--sage2)"/>
+          </div>
+          <p style={{fontWeight:800,fontSize:18,color:"var(--sage3)",marginBottom:6}}>Added to Calendar!</p>
+          <p style={{fontSize:14,color:"var(--cream3)"}}>Events saved from your flyer 🌸</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function InboxScreen({members,onAdd}) {
   const [tab,setTab]=useState("email");
   const [text,setText]=useState("");
@@ -2629,24 +3059,37 @@ function InboxScreen({members,onAdd}) {
   };
 
   const cd=function(c){return c==="high"?"var(--sage2)":c==="medium"?"#D97706":"#DC2626";};
-  const Tab=({id,label})=><button onClick={()=>setTab(id)} style={{flex:1,padding:"9px",borderRadius:8,background:tab===id?"#fff":"transparent",color:tab===id?"#111":"#6B7280",fontWeight:600,fontSize:15,border:"none",boxShadow:tab===id?"0 1px 4px rgba(0,0,0,.08)":"none"}}>{label}</button>;
+  const Tab=({id,label,icon})=><button onClick={function(){setTab(id);}} style={{flex:1,padding:"9px 4px",borderRadius:8,background:tab===id?"#fff":"transparent",color:tab===id?"var(--cream)":"var(--cream3)",fontWeight:600,fontSize:13,border:"none",boxShadow:tab===id?"0 1px 4px rgba(0,0,0,.08)":"none",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}><span>{icon}</span>{label}</button>;
 
   return (
     <div className="screen-enter">
       <h1 style={{fontSize:28,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",lineHeight:1,marginBottom:4}}>Catch</h1>
-      <p style={{fontSize:15,color:"var(--cream3)",marginBottom:16}}>Extract events from emails — instantly.</p>
+      <p style={{fontSize:15,color:"var(--cream3)",marginBottom:16}}>Extract events from emails or flyers — instantly.</p>
 
-      {/* Privacy pledge */}
-      <div style={{background:"rgba(45,90,61,.06)",border:"1px solid rgba(83,136,122,.2)",borderRadius:16,padding:"12px 14px",marginBottom:16,display:"flex",gap:10,alignItems:"flex-start"}}>
-        <Check size={16} color="var(--sage2)" style={{flexShrink:0,marginTop:2}}/>
-        <div>
-          <p style={{fontWeight:700,fontSize:15,color:"var(--sage3)",marginBottom:2}}>Your privacy is protected</p>
-          <p style={{fontSize:15,color:"var(--sage3)",lineHeight:1.6}}>Emails deleted immediately after extraction. Nothing else is stored.</p>
-        </div>
+      {/* Tab switcher */}
+      <div style={{display:"flex",background:"var(--ink3)",borderRadius:12,padding:4,marginBottom:16,gap:2}}>
+        <Tab id="email" icon="📧" label="Email"/>
+        <Tab id="flyer" icon="📄" label="Flyer"/>
       </div>
 
+      {/* Privacy pledge — email tab only */}
+      {tab==="email"&&(
+        <div style={{background:"rgba(45,90,61,.06)",border:"1px solid rgba(83,136,122,.2)",borderRadius:16,padding:"12px 14px",marginBottom:16,display:"flex",gap:10,alignItems:"flex-start"}}>
+          <Check size={16} color="var(--sage2)" style={{flexShrink:0,marginTop:2}}/>
+          <div>
+            <p style={{fontWeight:700,fontSize:15,color:"var(--sage3)",marginBottom:2}}>Your privacy is protected</p>
+            <p style={{fontSize:15,color:"var(--sage3)",lineHeight:1.6}}>Emails deleted immediately after extraction. Nothing else is stored.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Flyer tab */}
+      {tab==="flyer"&&(
+        <FlyerScanner members={members} onAdd={onAdd}/>
+      )}
+
       {/* Email tab */}
-      {stage==="idle"&&(
+      {tab==="email"&&stage==="idle"&&(
         <>
           <Card style={{marginBottom:14,background:"rgba(59,130,246,.08)",borderColor:"#BFDBFE"}}>
             <p style={{fontSize:15,fontWeight:700,color:"var(--sage3)",marginBottom:6}}>Your private catch address</p>
@@ -2666,7 +3109,7 @@ function InboxScreen({members,onAdd}) {
         </>
       )}
 
-      {stage==="analyzing"&&(
+      {tab==="email"&&stage==="analyzing"&&(
         <div style={{textAlign:"center",padding:"32px 0"}}>
           <div style={{width:48,height:48,border:"3px solid #E5E7EB",borderTopColor:"#111",borderRadius:"50%",animation:"spin .7s linear infinite",margin:"0 auto 16px"}}/>
           <p style={{fontWeight:700,fontSize:15,marginBottom:4}}>Reading email…</p>
@@ -2674,7 +3117,7 @@ function InboxScreen({members,onAdd}) {
         </div>
       )}
 
-      {stage==="deleting"&&(
+      {tab==="email"&&stage==="deleting"&&(
         <div style={{padding:"32px 0"}}>
           <div style={{textAlign:"center",marginBottom:20}}>
             <div style={{fontSize:40,marginBottom:10}}>🗑️</div>
@@ -2691,7 +3134,7 @@ function InboxScreen({members,onAdd}) {
         </div>
       )}
 
-      {stage==="review"&&(
+      {tab==="email"&&stage==="review"&&(
         <div>
           {/* Email deleted confirmation */}
           <div style={{background:"rgba(45,90,61,.06)",border:"1px solid rgba(83,136,122,.2)",borderRadius:12,padding:"12px 14px",marginBottom:14,display:"flex",gap:10,alignItems:"center"}}>
@@ -2810,7 +3253,7 @@ function InboxScreen({members,onAdd}) {
       )}
 
       {/* Processed log */}
-      {stage==="idle"&&log.length>0&&(
+      {tab==="email"&&stage==="idle"&&log.length>0&&(
         <div style={{marginTop:24}}>
           <p style={{fontSize:15,color:"var(--cream3)",fontWeight:700,textTransform:"uppercase",letterSpacing:".05em",marginBottom:10}}>Processed & Deleted</p>
           {log.map(function(l){return(
@@ -3257,6 +3700,195 @@ function NotifSettingsScreen({settings,setSettings,members,onBack,requestPermiss
 }
 
 /* ─── More ──────────────────────────────────────────────────────────────── */
+/* --- Morning Text Digest Screen --- */
+function DigestScreen({members, user, onBack, toast}) {
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem("calla_digest") || "{}"); } catch(e) {}
+  var [enabled,    setEnabled]    = useState(saved.enabled    || false);
+  var [sendTime,   setSendTime]   = useState(saved.sendTime   || "07:30");
+  var [recipients, setRecipients] = useState(saved.recipients || {});
+  var [saving,     setSaving]     = useState(false);
+  var [wasSaved,   setWasSaved]   = useState(false);
+
+  function save() {
+    setSaving(true);
+    var prefs = { enabled: enabled, sendTime: sendTime, recipients: recipients };
+    localStorage.setItem("calla_digest", JSON.stringify(prefs));
+    if (user && user.id) {
+      supabase.from("profiles")
+        .update({ digest_enabled: enabled, digest_time: sendTime, digest_recipients: JSON.stringify(recipients) })
+        .eq("id", user.id)
+        .then(function() {
+          setSaving(false); setWasSaved(true);
+          toast({ icon: "✓", title: "Morning Text saved!", color: "var(--sage2)" });
+          setTimeout(function() { setWasSaved(false); }, 2500);
+        });
+    } else {
+      setSaving(false); setWasSaved(true);
+      toast({ icon: "✓", title: "Saved!", color: "var(--sage2)" });
+      setTimeout(function() { setWasSaved(false); }, 2500);
+    }
+  }
+
+  function toggleRecipient(memberId, existingPhone) {
+    setRecipients(function(prev) {
+      var next = Object.assign({}, prev);
+      if (next[memberId] !== undefined) { delete next[memberId]; }
+      else { next[memberId] = existingPhone || ''; }
+      return next;
+    });
+  }
+
+  function updatePhone(memberId, phone) {
+    setRecipients(function(prev) {
+      var next = Object.assign({}, prev);
+      next[memberId] = phone;
+      return next;
+    });
+  }
+
+  function fmtTime(t) {
+    var parts = t.split(':'); var h = parseInt(parts[0]); var m = parts[1] || '00';
+    var ap = h >= 12 ? 'PM' : 'AM'; var h12 = h % 12 || 12;
+    return h12 + ':' + m + ' ' + ap;
+  }
+
+  var anyRecipient = Object.keys(recipients).length > 0;
+  var allHavePhone = Object.keys(recipients).every(function(id) { return recipients[id] && recipients[id].trim().length > 5; });
+  var canSave = !enabled || (anyRecipient && allHavePhone);
+  var TIMES = ["06:00","06:30","07:00","07:30","08:00","08:30","09:00"];
+  var TIME_LABELS = {"06:00":"6:00 AM","06:30":"6:30 AM","07:00":"7:00 AM","07:30":"7:30 AM","08:00":"8:00 AM","08:30":"8:30 AM","09:00":"9:00 AM"};
+
+  return (
+    <div>
+      <button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,marginBottom:20,padding:"7px 14px"}}>
+        <ChevronLeft size={16}/>Back
+      </button>
+
+      <div style={{marginBottom:22}}>
+        <h2 style={{fontSize:26,fontWeight:700,letterSpacing:"-.3px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)"}}>Morning Text</h2>
+        <p style={{fontSize:14,color:"var(--cream3)",marginTop:4,fontWeight:300}}>Daily SMS with today's schedule and any conflicts.</p>
+      </div>
+
+      {/* SMS example preview */}
+      <div style={{background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:16,padding:16,marginBottom:22}}>
+        <p style={{fontSize:12,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:10}}>Example Text</p>
+        <div style={{background:"#fff",borderRadius:12,padding:"14px 16px",border:"1px solid var(--border)"}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+            <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,var(--sage),var(--sage2))",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}}>{"\uD83C\uDF38"[0]}</div>
+            <div>
+              <p style={{fontSize:12,fontWeight:700,color:"var(--cream)"}}>Calla Family</p>
+              <p style={{fontSize:11,color:"var(--cream3)"}}>+1 (260) 236-6760</p>
+            </div>
+          </div>
+          <p style={{fontSize:13,color:"var(--cream)",lineHeight:1.8}}>
+            {"Good morning! Here's today:"}<br/>
+            <br/>
+            {"Emma: Soccer 3:30pm @ Riverside Field"}<br/>
+            {"Liam: Piano 4:00pm @ Music Studio"}<br/>
+            <br/>
+            {"Conflict: Both overlap 4-4:30pm"}<br/>
+            <br/>
+            {"-- Calla"}
+          </p>
+        </div>
+      </div>
+
+      {/* Enable toggle */}
+      <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--border2)",overflow:"hidden",boxShadow:"0 1px 4px rgba(45,60,45,.06)",marginBottom:22}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 18px"}}>
+          <div>
+            <p style={{fontSize:16,fontWeight:600,color:"var(--cream)"}}>Enable Morning Text</p>
+            <p style={{fontSize:13,color:"var(--cream3)",marginTop:2,fontWeight:300}}>Send a daily SMS each morning</p>
+          </div>
+          <Toggle on={enabled} onChange={function() { setEnabled(function(p) { return !p; }); }}/>
+        </div>
+      </div>
+
+      {enabled && (
+        <div>
+          {/* Send time */}
+          <p style={{fontSize:12,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--cream3)",marginBottom:8,paddingLeft:2}}>Send Time</p>
+          <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--border2)",padding:"16px 18px",marginBottom:22,boxShadow:"0 1px 4px rgba(45,60,45,.06)"}}>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>
+              {TIMES.map(function(t) {
+                var isOn = sendTime === t;
+                return (
+                  <button key={t} onClick={function() { setSendTime(t); }}
+                    style={{padding:"8px 14px",borderRadius:99,background:isOn?"var(--sage)":"var(--ink3)",color:isOn?"var(--ink)":"var(--cream3)",fontSize:13,fontWeight:600,border:"1px solid "+(isOn?"transparent":"var(--border2)"),transition:"all .2s"}}>
+                    {isOn ? '> ' : ''}{TIME_LABELS[t]}
+                  </button>
+                );
+              })}
+            </div>
+            <div>
+              <label style={{fontSize:12,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:6,letterSpacing:".05em"}}>CUSTOM TIME</label>
+              <input type="time" value={sendTime} onChange={function(e) { setSendTime(e.target.value); }} style={{fontSize:16,padding:"10px 14px",width:"auto"}}/>
+            </div>
+          </div>
+
+          {/* Recipients */}
+          <p style={{fontSize:12,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--cream3)",marginBottom:8,paddingLeft:2}}>Who Gets the Text</p>
+          <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--border2)",overflow:"hidden",boxShadow:"0 1px 4px rgba(45,60,45,.06)",marginBottom:22}}>
+            {members.map(function(m, i) {
+              var isOn = recipients[m.id] !== undefined;
+              var phone = isOn ? recipients[m.id] : (m.phone || '');
+              return (
+                <div key={m.id} style={{borderBottom:i < members.length - 1 ? "1px solid rgba(240,236,226,.06)" : "none"}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 18px"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:12}}>
+                      <div style={{width:36,height:36,borderRadius:"50%",background:m.color+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{m.emoji}</div>
+                      <div>
+                        <p style={{fontWeight:600,fontSize:15,color:"var(--cream)"}}>{m.name}</p>
+                        {isOn && phone && <p style={{fontSize:12,color:"var(--sage3)",marginTop:1}}>{phone}</p>}
+                        {isOn && !phone && <p style={{fontSize:12,color:"var(--gold)",marginTop:1}}>Add phone number below</p>}
+                      </div>
+                    </div>
+                    <Toggle on={isOn} onChange={function() { toggleRecipient(m.id, m.phone || ''); }}/>
+                  </div>
+                  {isOn && (
+                    <div style={{padding:"0 18px 14px"}}>
+                      <input type="tel" placeholder="+1 (555) 000-0000" value={phone}
+                        onChange={function(e) { updatePhone(m.id, e.target.value); }}
+                        style={{fontSize:16,padding:"10px 14px"}}/>
+                      <p style={{fontSize:12,color:"var(--cream3)",marginTop:6,fontWeight:300}}>Include country code e.g. +1 for Canada/US</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Included items */}
+          <p style={{fontSize:12,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--cream3)",marginBottom:8,paddingLeft:2}}>What's Included</p>
+          <div style={{background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:16,padding:"14px 16px",marginBottom:22}}>
+            <div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:10}}>
+              <span style={{fontSize:18,flexShrink:0}}>{"\ud83d\udcc5"[0]}</span>
+              <div><p style={{fontWeight:600,fontSize:14,color:"var(--cream)"}}>{"Today's events"}</p>
+              <p style={{fontSize:13,color:"var(--cream3)",marginTop:2,fontWeight:300}}>All events for every family member</p></div>
+            </div>
+            <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+              <span style={{fontSize:18,flexShrink:0}}>{"\u26a1"}</span>
+              <div><p style={{fontWeight:600,fontSize:14,color:"var(--cream)"}}>Conflicts detected</p>
+              <p style={{fontSize:13,color:"var(--cream3)",marginTop:2,fontWeight:300}}>Any scheduling overlaps flagged clearly</p></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Save button */}
+      <button onClick={save} disabled={saving || !canSave}
+        style={{width:"100%",background:(saving||!canSave)?"var(--ink4)":"linear-gradient(135deg,var(--sage),var(--sage2))",color:(saving||!canSave)?"var(--cream3)":"var(--ink)",border:"none",borderRadius:14,padding:"15px",fontFamily:"'DM Sans','Helvetica Neue',sans-serif",fontSize:16,fontWeight:700,cursor:(saving||!canSave)?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,transition:"all .2s"}}>
+        {saving ? 'Saving...' : wasSaved ? 'Saved!' : !canSave ? 'Add phone numbers first' : 'Save Morning Text Settings'}
+      </button>
+
+      {enabled && anyRecipient && allHavePhone && (
+        <p style={{textAlign:"center",fontSize:13,color:"var(--cream3)",marginTop:12,fontWeight:300}}>{'Text arrives daily at ' + fmtTime(sendTime) + ' via Twilio'}</p>
+      )}
+    </div>
+  );
+}
+
 function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onSignOut,notifSettings,setNotifSettings,saveMember,deleteMember,toast,familyId,sendInvite,requestPermission}) {
   const fr=useRef();
   const [confirmSignOut,setConfirmSignOut]=useState(false);
@@ -3410,7 +4042,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
     </div>
   );
   if(sec==="family") return <MembersScreen members={members} setMembers={setMembers} events={events} saveMember={saveMember} deleteMember={deleteMember} sendInvite={sendInvite} onBack={()=>setSec(null)}/>;
-  if(sec==="digest") return <DigestScreen members={members} onBack={()=>setSec(null)}/>;
+  if(sec==="digest") return <DigestScreen members={members} onBack={function(){setSec(null);}} user={user} toast={toast}/>;
   if(sec==="notif_settings") return <NotifSettingsScreen settings={notifSettings} setSettings={setNotifSettings} members={members} requestPermission={requestPermission} onBack={()=>setSec(null)}/>;
   if(sec==="vault") return (
     <div><Back/>
@@ -3725,68 +4357,6 @@ function TrialBanner({ daysLeft, onUpgrade }) {
 }
 
 /* ─── Morning Text / Digest Screen ─────────────────────────────────────── */
-function DigestScreen({members,onBack}) {
-  const [phones,setPhones]=useState({});
-  const [sendTime,setSendTime]=useState("07:00");
-  const [active,setActive]=useState(false);
-  const [saved,setSaved]=useState(false);
-  const [digestError,setDigestError]=useState("");
-  const PRESETS=[["06:30","6:30 AM"],["07:00","7:00 AM"],["07:30","7:30 AM"],["08:00","8:00 AM"]];
-  const sampleMsg="Good morning! Today: Soccer Practice 4pm Riverside Field (Liam), Piano Lesson 3:20pm Music Academy (Emma). Tomorrow: Team Meeting 9am.\n\n— Calla Family Calendar";
-  const save=function(){
-    var nums=Object.values(phones).filter(function(p){return p.trim().length>0;});
-    var invalid=nums.filter(function(p){return p.replace(/[\s\-()+]/g,"").length<7;});
-    if(invalid.length>0){setDigestError("That number looks short — double-check it and your texts will arrive ☀️");return;}
-    if(nums.length===0){setDigestError("Add at least one number so your morning texts have somewhere to go ☀️");return;}
-    setSaved(true);setActive(true);setTimeout(function(){setSaved(false);},2000);
-  };
-  return (
-    <div>
-      <button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,marginBottom:20,padding:"7px 14px"}}><ChevronLeft size={15}/>Back</button>
-      <h2 style={{fontSize:20,fontWeight:800,marginBottom:4}}>Morning Text</h2>
-      <p style={{fontSize:15,color:"var(--cream3)",marginBottom:18}}>Get a daily SMS with your family schedule</p>
-      <Card style={{marginBottom:14,background:"#111",padding:0,overflow:"hidden"}}>
-        <div style={{padding:"10px 14px 6px",display:"flex",alignItems:"center",gap:6}}>
-          <div style={{width:10,height:10,borderRadius:"50%",background:"#34C759"}}/>
-          <p style={{fontSize:15,color:"rgba(255,255,255,.4)",fontWeight:600}}>Messages preview</p>
-        </div>
-        <div style={{padding:"0 14px 16px"}}>
-          <div style={{background:"#3A3A3C",borderRadius:"14px 14px 14px 4px",padding:"10px 14px",maxWidth:"80%"}}>
-            <p style={{fontSize:15,color:"var(--cream)",lineHeight:1.6,whiteSpace:"pre-line"}}>{sampleMsg}</p>
-          </div>
-        </div>
-      </Card>
-      <Card style={{marginBottom:14}}>
-        <p style={{fontWeight:700,marginBottom:10}}>Send time</p>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:10}}>
-          {PRESETS.map(function(p){return(
-            <button key={p[0]} onClick={function(){setSendTime(p[0]);}} style={{padding:"7px 14px",borderRadius:99,background:sendTime===p[0]?"var(--sage)":"var(--ink3)",color:sendTime===p[0]?"var(--cream)":"var(--cream3)",fontSize:15,fontWeight:600,border:"none"}}>{p[1]}</button>
-          );})}
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <label style={{fontSize:15,color:"var(--cream3)",fontWeight:600}}>Custom time:</label>
-          <input type="time" value={sendTime} onChange={function(e){setSendTime(e.target.value);}} style={{fontSize:15,padding:"6px 10px"}}/>
-        </div>
-      </Card>
-      <Card style={{marginBottom:14}}>
-        <p style={{fontWeight:700,marginBottom:12}}>Phone numbers</p>
-        {members.slice(0,2).map(function(m){return(
-          <div key={m.id} style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-            <div style={{width:30,height:30,borderRadius:"50%",background:m.color+"15",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>{m.emoji}</div>
-            <input placeholder={m.name+"'s phone"} value={phones[m.id]||""} onChange={function(e){var v=e.target.value;setPhones(function(p){var n={};Object.keys(p).forEach(function(k){n[k]=p[k];});n[m.id]=v;return n;});}} style={{flex:1,fontSize:15}}/>
-          </div>
-        );})}
-        <p style={{fontSize:15,color:"var(--cream3)",marginTop:4}}>Powered by Twilio · Standard SMS rates apply</p>
-      </Card>
-      {digestError&&<div style={{background:"rgba(196,90,90,.1)",border:"1px solid rgba(196,90,90,.25)",borderRadius:12,padding:"12px 14px",marginBottom:12,fontSize:14,color:"var(--rose)",lineHeight:1.6}}>{digestError}</div>}
-      <button onClick={save} style={{width:"100%",background:"var(--ink2)",color:"var(--cream)",borderRadius:12,padding:14,fontWeight:700,fontSize:15,border:"none",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-        {saved?"✓ Saved!":active?"Update Settings":"Turn on Morning Text"}
-      </button>
-    </div>
-  );
-}
-
-/* ─── Lists Screen ──────────────────────────────────────────────────────── */
 function ListsScreen({members}) {
   const PRESET=[
     {id:"grocery",icon:"🛒",name:"Grocery",color:"var(--sage2)",items:[]},
@@ -3968,6 +4538,8 @@ export default function App() {
         toast({icon:"⚠️",title:"Notifications blocked",body:"Enable in your browser settings.",color:"var(--rose)"});
         return;
       }
+    const isCapacitorApp = typeof window !== "undefined" && window.location.protocol === "capacitor:";
+    if(isCapacitorApp) { toast({icon:"ℹ️",title:"Using native iOS notifications",color:"var(--sage2)"}); return; }
       if(!("serviceWorker" in navigator)){
         toast({icon:"⚠️",title:"Service worker not supported",color:"var(--rose)"});
         return;
@@ -4263,8 +4835,8 @@ export default function App() {
     <>
       <GS/>
       <Toasts toasts={toasts}/>
-      <div style={{minHeight:"100vh",paddingBottom:90,background:"#f0ebe2"}}>
-        <div style={{maxWidth:480,margin:"0 auto",padding:"20px 18px"}}>
+      <div style={{minHeight:"100dvh",paddingBottom:"calc(90px + env(safe-area-inset-bottom,0px))",background:"#f0ebe2"}}>
+        <div style={{maxWidth:480,margin:"0 auto",padding:"calc(env(safe-area-inset-top,20px) + 20px) 18px 20px"}}>
 
           {/* ── Header ── */}
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20,position:"relative"}}>

@@ -1,0 +1,39 @@
+{
+  "appId": "ca.getcalla.app",
+  "appName": "Calla",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "ios": {
+    "contentInset": "automatic",
+    "scrollEnabled": true,
+    "backgroundColor": "#f5f0e8",
+    "allowsLinkPreview": false,
+    "handleApplicationNotifications": true
+  },
+  "android": {
+    "backgroundColor": "#f5f0e8"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0,
+      "launchAutoHide": true,
+      "backgroundColor": "#f5f0e8",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "default",
+      "overlaysWebView": true,
+      "backgroundColor": "#00000000"
+    },
+    "Keyboard": {
+      "resize": "body",
+      "style": "dark",
+      "resizeOnFullScreen": true
+    },
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    }
+  }
+}
