@@ -1688,7 +1688,7 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
 
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:500,display:"flex",alignItems:"flex-start"}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
-      <div className="sheet-top sheet-scroll" style={{borderRadius:"0 0 24px 24px",padding:"calc(env(safe-area-inset-top,20px) + 8px) 20px calc(env(safe-area-inset-bottom,0px) + 32px)",width:"100%",height:"92dvh",overflowY:"scroll",background:"var(--ink2)",WebkitOverflowScrolling:"touch",willChange:"transform",overscrollBehavior:"contain"}}>
+      <div className="sheet-top sheet-scroll" style={{borderRadius:"0 0 24px 24px",padding:"calc(env(safe-area-inset-top,20px) + 8px) 20px calc(env(safe-area-inset-bottom,0px) + 80px)",width:"100%",height:"100dvh",overflowY:"scroll",overflowX:"hidden",background:"var(--ink2)",WebkitOverflowScrolling:"touch",willChange:"transform",overscrollBehavior:"contain"}}>
         <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 20px"}}/>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
           <h2 style={{fontSize:18,fontWeight:800}}>New Event</h2>
@@ -1823,7 +1823,7 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
             </select>
           </div>
           {addError&&<div style={{background:"rgba(196,90,90,.1)",border:"1px solid rgba(196,90,90,.25)",borderRadius:12,padding:"10px 14px",marginBottom:8,fontSize:14,color:"var(--rose)",lineHeight:1.6}}>{addError}</div>}
-        <Btn onClick={submit} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:4}}>
+        <Btn onClick={submit} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:8,marginBottom:24,width:"100%"}}>
             {ev.recurring?<><Repeat size={15}/>Add Recurring</>:<><Check size={15}/>Add to Calendar</>}
           </Btn>
         </div>
