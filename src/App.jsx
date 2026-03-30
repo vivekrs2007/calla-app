@@ -1688,12 +1688,17 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
 
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:500,display:"flex",alignItems:"flex-start"}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
-      <div className="sheet-top sheet-scroll" style={{borderRadius:"0 0 24px 24px",padding:"calc(env(safe-area-inset-top,20px) + 8px) 20px calc(env(safe-area-inset-bottom,0px) + 80px)",width:"100%",height:"100dvh",overflowY:"scroll",overflowX:"hidden",background:"var(--ink2)",WebkitOverflowScrolling:"touch",willChange:"transform",overscrollBehavior:"contain"}}>
-        <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 20px"}}/>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-          <h2 style={{fontSize:18,fontWeight:800}}>New Event</h2>
-          <Btn v="icon" onClick={onClose}><X size={18}/></Btn>
+      <div className="sheet-top" style={{borderRadius:"0 0 24px 24px",width:"100%",height:"100dvh",background:"var(--ink2)",display:"flex",flexDirection:"column",overflow:"hidden"}}>
+        {/* ── Fixed header ── */}
+        <div style={{flexShrink:0,padding:"calc(env(safe-area-inset-top,20px) + 8px) 20px 0"}}>
+          <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 16px"}}/>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+            <h2 style={{fontSize:18,fontWeight:800}}>New Event</h2>
+            <Btn v="icon" onClick={onClose}><X size={18}/></Btn>
+          </div>
         </div>
+        {/* ── Scrollable content ── */}
+        <div style={{flex:1,overflowY:"scroll",WebkitOverflowScrolling:"touch",overscrollBehavior:"contain",padding:"0 20px 16px"}}>
         <div style={{display:"flex",flexDirection:"column",gap:14}}>
           <input placeholder="What's happening?" value={ev.title} maxLength={80} onChange={e=>{var v=e.target.value.slice(0,80);s("title")(v);var lo=v.toLowerCase();setRecurSuggest(!ev.recurring&&recurringKeywords.some(function(k){return lo.includes(k);}));if(v&&!ev.endTime&&ev.time){var dur=smartDuration(v);if(dur)setEv(function(p){return{...p,endTime:addMinutes(p.time,dur)};});}}} style={{fontSize:16,fontWeight:600}}/>
           <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
@@ -1823,7 +1828,11 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
             </select>
           </div>
           {addError&&<div style={{background:"rgba(196,90,90,.1)",border:"1px solid rgba(196,90,90,.25)",borderRadius:12,padding:"10px 14px",marginBottom:8,fontSize:14,color:"var(--rose)",lineHeight:1.6}}>{addError}</div>}
-        <Btn onClick={submit} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:8,marginBottom:24,width:"100%"}}>
+        </div>
+        </div>
+        {/* ── Sticky submit button — always visible ── */}
+        <div style={{flexShrink:0,padding:"12px 20px calc(env(safe-area-inset-bottom,0px) + 16px)",background:"var(--ink2)",borderTop:"1px solid var(--border)"}}>
+          <Btn onClick={submit} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,width:"100%"}}>
             {ev.recurring?<><Repeat size={15}/>Add Recurring</>:<><Check size={15}/>Add to Calendar</>}
           </Btn>
         </div>
