@@ -2402,63 +2402,27 @@ function FlyerScanner({members, onAdd}) {
   }
 
   function callClaude(base64, mediaType) {
-    var apiKey = typeof import_meta_env !== "undefined"
-      ? import_meta_env.VITE_ANTHROPIC_KEY
-      : (typeof window !== "undefined" && window.__VITE_ANTHROPIC_KEY__) || "";
-
-    // Access via Vite env — injected at build time
-    var key = "";
-    try { key = __VITE_ANTHROPIC_KEY__; } catch(e) {}
-
-    var prompt = "You are a helpful assistant that extracts calendar events from school flyers, newsletters, and notices." +
-      " Extract ALL events from this image. Respond ONLY with a valid JSON array, no markdown, no extra text." +
-      " Each object must have: title (string), date (string YYYY-MM-DD, guess year 2026 if not shown)," +
-      " time (string HH:MM 24hr or null), location (string or null), notes (string or null)." +
-      " If no events found return [].";
-
-    fetch("https://api.anthropic.com/v1/messages", {
+    // Calls our Supabase Edge Function which holds the Anthropic key server-side.
+    // The key never reaches the browser bundle.
+    fetch("https://pqvxzsrpifiuovhtxldp.supabase.co/functions/v1/scan-flyer", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "x-api-key": import.meta.env.VITE_ANTHROPIC_KEY || "",
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-client-side-allow-unsafe-eval": "true"
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
-        messages: [{
-          role: "user",
-          content: [
-            { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } },
-            { type: "text",  text: prompt }
-          ]
-        }]
+        imageBase64: base64,
+        mediaType:   mediaType
       })
     }).then(function(res) {
       return res.json();
     }).then(function(data) {
       stopStepAnim();
       if (data.error) {
-        setErrorMsg(data.error.message || "API error — please try again.");
+        setErrorMsg(data.error || "API error — please try again.");
         setScanStage("error");
         return;
       }
-      var raw = "";
-      if (data.content && data.content.length > 0) {
-        data.content.forEach(function(block) {
-          if (block.type === "text") raw += block.text;
-        });
-      }
-      var events = [];
-      try {
-        var clean = raw.replace(/```json|```/g, "").trim();
-        events = JSON.parse(clean);
-      } catch(e) {
-        setErrorMsg("Couldn't read the response. Try a clearer photo.");
-        setScanStage("error");
-        return;
-      }
+      var events = data.events || [];
       if (!events || events.length === 0) {
         setErrorMsg("No events found in this image. Try a clearer photo of the flyer.");
         setScanStage("error");
