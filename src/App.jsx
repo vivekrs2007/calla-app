@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, Fragment } from "react";
 import { supabase } from "./supabase.js";
 import { initializeApp } from "firebase/app";
-import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { getMessaging, getToken } from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey:            import.meta.env.VITE_FIREBASE_API_KEY        || "",
@@ -160,6 +160,9 @@ const GS = () => (
 
     /* ── Sheet backdrop ── */
     .sheet-scroll{overflow-y:scroll;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;will-change:transform}
+    /* Lock background when modal open */
+    body.modal-open{overflow:hidden;position:fixed;width:100%;height:100%;}
+    .sheet-backdrop{touch-action:none;}
     /* ── Glass card used by sheets ── */
     .glass{
       background:rgba(245,240,232,.95);
@@ -1104,7 +1107,7 @@ const ShareSheet = ({ev,onClose}) => {
   };
 
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.35)",zIndex:600,display:"flex",alignItems:"flex-end"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.35)",zIndex:600,display:"flex",alignItems:"flex-end"}} onClick={e=>e.target===e.currentTarget&&onClose()} onTouchMove={function(e){e.preventDefault();}} >
       <div className="sheet-enter sheet-scroll" style={{background:"var(--ink2)",borderRadius:"20px 20px 0 0",padding:"8px 20px calc(env(safe-area-inset-bottom,20px) + 28px)",width:"100%",height:"85vh",overflowY:"scroll",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
         <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 20px"}}/>
 
@@ -1338,7 +1341,7 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
   const openDirs = loc=>window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(loc),"_blank");
 
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:600,display:"flex",alignItems:"flex-end"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:600,display:"flex",alignItems:"flex-end"}} onClick={e=>e.target===e.currentTarget&&onClose()} onTouchMove={function(e){e.preventDefault();}} >
       <div className="sheet-enter sheet-scroll" style={{borderRadius:"20px 20px 0 0",padding:"8px 20px calc(env(safe-area-inset-bottom,20px) + 32px)",width:"100%",height:"92vh",overflowY:"scroll",overscrollBehavior:"contain",background:"var(--ink2)",WebkitOverflowScrolling:"touch",willChange:"transform"}}>
         <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 16px"}}/>
 
@@ -1982,7 +1985,7 @@ function DaySheet({date,events,members,onClose,onSelect}) {
   const d=new Date(date+"T12:00:00");
   const label=date===todayStr?"Today":date===addDays(todayStr,1)?"Tomorrow":dayNames[d.getDay()]+", "+MONTHS[d.getMonth()]+" "+d.getDate();
   return (
-    <div onClick={function(e){if(e.target===e.currentTarget)onClose();}} style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:500,display:"flex",alignItems:"flex-end"}}>
+    <div onClick={function(e){if(e.target===e.currentTarget)onClose();}} onTouchMove={function(e){e.preventDefault();}} style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:500,display:"flex",alignItems:"flex-end"}}>
       <div className="sheet-enter sheet-scroll" style={{borderRadius:"20px 20px 0 0",padding:"8px 20px calc(env(safe-area-inset-bottom,20px) + 28px)",width:"100%",height:"80vh",overflowY:"scroll",overscrollBehavior:"contain",background:"var(--ink2)",WebkitOverflowScrolling:"touch",willChange:"transform"}}>
         <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 20px"}}/>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
@@ -3991,27 +3994,16 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
         </button>
       )}
 
-      {/* Group 1: Family */}
-      <p style={{fontSize:15,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"var(--cream3)",marginBottom:8,paddingLeft:4}}>Family</p>
+      {/* All options in one basket */}
       <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--border2)",overflow:"hidden",marginBottom:24,boxShadow:"0 1px 4px rgba(45,60,45,.06)"}}>
-        <Row Icon={Users}      iconBg="rgba(83,136,122,.25)"  label="Family Members" desc={members.length+" members"} onTap={()=>setSec("family")}/>
-        <Row Icon={Share2}     iconBg="rgba(59,130,246,.2)"   label="Family Sharing" desc="Invite partner & sync" onTap={()=>setSec("sharing")} last/>
-      </div>
-
-      {/* Group 2: Tools */}
-      <p style={{fontSize:15,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"var(--cream3)",marginBottom:8,paddingLeft:4}}>Tools</p>
-      <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--border2)",overflow:"hidden",marginBottom:24,boxShadow:"0 1px 4px rgba(45,60,45,.06)"}}>
-        <Row Icon={Sun}        iconBg="rgba(176,141,82,.25)"  label="Morning Text"   desc="Daily SMS digest"     onTap={()=>setSec("digest")}/>
-        <Row Icon={Folder}     iconBg="rgba(139,92,246,.2)"   label="Document Vault" desc="Slips, records, cards" onTap={()=>setSec("vault")}/>
-        <Row Icon={DollarSign} iconBg="rgba(16,185,129,.2)"   label="Budget Tracker" desc={"$"+tot.toFixed(0)+"/mo estimated"} onTap={()=>setSec("budget")} last/>
-      </div>
-
-      {/* Group 3: Settings */}
-      <p style={{fontSize:15,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"var(--cream3)",marginBottom:8,paddingLeft:4}}>Settings</p>
-      <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--border2)",overflow:"hidden",marginBottom:24,boxShadow:"0 1px 4px rgba(45,60,45,.06)"}}>
-        <Row Icon={Settings}  iconBg="rgba(45,90,61,.15)"   label="Account Settings"   desc="Name, email, password"   onTap={()=>setSec("account")}/>
-        <Row Icon={Bell}      iconBg="rgba(59,130,246,.2)"   label="Notifications"      desc="Reminders, quiet hours"  onTap={()=>setSec("notif_settings")}/>
-        <Row Icon={LogOut}    iconBg="rgba(220,80,80,.15)"   label="Sign Out"            danger                         onTap={()=>setConfirmSignOut(true)} last/>
+        <Row Icon={Users}      iconBg="rgba(83,136,122,.25)"  label="Family Members"   desc={members.length+" members"}          onTap={()=>setSec("family")}/>
+        <Row Icon={Share2}     iconBg="rgba(59,130,246,.2)"   label="Family Sharing"   desc="Invite partner & sync"               onTap={()=>setSec("sharing")}/>
+        <Row Icon={Sun}        iconBg="rgba(176,141,82,.25)"  label="Morning Text"     desc="Daily SMS digest"                    onTap={()=>setSec("digest")}/>
+        <Row Icon={Folder}     iconBg="rgba(139,92,246,.2)"   label="Document Vault"   desc="Slips, records, cards"               onTap={()=>setSec("vault")}/>
+        <Row Icon={DollarSign} iconBg="rgba(16,185,129,.2)"   label="Budget Tracker"   desc={"$"+tot.toFixed(0)+"/mo estimated"}  onTap={()=>setSec("budget")}/>
+        <Row Icon={Settings}   iconBg="rgba(45,90,61,.15)"    label="Account Settings" desc="Name, email, password"               onTap={()=>setSec("account")}/>
+        <Row Icon={Bell}       iconBg="rgba(59,130,246,.2)"   label="Notifications"    desc="Reminders, quiet hours"              onTap={()=>setSec("notif_settings")}/>
+        <Row Icon={LogOut}     iconBg="rgba(220,80,80,.15)"   label="Sign Out"         danger                                     onTap={()=>setConfirmSignOut(true)} last/>
       </div>
 
       {/* Sign out confirm */}
@@ -4641,19 +4633,6 @@ export default function App() {
     return function(){sub.data.subscription.unsubscribe();};
   },[]);
 
-  // ── Foreground push notification handler ─────────────────────────────────
-  useEffect(function() {
-    if (!messaging) return;
-    var unsub = onMessage(messaging, function(payload) {
-      console.log("[Calla] Foreground message:", payload);
-      var title = (payload.notification && payload.notification.title) || "Calla";
-      var body  = (payload.notification && payload.notification.body)  || "";
-      // Show as in-app toast since browser won't show native notif when app is focused
-      toast({ icon: "🔔", title: title, body: body, color: "var(--sage2)" });
-    });
-    return function() { unsub && unsub(); };
-  }, []);
-
   // ── Load events + members from Supabase ───────────────────────────────────
   function loadUserData(userId){
     // Check if user belongs to a family
@@ -4892,7 +4871,7 @@ export default function App() {
       <GS/>
       <Toasts toasts={toasts}/>
       <div style={{minHeight:"100dvh",paddingBottom:"calc(90px + env(safe-area-inset-bottom,0px))",background:"#f0ebe2"}}>
-        <div style={{maxWidth:480,margin:"0 auto",padding:"calc(env(safe-area-inset-top,20px) + 20px) 18px 20px"}}>
+        <div style={{maxWidth:480,margin:"0 auto",padding:"calc(env(safe-area-inset-top,0px) + 20px) 18px 20px"}}>
 
           {/* ── Header ── */}
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20,position:"relative"}}>
