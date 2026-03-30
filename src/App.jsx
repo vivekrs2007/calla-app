@@ -1688,7 +1688,7 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
 
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:500,display:"flex",alignItems:"flex-start"}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
-      <div className="sheet-top sheet-scroll" style={{borderRadius:"0 0 24px 24px",padding:"calc(env(safe-area-inset-top,20px) + 8px) 20px calc(env(safe-area-inset-bottom,0px) + 32px)",width:"100%",height:"92dvh",overflowY:"scroll",background:"var(--ink2)",WebkitOverflowScrolling:"touch",willChange:"transform",overscrollBehavior:"contain",touchAction:"pan-y pinch-zoom"}}>
+      <div className="sheet-top sheet-scroll" style={{borderRadius:"0 0 24px 24px",padding:"calc(env(safe-area-inset-top,20px) + 8px) 20px calc(env(safe-area-inset-bottom,0px) + 32px)",width:"100%",height:"92dvh",overflowY:"scroll",background:"var(--ink2)",WebkitOverflowScrolling:"touch",willChange:"transform",overscrollBehavior:"contain"}}>
         <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 20px"}}/>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
           <h2 style={{fontSize:18,fontWeight:800}}>New Event</h2>
