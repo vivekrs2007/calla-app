@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, Fragment } from "react";
 import { supabase } from "./supabase.js";
 import { initializeApp } from "firebase/app";
-import { getMessaging, getToken } from "firebase/messaging";
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey:            import.meta.env.VITE_FIREBASE_API_KEY        || "",
@@ -4640,6 +4640,19 @@ export default function App() {
     });
     return function(){sub.data.subscription.unsubscribe();};
   },[]);
+
+  // ── Foreground push notification handler ─────────────────────────────────
+  useEffect(function() {
+    if (!messaging) return;
+    var unsub = onMessage(messaging, function(payload) {
+      console.log("[Calla] Foreground message:", payload);
+      var title = (payload.notification && payload.notification.title) || "Calla";
+      var body  = (payload.notification && payload.notification.body)  || "";
+      // Show as in-app toast since browser won't show native notif when app is focused
+      toast({ icon: "🔔", title: title, body: body, color: "var(--sage2)" });
+    });
+    return function() { unsub && unsub(); };
+  }, []);
 
   // ── Load events + members from Supabase ───────────────────────────────────
   function loadUserData(userId){
