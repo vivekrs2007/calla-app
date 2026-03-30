@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="format-detection" content="telephone=no" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -12,7 +12,7 @@
   <body>
     <div id="root"></div>
     <script>
-      // Disable Service Workers on mobile/Capacitor
+      // Disable Service Workers on Capacitor/iOS
       if (window.location.protocol === 'capacitor:') {
         window.addEventListener('load', function() {
           if ('serviceWorker' in navigator) {
@@ -22,6 +22,14 @@
           }
         });
       }
+
+      // Prevent double-tap zoom on iOS (belt + suspenders)
+      var lastTap = 0;
+      document.addEventListener('touchend', function(e) {
+        var now = Date.now();
+        if (now - lastTap < 300) { e.preventDefault(); }
+        lastTap = now;
+      }, { passive: false });
     </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>

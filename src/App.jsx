@@ -34,6 +34,51 @@ import {
   ShoppingCart, MessageCircle, Send, List, Star
 } from "lucide-react";
 
+
+/* ─── Scroll Lock (iOS-safe) ────────────────────────────────────────────────
+   Uses position:fixed + top offset technique — the only fully reliable method
+   for WKWebView. overflow:hidden alone does NOT stop iOS momentum scroll.    */
+var _scrollLockCount = 0;
+
+function lockBodyScroll() {
+  _scrollLockCount++;
+  if (_scrollLockCount > 1) return;
+  var scrollY = window.scrollY || window.pageYOffset || 0;
+  document.body.style.position = "fixed";
+  document.body.style.top      = "-" + scrollY + "px";
+  document.body.style.left     = "0";
+  document.body.style.right    = "0";
+  document.body.style.width    = "100%";
+  document.body.setAttribute("data-scroll-y", String(scrollY));
+}
+
+function unlockBodyScroll() {
+  _scrollLockCount = Math.max(0, _scrollLockCount - 1);
+  if (_scrollLockCount > 0) return;
+  var scrollY = parseInt(document.body.getAttribute("data-scroll-y") || "0", 10);
+  document.body.style.position = "";
+  document.body.style.top      = "";
+  document.body.style.left     = "";
+  document.body.style.right    = "";
+  document.body.style.width    = "";
+  document.body.removeAttribute("data-scroll-y");
+  window.scrollTo(0, scrollY);
+}
+
+/* Hook: call inside any modal component */
+function useScrollLock(isOpen) {
+  useEffect(function() {
+    if (isOpen) {
+      lockBodyScroll();
+    } else {
+      unlockBodyScroll();
+    }
+    return function() {
+      if (isOpen) unlockBodyScroll();
+    };
+  }, [isOpen]);
+}
+
 /* ─── Global CSS ────────────────────────────────────────────────────────── */
 const GS = () => (
   <style>{`
@@ -85,6 +130,10 @@ const GS = () => (
       overscroll-behavior:none;
       -webkit-text-size-adjust:100%;
       text-size-adjust:100%;
+    }
+    /* iOS scroll lock — applied by lockBodyScroll() */
+    body[data-scroll-y]{
+      overflow:hidden;
     }
     /* ── Inputs ── */
     input,textarea,select{
@@ -160,9 +209,6 @@ const GS = () => (
 
     /* ── Sheet backdrop ── */
     .sheet-scroll{overflow-y:scroll;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;will-change:transform}
-    /* Lock background when modal open */
-    body.modal-open{overflow:hidden;position:fixed;width:100%;height:100%;}
-    .sheet-backdrop{touch-action:none;}
     /* ── Glass card used by sheets ── */
     .glass{
       background:rgba(245,240,232,.95);
@@ -1107,7 +1153,7 @@ const ShareSheet = ({ev,onClose}) => {
   };
 
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.35)",zIndex:600,display:"flex",alignItems:"flex-end"}} onClick={e=>e.target===e.currentTarget&&onClose()} onTouchMove={function(e){e.preventDefault();}} >
+    <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.35)",zIndex:600,display:"flex",alignItems:"flex-end"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
       <div className="sheet-enter sheet-scroll" style={{background:"var(--ink2)",borderRadius:"20px 20px 0 0",padding:"8px 20px calc(env(safe-area-inset-bottom,20px) + 28px)",width:"100%",height:"85vh",overflowY:"scroll",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
         <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 20px"}}/>
 
@@ -1280,6 +1326,7 @@ const ShareSheet = ({ev,onClose}) => {
 const EVENT_COMMENTS = {};
 
 function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
+  useScrollLock(true);
   const [confirmDelete,setConfirmDelete]=useState(false);
   const [packed,setPacked]     = useState({});
   const [comments,setComments] = useState(EVENT_COMMENTS[ev.id]||[]);
@@ -1341,7 +1388,7 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
   const openDirs = loc=>window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(loc),"_blank");
 
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:600,display:"flex",alignItems:"flex-end"}} onClick={e=>e.target===e.currentTarget&&onClose()} onTouchMove={function(e){e.preventDefault();}} >
+    <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:600,display:"flex",alignItems:"flex-end"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
       <div className="sheet-enter sheet-scroll" style={{borderRadius:"20px 20px 0 0",padding:"8px 20px calc(env(safe-area-inset-bottom,20px) + 32px)",width:"100%",height:"92vh",overflowY:"scroll",overscrollBehavior:"contain",background:"var(--ink2)",WebkitOverflowScrolling:"touch",willChange:"transform"}}>
         <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 16px"}}/>
 
@@ -1593,6 +1640,7 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
 
 /* ─── Add Sheet ─────────────────────────────────────────────────────────── */
 function AddSheet({members,onAdd,onClose,events=[]}) {
+  useScrollLock(true);  // Lock background scroll while modal is open
   const [ev,setEv]=useState({title:"",memberId:members[0]&&members[0].id||"",date:todayStr,time:smartTime(),endTime:"",location:"",recurring:false,recurFreq:"weekly",recurEnd:addDays(todayStr,84),notes:"",packingList:[],cost:"",costType:"one-time",_pack:""});
   const [locQuery,setLocQuery]=useState("");
   const [showLocDrop,setShowLocDrop]=useState(false);
@@ -1639,8 +1687,8 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
   };
 
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:500,display:"flex",alignItems:"flex-start"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className="sheet-top" style={{borderRadius:"0 0 24px 24px",padding:"env(safe-area-inset-top,20px) 20px 32px",width:"100%",height:"92vh",overflowY:"scroll",background:"var(--ink2)",WebkitOverflowScrolling:"touch",willChange:"transform"}}>
+    <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:500,display:"flex",alignItems:"flex-start",touchAction:"none"}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
+      <div className="sheet-top sheet-scroll" style={{borderRadius:"0 0 24px 24px",padding:"calc(env(safe-area-inset-top,20px) + 8px) 20px calc(env(safe-area-inset-bottom,0px) + 32px)",width:"100%",height:"92dvh",overflowY:"scroll",background:"var(--ink2)",WebkitOverflowScrolling:"touch",willChange:"transform",touchAction:"pan-y",overscrollBehavior:"contain"}}>
         <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 20px"}}/>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
           <h2 style={{fontSize:18,fontWeight:800}}>New Event</h2>
@@ -1786,6 +1834,7 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
 
 /* ─── Voice Sheet ───────────────────────────────────────────────────────── */
 function VoiceSheet({members,onAdd,onClose}) {
+  useScrollLock(true);
   const [stage,setStage]=useState("ready"),[transcript,setTranscript]=useState(""),[parsed,setParsed]=useState(null);
   const rec=useRef(null);
 
@@ -1985,7 +2034,7 @@ function DaySheet({date,events,members,onClose,onSelect}) {
   const d=new Date(date+"T12:00:00");
   const label=date===todayStr?"Today":date===addDays(todayStr,1)?"Tomorrow":dayNames[d.getDay()]+", "+MONTHS[d.getMonth()]+" "+d.getDate();
   return (
-    <div onClick={function(e){if(e.target===e.currentTarget)onClose();}} onTouchMove={function(e){e.preventDefault();}} style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:500,display:"flex",alignItems:"flex-end"}}>
+    <div onClick={function(e){if(e.target===e.currentTarget)onClose();}} style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:500,display:"flex",alignItems:"flex-end"}}>
       <div className="sheet-enter sheet-scroll" style={{borderRadius:"20px 20px 0 0",padding:"8px 20px calc(env(safe-area-inset-bottom,20px) + 28px)",width:"100%",height:"80vh",overflowY:"scroll",overscrollBehavior:"contain",background:"var(--ink2)",WebkitOverflowScrolling:"touch",willChange:"transform"}}>
         <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 20px"}}/>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
@@ -3994,16 +4043,16 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
         </button>
       )}
 
-      {/* All options in one basket */}
+      {/* All options — single basket */}
       <div style={{background:"#fff",borderRadius:16,border:"1px solid var(--border2)",overflow:"hidden",marginBottom:24,boxShadow:"0 1px 4px rgba(45,60,45,.06)"}}>
-        <Row Icon={Users}      iconBg="rgba(83,136,122,.25)"  label="Family Members"   desc={members.length+" members"}          onTap={()=>setSec("family")}/>
-        <Row Icon={Share2}     iconBg="rgba(59,130,246,.2)"   label="Family Sharing"   desc="Invite partner & sync"               onTap={()=>setSec("sharing")}/>
-        <Row Icon={Sun}        iconBg="rgba(176,141,82,.25)"  label="Morning Text"     desc="Daily SMS digest"                    onTap={()=>setSec("digest")}/>
-        <Row Icon={Folder}     iconBg="rgba(139,92,246,.2)"   label="Document Vault"   desc="Slips, records, cards"               onTap={()=>setSec("vault")}/>
-        <Row Icon={DollarSign} iconBg="rgba(16,185,129,.2)"   label="Budget Tracker"   desc={"$"+tot.toFixed(0)+"/mo estimated"}  onTap={()=>setSec("budget")}/>
-        <Row Icon={Settings}   iconBg="rgba(45,90,61,.15)"    label="Account Settings" desc="Name, email, password"               onTap={()=>setSec("account")}/>
-        <Row Icon={Bell}       iconBg="rgba(59,130,246,.2)"   label="Notifications"    desc="Reminders, quiet hours"              onTap={()=>setSec("notif_settings")}/>
-        <Row Icon={LogOut}     iconBg="rgba(220,80,80,.15)"   label="Sign Out"         danger                                     onTap={()=>setConfirmSignOut(true)} last/>
+        <Row Icon={Users}      iconBg="rgba(83,136,122,.25)"  label="Family Members"   desc={members.length+" members"}         onTap={()=>setSec("family")}/>
+        <Row Icon={Share2}     iconBg="rgba(59,130,246,.2)"   label="Family Sharing"   desc="Invite partner & sync"              onTap={()=>setSec("sharing")}/>
+        <Row Icon={Sun}        iconBg="rgba(176,141,82,.25)"  label="Morning Text"     desc="Daily SMS digest"                   onTap={()=>setSec("digest")}/>
+        <Row Icon={Folder}     iconBg="rgba(139,92,246,.2)"   label="Document Vault"   desc="Slips, records, cards"              onTap={()=>setSec("vault")}/>
+        <Row Icon={DollarSign} iconBg="rgba(16,185,129,.2)"   label="Budget Tracker"   desc={"$"+tot.toFixed(0)+"/mo estimated"} onTap={()=>setSec("budget")}/>
+        <Row Icon={Settings}   iconBg="rgba(45,90,61,.15)"    label="Account Settings" desc="Name, email, password"              onTap={()=>setSec("account")}/>
+        <Row Icon={Bell}       iconBg="rgba(59,130,246,.2)"   label="Notifications"    desc="Reminders, quiet hours"             onTap={()=>setSec("notif_settings")}/>
+        <Row Icon={LogOut}     iconBg="rgba(220,80,80,.15)"   label="Sign Out"         danger                                    onTap={()=>setConfirmSignOut(true)} last/>
       </div>
 
       {/* Sign out confirm */}
@@ -4871,7 +4920,7 @@ export default function App() {
       <GS/>
       <Toasts toasts={toasts}/>
       <div style={{minHeight:"100dvh",paddingBottom:"calc(90px + env(safe-area-inset-bottom,0px))",background:"#f0ebe2"}}>
-        <div style={{maxWidth:480,margin:"0 auto",padding:"calc(env(safe-area-inset-top,0px) + 20px) 18px 20px"}}>
+        <div style={{maxWidth:480,margin:"0 auto",padding:"calc(env(safe-area-inset-top,20px) + 20px) 18px 20px"}}>
 
           {/* ── Header ── */}
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20,position:"relative"}}>
