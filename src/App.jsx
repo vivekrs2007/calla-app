@@ -1687,8 +1687,8 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
   };
 
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:500,display:"flex",alignItems:"flex-start",touchAction:"none"}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
-      <div className="sheet-top sheet-scroll" style={{borderRadius:"0 0 24px 24px",padding:"calc(env(safe-area-inset-top,20px) + 8px) 20px calc(env(safe-area-inset-bottom,0px) + 32px)",width:"100%",height:"92dvh",overflowY:"scroll",background:"var(--ink2)",WebkitOverflowScrolling:"touch",willChange:"transform",touchAction:"pan-y",overscrollBehavior:"contain"}}>
+    <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:500,display:"flex",alignItems:"flex-start"}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
+      <div className="sheet-top sheet-scroll" style={{borderRadius:"0 0 24px 24px",padding:"calc(env(safe-area-inset-top,20px) + 8px) 20px calc(env(safe-area-inset-bottom,0px) + 32px)",width:"100%",height:"92dvh",overflowY:"scroll",background:"var(--ink2)",WebkitOverflowScrolling:"touch",willChange:"transform",overscrollBehavior:"contain",touchAction:"pan-y pinch-zoom"}}>
         <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 20px"}}/>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
           <h2 style={{fontSize:18,fontWeight:800}}>New Event</h2>
@@ -2402,17 +2402,10 @@ function FlyerScanner({members, onAdd}) {
   }
 
   function callClaude(base64, mediaType) {
-    // Calls our Supabase Edge Function which holds the Anthropic key server-side.
-    // The key never reaches the browser bundle.
     fetch("https://pqvxzsrpifiuovhtxldp.supabase.co/functions/v1/scan-flyer", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        imageBase64: base64,
-        mediaType:   mediaType
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ imageBase64: base64, mediaType: mediaType })
     }).then(function(res) {
       return res.json();
     }).then(function(data) {
