@@ -4446,7 +4446,7 @@ function DiscoverScreen({members,onAdd,user}) {
     fetch("https://pqvxzsrpifiuovhtxldp.supabase.co/functions/v1/scan-flyer", {
       method:"POST",
       headers:{"Content-Type":"application/json","Authorization":"Bearer "+window.__supabaseAnonKey},
-      body:JSON.stringify({type:"discover",prompt:prompt})
+      body:JSON.stringify({type:"discover",location:loc})
     }).then(function(r){return r.json();}).then(function(d){
       var text = d.result||d.text||"";
       try {
@@ -4464,10 +4464,10 @@ function DiscoverScreen({members,onAdd,user}) {
     });
   }
 
-  var categories=["All","Soccer","Basketball","Hockey","Swimming","Music","Art","Dance","Community","Other"];
+  var categories=["All","Soccer","Basketball","Hockey","Swimming","Music","Art","Dance","Community","STEM","Outdoor","Other"];
   var [filter,setFilter]=useState("All");
 
-  var catEmoji={"Soccer":"⚽","Basketball":"🏀","Hockey":"🏒","Swimming":"🏊","Music":"🎵","Art":"🎨","Dance":"💃","Community":"🏘️","Other":"📅"};
+  var catEmoji={"Soccer":"⚽","Basketball":"🏀","Hockey":"🏒","Swimming":"🏊","Music":"🎵","Art":"🎨","Dance":"💃","Community":"🏘️","STEM":"🔬","Outdoor":"🌲","Other":"📅"};
 
   function addToCalendar(item) {
     var mem = members[0]||{id:"",color:"#2d5a3d"};
@@ -4580,9 +4580,17 @@ function DiscoverScreen({members,onAdd,user}) {
                   {hasDate&&!hasDeadline&&<span style={{fontSize:12,fontWeight:600,background:"rgba(45,90,61,.08)",color:"var(--sage2)",borderRadius:99,padding:"3px 10px"}}>📅 {item.date}</span>}
                   {item.location&&<span style={{fontSize:12,color:"var(--cream3)",display:"flex",alignItems:"center",gap:3}}><MapPin size={11} color="var(--cream3)"/>{item.location}</span>}
                 </div>
-                <button onClick={function(){addToCalendar(item);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"var(--sage)",color:"var(--cream)",borderRadius:10,padding:"10px 0",fontWeight:700,fontSize:14,border:"none",width:"100%"}}>
-                  <Check size={14}/>Add to Calla
-                </button>
+                <div style={{display:"flex",gap:8}}>
+                  <button onClick={function(){addToCalendar(item);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"var(--sage)",color:"var(--cream)",borderRadius:10,padding:"10px 0",fontWeight:700,fontSize:14,border:"none",flex:2}}>
+                    <Check size={14}/>Add to Calla
+                  </button>
+                  <button onClick={function(){
+                    var url=item.url&&item.url.length>4?item.url:"https://www.google.com/search?q="+encodeURIComponent(item.title+" "+item.location);
+                    window.open(url,"_blank");
+                  }} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"var(--ink3)",color:"var(--cream3)",borderRadius:10,padding:"10px 0",fontWeight:600,fontSize:14,border:"1px solid var(--border2)",flex:1}}>
+                    <Share2 size={13}/>View
+                  </button>
+                </div>
               </div>
             );
           })}
@@ -4613,6 +4621,7 @@ function Nav({active,setActive,inboxBadge,notifBadge}) {
     {id:"home",  Icon:Home,         label:"Home"},
     {id:"inbox", Icon:Zap,          label:"Catch", badge:inboxBadge},
     {id:"discover",Icon:Compass,      label:"Discover"},
+    {id:"lists", Icon:ShoppingCart, label:"Lists"},
     {id:"notif", Icon:Bell,         label:"Alerts",badge:notifBadge},
     {id:"more",  Icon:Settings,     label:"More"},
   ];
