@@ -26,12 +26,12 @@ if (!isCapacitor && typeof navigator !== "undefined" && "serviceWorker" in navig
 }
 
 import {
-  Home, Inbox, Users, Bell, Settings, Plus, Mic, MicOff,
+  Home, Inbox, Users, Bell, Settings, Plus, Mic, MicOff, Search,
   ChevronLeft, ChevronRight, ChevronDown, ChevronUp,
   MapPin, Clock, Repeat, Package, DollarSign, Trash2,
   X, Check, AlertTriangle, Zap, Sun, Sunset, Moon,
   Copy, Link, LogOut, Share2, Folder, FileText, Calendar,
-  ShoppingCart, MessageCircle, Send, List, Star
+  ShoppingCart, MessageCircle, Send, List, Star, Compass, Locate
 } from "lucide-react";
 
 
@@ -1687,151 +1687,49 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
   };
 
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:500,display:"flex",alignItems:"flex-start"}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
-      <div className="sheet-top" style={{borderRadius:"0 0 24px 24px",width:"100%",height:"100dvh",background:"var(--ink2)",display:"flex",flexDirection:"column",overflow:"hidden"}}>
-        {/* ── Fixed header ── */}
-        <div style={{flexShrink:0,padding:"calc(env(safe-area-inset-top,20px) + 8px) 20px 0"}}>
+    <div onClick={function(e){if(e.target===e.currentTarget)onClose();}} style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:500,background:"rgba(26,46,26,.5)"}}>
+      <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"var(--ink2)",borderRadius:"0 0 24px 24px",display:"flex",flexDirection:"column"}}>
+        <div style={{flexShrink:0,padding:"calc(env(safe-area-inset-top,44px) + 8px) 20px 0"}}>
           <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 16px"}}/>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
             <h2 style={{fontSize:18,fontWeight:800}}>New Event</h2>
             <Btn v="icon" onClick={onClose}><X size={18}/></Btn>
           </div>
         </div>
-        {/* ── Scrollable content ── */}
-        <div style={{flex:1,overflowY:"scroll",WebkitOverflowScrolling:"touch",overscrollBehavior:"contain",padding:"0 20px 16px"}}>
-        <div style={{display:"flex",flexDirection:"column",gap:14}}>
+        <div style={{flex:1,minHeight:0,overflowY:"auto",WebkitOverflowScrolling:"touch",overscrollBehavior:"contain",padding:"0 20px 8px"}}>
+          <div style={{display:"flex",flexDirection:"column",gap:14}}>
           <input placeholder="What's happening?" value={ev.title} maxLength={80} onChange={e=>{var v=e.target.value.slice(0,80);s("title")(v);var lo=v.toLowerCase();setRecurSuggest(!ev.recurring&&recurringKeywords.some(function(k){return lo.includes(k);}));if(v&&!ev.endTime&&ev.time){var dur=smartDuration(v);if(dur)setEv(function(p){return{...p,endTime:addMinutes(p.time,dur)};});}}} style={{fontSize:16,fontWeight:600}}/>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-            {members.map(m=>(
-              <button key={m.id} onClick={()=>s("memberId")(m.id)} style={{display:"flex",alignItems:"center",gap:6,padding:"8px 14px",borderRadius:99,background:ev.memberId===m.id?m.color+"22":"var(--ink4)",color:ev.memberId===m.id?m.color:"var(--cream3)",border:"1.5px solid "+(ev.memberId===m.id?m.color+"99":"var(--border2)"),fontWeight:600,fontSize:15,border:"none"}}>
-                <span>{m.emoji}</span>{m.name}
-              </button>
-            ))}
-          </div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{members.map(m=>(<button key={m.id} onClick={()=>s("memberId")(m.id)} style={{display:"flex",alignItems:"center",gap:6,padding:"8px 14px",borderRadius:99,background:ev.memberId===m.id?m.color+"22":"var(--ink4)",color:ev.memberId===m.id?m.color:"var(--cream3)",border:"1.5px solid "+(ev.memberId===m.id?m.color+"99":"var(--border2)"),fontWeight:600,fontSize:15,border:"none"}}><span>{m.emoji}</span>{m.name}</button>))}</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
             <div><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>DATE *</label><input type="date" value={ev.date} onChange={e=>s("date")(e.target.value)} style={{colorScheme:"light",color:"var(--cream)",background:"#fff"}}/></div>
             <div><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>START TIME</label><input type="time" value={ev.time} onChange={e=>s("time")(e.target.value)} style={{colorScheme:"light",color:"var(--cream)",background:"#fff"}}/></div>
             <div style={{gridColumn:"1/-1"}}><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>END TIME <span style={{fontWeight:400}}>(optional)</span></label><input type="time" value={ev.endTime||""} onChange={e=>s("endTime")(e.target.value)} style={{colorScheme:"light",color:"var(--cream)",background:"#fff"}}/></div>
           </div>
-
-          {/* Location with autocomplete */}
           <div style={{position:"relative"}}>
             <label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>LOCATION</label>
             <div style={{display:"flex",alignItems:"center",gap:10,background:"var(--ink3)",borderRadius:12,padding:"10px 14px",border:"1.5px solid "+(showLocDrop?"var(--sage)":"var(--border2)"),transition:"border-color .15s"}}>
               <MapPin size={15} color={showLocDrop?"var(--sage)":"#9CA3AF"}/>
-              <input
-                placeholder="Search or type location…"
-                value={locQuery||ev.location}
-                onChange={e=>{
-                  setLocQuery(e.target.value);
-                  s("location")(e.target.value);
-                  setShowLocDrop(e.target.value.length>0);
-                }}
-                onFocus={()=>setShowLocDrop(true)}
-                onBlur={()=>setTimeout(()=>setShowLocDrop(false),150)}
-                style={{background:"transparent",border:"none",padding:0,fontSize:15,flex:1}}
-              />
+              <input placeholder="Search or type location…" value={locQuery||ev.location} onChange={e=>{setLocQuery(e.target.value);s("location")(e.target.value);setShowLocDrop(e.target.value.length>0);}} onFocus={()=>setShowLocDrop(true)} onBlur={()=>setTimeout(()=>setShowLocDrop(false),150)} style={{background:"transparent",border:"none",padding:0,fontSize:15,flex:1}}/>
               {ev.location&&<button onClick={()=>{s("location")("");setLocQuery("");}} style={{background:"none",border:"none",color:"var(--cream3)",display:"flex",padding:2,flexShrink:0}}><X size={13}/></button>}
             </div>
-            {showLocDrop&&(
-              <div style={{position:"absolute",top:"100%",left:0,right:0,background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,.12)",zIndex:50,overflow:"hidden",marginTop:4}}>
-                {/* Venue type suggestions */}
-                {getSuggestions().map((v,i)=>(
-                  <div key={i} onClick={()=>{s("location")(v.label);setLocQuery("");setShowLocDrop(false);}}
-                    style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",cursor:"pointer",borderBottom:i<getSuggestions().length-1?"1px solid #F3F4F6":"none"}}
-                    onMouseEnter={e=>e.currentTarget.style.background="rgba(45,60,45,.05)"}
-                    onMouseLeave={e=>e.currentTarget.style.background="transparent"}
-                  >
-                    <span style={{fontSize:20,flexShrink:0}}>{v.icon}</span>
-                    <div>
-                      <p style={{fontSize:15,fontWeight:600,color:"var(--cream)"}}>{v.label}</p>
-                      <p style={{fontSize:15,color:"var(--cream3)"}}>{v.keywords.slice(0,3).join(", ")}</p>
-                    </div>
-                    <MapPin size={13} color="#D1D5DB" style={{marginLeft:"auto",flexShrink:0}}/>
-                  </div>
-                ))}
-                {/* Use typed text as-is */}
-                {locQuery.trim()&&(
-                  <div onClick={()=>{s("location")(locQuery.trim());setShowLocDrop(false);}}
-                    style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",cursor:"pointer",background:"rgba(45,90,61,.07)",borderTop:"1px solid var(--border2)"}}
-                  >
-                    <Check size={15} color="var(--sage2)" style={{flexShrink:0}}/>
-                    <p style={{fontSize:15,fontWeight:600,color:"var(--sage2)"}}>Use "{locQuery.trim()}"</p>
-                  </div>
-                )}
-              </div>
-            )}
+            {showLocDrop&&(<div style={{position:"absolute",top:"100%",left:0,right:0,background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,.12)",zIndex:50,overflow:"hidden",marginTop:4}}>{getSuggestions().map((v,i)=>(<div key={i} onClick={()=>{s("location")(v.label);setLocQuery("");setShowLocDrop(false);}} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",cursor:"pointer",borderBottom:i<getSuggestions().length-1?"1px solid #F3F4F6":"none"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(45,60,45,.05)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}><span style={{fontSize:20,flexShrink:0}}>{v.icon}</span><div><p style={{fontSize:15,fontWeight:600,color:"var(--cream)"}}>{v.label}</p><p style={{fontSize:15,color:"var(--cream3)"}}>{v.keywords.slice(0,3).join(", ")}</p></div><MapPin size={13} color="#D1D5DB" style={{marginLeft:"auto",flexShrink:0}}/></div>))}{locQuery.trim()&&(<div onClick={()=>{s("location")(locQuery.trim());setShowLocDrop(false);}} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",cursor:"pointer",background:"rgba(45,90,61,.07)",borderTop:"1px solid var(--border2)"}}><Check size={15} color="var(--sage2)" style={{flexShrink:0}}/><p style={{fontSize:15,fontWeight:600,color:"var(--sage2)"}}>Use "{locQuery.trim()}"</p></div>)}</div>)}
           </div>
-          {recurSuggest&&(
-            <div className="fu" style={{background:"rgba(67,143,126,.1)",border:"1px solid rgba(67,143,126,.3)",borderRadius:12,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
-              <span style={{fontSize:18,flexShrink:0}}>🔄</span>
-              <div style={{flex:1}}>
-                <p style={{fontSize:14,fontWeight:600,color:"var(--sage3)",marginBottom:1}}>Looks like a regular event</p>
-                <p style={{fontSize:12,color:"var(--cream3)",fontWeight:300}}>Set as weekly recurring?</p>
-              </div>
-              <button onClick={function(){s("recurring")(true);setRecurSuggest(false);}} style={{background:"var(--sage)",color:"var(--cream)",borderRadius:8,padding:"7px 12px",fontSize:13,fontWeight:700,border:"none",flexShrink:0}}>Weekly ✓</button>
-              <button onClick={function(){setRecurSuggest(false);}} style={{background:"transparent",color:"var(--cream3)",border:"none",fontSize:18,lineHeight:1,padding:"2px 6px"}}>×</button>
-            </div>
-          )}
+          {recurSuggest&&(<div className="fu" style={{background:"rgba(67,143,126,.1)",border:"1px solid rgba(67,143,126,.3)",borderRadius:12,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:18,flexShrink:0}}>🔄</span><div style={{flex:1}}><p style={{fontSize:14,fontWeight:600,color:"var(--sage3)",marginBottom:1}}>Looks like a regular event</p><p style={{fontSize:12,color:"var(--cream3)",fontWeight:300}}>Set as weekly recurring?</p></div><button onClick={function(){s("recurring")(true);setRecurSuggest(false);}} style={{background:"var(--sage)",color:"var(--cream)",borderRadius:8,padding:"7px 12px",fontSize:13,fontWeight:700,border:"none",flexShrink:0}}>Weekly ✓</button><button onClick={function(){setRecurSuggest(false);}} style={{background:"transparent",color:"var(--cream3)",border:"none",fontSize:18,lineHeight:1,padding:"2px 6px"}}>×</button></div>)}
           <Card style={{background:"var(--ink3)"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <Repeat size={15} color="var(--cream3)"/>
-                <div><p style={{fontWeight:600,fontSize:15}}>Recurring</p><p style={{fontSize:15,color:"var(--cream3)"}}>Repeat automatically</p></div>
-              </div>
-              <Toggle on={ev.recurring} onChange={()=>s("recurring")(!ev.recurring)}/>
-            </div>
-            {ev.recurring&&(
-              <div style={{marginTop:14,display:"flex",flexDirection:"column",gap:10}}>
-                <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                  {["daily","weekly","biweekly","monthly"].map(f=>(
-                    <button key={f} onClick={()=>s("recurFreq")(f)} style={{padding:"6px 14px",borderRadius:99,background:ev.recurFreq===f?"var(--sage)":"var(--ink4)",color:ev.recurFreq===f?"var(--cream)":"var(--cream3)",fontSize:15,fontWeight:600,border:"1.5px solid",borderColor:ev.recurFreq===f?"var(--sage2)":"var(--border2)",textTransform:"capitalize"}}>{f}</button>
-                  ))}
-                </div>
-                <div><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>UNTIL</label><input type="date" value={ev.recurEnd} onChange={e=>s("recurEnd")(e.target.value)} style={{colorScheme:"light",color:"var(--cream)",background:"#fff"}}/></div>
-                <p style={{fontSize:15,color:"var(--sage2)",fontWeight:600}}>Creates ~{recurCount(ev.recurFreq,ev.date,ev.recurEnd)} events</p>
-              </div>
-            )}
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}><div style={{display:"flex",alignItems:"center",gap:10}}><Repeat size={15} color="var(--cream3)"/><div><p style={{fontWeight:600,fontSize:15}}>Recurring</p><p style={{fontSize:15,color:"var(--cream3)"}}>Repeat automatically</p></div></div><Toggle on={ev.recurring} onChange={()=>s("recurring")(!ev.recurring)}/></div>
+            {ev.recurring&&(<div style={{marginTop:14,display:"flex",flexDirection:"column",gap:10}}><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{["daily","weekly","biweekly","monthly"].map(f=>(<button key={f} onClick={()=>s("recurFreq")(f)} style={{padding:"6px 14px",borderRadius:99,background:ev.recurFreq===f?"var(--sage)":"var(--ink4)",color:ev.recurFreq===f?"var(--cream)":"var(--cream3)",fontSize:15,fontWeight:600,border:"1.5px solid",borderColor:ev.recurFreq===f?"var(--sage2)":"var(--border2)",textTransform:"capitalize"}}>{f}</button>))}</div><div><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>UNTIL</label><input type="date" value={ev.recurEnd} onChange={e=>s("recurEnd")(e.target.value)} style={{colorScheme:"light",color:"var(--cream)",background:"#fff"}}/></div><p style={{fontSize:15,color:"var(--sage2)",fontWeight:600}}>Creates ~{recurCount(ev.recurFreq,ev.date,ev.recurEnd)} events</p></div>)}
           </Card>
           <textarea rows={2} placeholder="Notes (optional)" value={ev.notes} onChange={e=>s("notes")(e.target.value)} style={{resize:"none",fontSize:15}}/>
           <Card style={{background:"var(--ink3)"}}>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:ev.packingList&&ev.packingList.length?12:0}}>
-              <Package size={15} color="var(--cream3)"/><p style={{fontWeight:600,fontSize:15}}>Packing List</p>
-              <div style={{display:"flex",gap:6,marginLeft:"auto"}}>
-                {[["⚽","cleats,water bottle,jersey,shin guards"],["🎵","instrument,sheet music,lesson book"]].map(([ico,items])=>(
-                  <button key={ico} onClick={()=>{const ex=ev.packingList||[];const add=items.split(",").filter(i=>!ex.includes(i));setEv(p=>({...p,packingList:[...ex,...add]}));}} style={{background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:99,padding:"3px 10px",fontSize:15,fontWeight:500}}>{ico}</button>
-                ))}
-              </div>
-            </div>
-            {ev.packingList&&ev.packingList.length>0&&(
-              <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
-                {ev.packingList.map((item,i)=>(
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:5,background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:99,padding:"4px 10px 4px 12px"}}>
-                    <span style={{fontSize:15}}>{item}</span>
-                    <button onClick={()=>setEv(p=>({...p,packingList:p.packingList.filter((_,j)=>j!==i)}))} style={{background:"none",color:"var(--cream3)",display:"flex",padding:2}}><X size={11}/></button>
-                  </div>
-                ))}
-              </div>
-            )}
-            <div style={{display:"flex",gap:8}}>
-              <input placeholder="What's needed?" value={ev._pack} onChange={e=>s("_pack")(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addPack()} style={{fontSize:15}}/>
-              <button onClick={addPack} style={{background:"var(--sage)",color:"var(--cream)",borderRadius:8,padding:"0 14px",fontWeight:700,fontSize:18,flexShrink:0}}>+</button>
-            </div>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:ev.packingList&&ev.packingList.length?12:0}}><Package size={15} color="var(--cream3)"/><p style={{fontWeight:600,fontSize:15}}>Packing List</p><div style={{display:"flex",gap:6,marginLeft:"auto"}}>{[["⚽","cleats,water bottle,jersey,shin guards"],["🎵","instrument,sheet music,lesson book"]].map(([ico,items])=>(<button key={ico} onClick={()=>{const ex=ev.packingList||[];const add=items.split(",").filter(i=>!ex.includes(i));setEv(p=>({...p,packingList:[...ex,...add]}));}} style={{background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:99,padding:"3px 10px",fontSize:15,fontWeight:500}}>{ico}</button>))}</div></div>
+            {ev.packingList&&ev.packingList.length>0&&(<div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>{ev.packingList.map((item,i)=>(<div key={i} style={{display:"flex",alignItems:"center",gap:5,background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:99,padding:"4px 10px 4px 12px"}}><span style={{fontSize:15}}>{item}</span><button onClick={()=>setEv(p=>({...p,packingList:p.packingList.filter((_,j)=>j!==i)}))} style={{background:"none",color:"var(--cream3)",display:"flex",padding:2}}><X size={11}/></button></div>))}</div>)}
+            <div style={{display:"flex",gap:8}}><input placeholder="What's needed?" value={ev._pack} onChange={e=>s("_pack")(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addPack()} style={{fontSize:15}}/><button onClick={addPack} style={{background:"var(--sage)",color:"var(--cream)",borderRadius:8,padding:"0 14px",fontWeight:700,fontSize:18,flexShrink:0}}>+</button></div>
           </Card>
-          <div style={{display:"flex",gap:10}}>
-            <div style={{position:"relative",flex:1}}>
-              <DollarSign size={13} color="#9CA3AF" style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)"}}/>
-              <input placeholder="Monthly cost ($)" type="number" value={ev.cost} onChange={e=>s("cost")(e.target.value)} style={{paddingLeft:32}}/>
-            </div>
-            <select value={ev.costType} onChange={e=>s("costType")(e.target.value)} style={{width:"auto",minWidth:110,fontSize:15}}>
-              <option value="one-time">one-time</option><option value="monthly">/ month</option><option value="session">/ session</option><option value="season">/ season</option>
-            </select>
-          </div>
+          <div style={{display:"flex",gap:10}}><div style={{position:"relative",flex:1}}><DollarSign size={13} color="#9CA3AF" style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)"}}/><input placeholder="Monthly cost ($)" type="number" value={ev.cost} onChange={e=>s("cost")(e.target.value)} style={{paddingLeft:32}}/></div><select value={ev.costType} onChange={e=>s("costType")(e.target.value)} style={{width:"auto",minWidth:110,fontSize:15}}><option value="one-time">one-time</option><option value="monthly">/ month</option><option value="session">/ session</option><option value="season">/ season</option></select></div>
           {addError&&<div style={{background:"rgba(196,90,90,.1)",border:"1px solid rgba(196,90,90,.25)",borderRadius:12,padding:"10px 14px",marginBottom:8,fontSize:14,color:"var(--rose)",lineHeight:1.6}}>{addError}</div>}
+          </div>
         </div>
-        </div>
-        {/* ── Sticky submit button — always visible ── */}
-        <div style={{flexShrink:0,padding:"12px 20px calc(env(safe-area-inset-bottom,0px) + 16px)",background:"var(--ink2)",borderTop:"1px solid var(--border)"}}>
+        <div style={{flexShrink:0,padding:"12px 20px",paddingBottom:"calc(env(safe-area-inset-bottom,16px) + 12px)",background:"var(--ink2)",borderTop:"1px solid var(--border)"}}>
           <Btn onClick={submit} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,width:"100%"}}>
             {ev.recurring?<><Repeat size={15}/>Add Recurring</>:<><Check size={15}/>Add to Calendar</>}
           </Btn>
@@ -1841,7 +1739,6 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
   );
 }
 
-/* ─── Voice Sheet ───────────────────────────────────────────────────────── */
 function VoiceSheet({members,onAdd,onClose}) {
   useScrollLock(true);
   const [stage,setStage]=useState("ready"),[transcript,setTranscript]=useState(""),[parsed,setParsed]=useState(null);
@@ -2016,7 +1913,7 @@ function VoiceSheet({members,onAdd,onClose}) {
             </div>
           </div>
         )}
-        {tab==="email"&&stage==="done"&&(
+        {stage==="done"&&(
           <div style={{textAlign:"center",padding:"32px 0"}}>
             <div style={{width:60,height:60,background:"rgba(45,90,61,.06)",border:"1px solid rgba(83,136,122,.4)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px"}}><Check size={26} color="var(--sage2)"/></div>
             <p style={{fontWeight:800,fontSize:18,color:"var(--sage2)"}}>Added!</p>
@@ -2090,10 +1987,11 @@ function DaySheet({date,events,members,onClose,onSelect}) {
 }
 
 /* ─── Dashboard ─────────────────────────────────────────────────────────── */
-function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,initialSel,onClearSel}) {
+function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,initialSel,onClearSel,onShowAdd,onShowVoice}) {
   const [anchor,setAnchor]=useState(todayStr);
   const [showAdd,setShowAdd]=useState(false);
   const [showVoice,setShowVoice]=useState(false);
+  const [searchQuery,setSearchQuery]=useState("");
   const [sel,setSel]=useState(null);
   const [map,setMap]=useState(false);
   const [dayView,setDayView]=useState(null);
@@ -2130,11 +2028,11 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
     <div className="screen-enter">
       {/* ── Action buttons — VERY TOP ── */}
       <div style={{display:"flex",gap:10,marginBottom:16}}>
-        <button onClick={function(){setShowVoice(true);}}
+        <button onClick={function(){onShowVoice();}}
           style={{flex:1,background:"#fff",border:"1.5px solid var(--border2)",borderRadius:16,padding:"13px 10px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontWeight:600,fontSize:15,color:"var(--cream2)",boxShadow:"0 1px 4px rgba(45,60,45,.08)"}}>
           <Mic size={18} color="var(--sage3)"/>Voice
         </button>
-        <button onClick={function(){setShowAdd(true);}}
+        <button onClick={function(){onShowAdd();}}
           style={{flex:2,background:"linear-gradient(135deg,var(--sage),var(--sage2))",borderRadius:16,padding:"13px 10px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontWeight:700,fontSize:15,color:"#fff",boxShadow:"0 4px 16px rgba(45,90,61,.3)"}}>
           <Plus size={18}/>New Event
         </button>
@@ -4521,11 +4419,200 @@ function ListsScreen({members}) {
 
 
 /* ─── Nav ───────────────────────────────────────────────────────────────── */
+function DiscoverScreen({members,onAdd,user}) {
+  var [city,setCity]=useState(function(){return localStorage.getItem("calla_city")||"";});
+  var [hood,setHood]=useState(function(){return localStorage.getItem("calla_hood")||"";});
+  var [results,setResults]=useState([]);
+  var [loading,setLoading]=useState(false);
+  var [error,setError]=useState("");
+  var [editLoc,setEditLoc]=useState(false);
+  var [lastSearch,setLastSearch]=useState("");
+
+  function saveLocation() {
+    localStorage.setItem("calla_city", city);
+    localStorage.setItem("calla_hood", hood);
+    setEditLoc(false);
+    if(city) search(city, hood);
+  }
+
+  function search(c, h) {
+    var loc = h ? h+", "+c : c;
+    if(!loc.trim()) return;
+    setLoading(true);
+    setError("");
+    setResults([]);
+    setLastSearch(loc);
+    var prompt = "Search the web for upcoming kids activities, sports registrations, music classes, recreational programs, and community events near "+loc+". Include registration deadlines. Today is "+new Date().toISOString().slice(0,10)+". Return ONLY a JSON array (no markdown) of up to 12 items. Each item must have: title (string), category (one of: Soccer, Basketball, Hockey, Swimming, Music, Art, Dance, Community, Other), date (YYYY-MM-DD or empty string if unknown), deadline (YYYY-MM-DD or empty string), location (string), description (string, max 100 chars), url (string or empty). Only include real, specific, verifiable events.";
+    fetch("https://pqvxzsrpifiuovhtxldp.supabase.co/functions/v1/scan-flyer", {
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+window.__supabaseAnonKey},
+      body:JSON.stringify({type:"discover",prompt:prompt})
+    }).then(function(r){return r.json();}).then(function(d){
+      var text = d.result||d.text||"";
+      try {
+        var clean = text.replace(/```json|```/g,"").trim();
+        var parsed = JSON.parse(clean);
+        if(Array.isArray(parsed)) setResults(parsed);
+        else setError("No results found. Try a different area.");
+      } catch(e) {
+        setError("Could not load results. Try again.");
+      }
+      setLoading(false);
+    }).catch(function(){
+      setError("Network error. Check your connection.");
+      setLoading(false);
+    });
+  }
+
+  var categories=["All","Soccer","Basketball","Hockey","Swimming","Music","Art","Dance","Community","Other"];
+  var [filter,setFilter]=useState("All");
+
+  var catEmoji={"Soccer":"⚽","Basketball":"🏀","Hockey":"🏒","Swimming":"🏊","Music":"🎵","Art":"🎨","Dance":"💃","Community":"🏘️","Other":"📅"};
+
+  function addToCalendar(item) {
+    var mem = members[0]||{id:"",color:"#2d5a3d"};
+    onAdd({
+      id:Date.now().toString(),
+      title:item.title,
+      date:item.deadline||item.date||new Date().toISOString().slice(0,10),
+      time:"",endTime:"",
+      location:item.location||"",
+      notes:item.description+(item.url?" | "+item.url:""),
+      memberId:mem.id,
+      color:mem.color,
+      recurring:false,recurFreq:"weekly",recurEnd:"",
+      cost:"",costType:"one-time",packingList:[],
+    });
+    toast_({icon:"✅",title:"Added to calendar!",body:item.title,color:"var(--sage2)"});
+  }
+
+  function toast_(t){
+    var el=document.createElement("div");
+    el.style.cssText="position:fixed;top:calc(env(safe-area-inset-top,20px)+60px);left:50%;transform:translateX(-50%);background:var(--ink2);border:1px solid var(--border2);borderRadius:12px;padding:10px 16px;zIndex:9999;fontSize:14px;fontWeight:600;color:var(--cream);boxShadow:0 4px 20px rgba(0,0,0,.15);whiteSpace:nowrap;";
+    el.textContent=t.icon+" "+t.title;
+    document.body.appendChild(el);
+    setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},2500);
+  }
+
+  var filtered = filter==="All" ? results : results.filter(function(r){return r.category===filter;});
+
+  var locSet = city.trim().length > 0;
+
+  return (
+    <div style={{paddingBottom:8}}>
+      {/* Location bar */}
+      <div style={{background:"var(--ink2)",borderRadius:16,padding:"14px 16px",marginBottom:14,border:"1px solid var(--border2)"}}>
+        {!editLoc&&locSet ? (
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <Locate size={16} color="var(--sage)"/>
+              <div>
+                <p style={{fontWeight:700,fontSize:15,color:"var(--cream)"}}>{hood?hood+", ":""}{city}</p>
+                <p style={{fontSize:12,color:"var(--cream3)"}}>Your discovery area</p>
+              </div>
+            </div>
+            <button onClick={function(){setEditLoc(true);}} style={{background:"var(--ink3)",border:"1px solid var(--border2)",borderRadius:8,padding:"6px 12px",fontSize:13,fontWeight:600,color:"var(--cream3)"}}>Change</button>
+          </div>
+        ) : (
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            <p style={{fontWeight:700,fontSize:15,color:"var(--cream)"}}>Set your location</p>
+            <input placeholder="City (e.g. Ottawa)" value={city} onChange={function(e){setCity(e.target.value);}} style={{fontSize:15}}/>
+            <input placeholder="Neighbourhood (e.g. Riverside South)" value={hood} onChange={function(e){setHood(e.target.value);}} style={{fontSize:15}}/>
+            <Btn onClick={saveLocation} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+              <Locate size={14}/>Save & Search
+            </Btn>
+          </div>
+        )}
+      </div>
+
+      {/* Search button if location set but no results yet */}
+      {locSet&&!editLoc&&results.length===0&&!loading&&!error&&(
+        <Btn onClick={function(){search(city,hood);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,width:"100%",marginBottom:14}}>
+          <Compass size={15}/>Discover in {hood||city}
+        </Btn>
+      )}
+
+      {/* Loading */}
+      {loading&&(
+        <div style={{textAlign:"center",padding:"48px 0"}}>
+          <div style={{width:32,height:32,border:"3px solid var(--border2)",borderTopColor:"var(--sage2)",borderRadius:"50%",animation:"spin .7s linear infinite",margin:"0 auto 16px"}}/>
+          <p style={{fontSize:15,color:"var(--cream3)",fontWeight:500}}>Searching {lastSearch}…</p>
+          <p style={{fontSize:13,color:"var(--cream3)",marginTop:4}}>Finding registrations & events</p>
+        </div>
+      )}
+
+      {/* Error */}
+      {error&&<div style={{background:"rgba(196,90,90,.08)",border:"1px solid rgba(196,90,90,.2)",borderRadius:12,padding:"14px 16px",marginBottom:14,fontSize:14,color:"var(--rose)"}}>{error}</div>}
+
+      {/* Category filter */}
+      {results.length>0&&(
+        <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:8,marginBottom:12,WebkitOverflowScrolling:"touch"}}>
+          {categories.map(function(c){
+            var active=filter===c;
+            return (
+              <button key={c} onClick={function(){setFilter(c);}} style={{flexShrink:0,padding:"6px 14px",borderRadius:99,background:active?"var(--sage)":"var(--ink2)",color:active?"var(--cream)":"var(--cream3)",border:"1px solid "+(active?"var(--sage2)":"var(--border2)"),fontSize:13,fontWeight:600,whiteSpace:"nowrap"}}>
+                {c==="All"?"All":catEmoji[c]+" "+c}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Results */}
+      {filtered.length>0&&(
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          <p style={{fontSize:12,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em"}}>{filtered.length} result{filtered.length===1?"":"s"} near {lastSearch}</p>
+          {filtered.map(function(item,i){
+            var emoji=catEmoji[item.category]||"📅";
+            var hasDeadline=item.deadline&&item.deadline.length>0;
+            var hasDate=item.date&&item.date.length>0;
+            return (
+              <div key={i} style={{background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:16,padding:"14px 16px",display:"flex",flexDirection:"column",gap:8}}>
+                <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
+                  <div style={{width:40,height:40,borderRadius:12,background:"rgba(45,90,61,.08)",border:"1px solid rgba(45,90,61,.12)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{emoji}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <p style={{fontWeight:700,fontSize:15,color:"var(--cream)",lineHeight:1.3,marginBottom:3}}>{item.title}</p>
+                    <p style={{fontSize:13,color:"var(--cream3)",lineHeight:1.4}}>{item.description}</p>
+                  </div>
+                </div>
+                <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                  {hasDeadline&&<span style={{fontSize:12,fontWeight:600,background:"rgba(196,90,90,.1)",color:"var(--rose)",borderRadius:99,padding:"3px 10px"}}>⏰ Deadline: {item.deadline}</span>}
+                  {hasDate&&!hasDeadline&&<span style={{fontSize:12,fontWeight:600,background:"rgba(45,90,61,.08)",color:"var(--sage2)",borderRadius:99,padding:"3px 10px"}}>📅 {item.date}</span>}
+                  {item.location&&<span style={{fontSize:12,color:"var(--cream3)",display:"flex",alignItems:"center",gap:3}}><MapPin size={11} color="var(--cream3)"/>{item.location}</span>}
+                </div>
+                <button onClick={function(){addToCalendar(item);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"var(--sage)",color:"var(--cream)",borderRadius:10,padding:"10px 0",fontWeight:700,fontSize:14,border:"none",width:"100%"}}>
+                  <Check size={14}/>Add to Calla
+                </button>
+              </div>
+            );
+          })}
+          <button onClick={function(){search(city,hood);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:10,padding:"10px 0",fontWeight:600,fontSize:14,color:"var(--cream3)",width:"100%",marginTop:4}}>
+            <Compass size={14}/>Refresh results
+          </button>
+        </div>
+      )}
+
+      {/* Empty — no location */}
+      {!locSet&&!editLoc&&(
+        <div style={{textAlign:"center",padding:"48px 20px"}}>
+          <div style={{fontSize:48,marginBottom:16}}>🧭</div>
+          <p style={{fontWeight:700,fontSize:18,color:"var(--cream)",marginBottom:8}}>Discover local activities</p>
+          <p style={{fontSize:15,color:"var(--cream3)",lineHeight:1.6,marginBottom:24}}>Set your city and neighbourhood to find upcoming kids sports, music classes, and community events near you.</p>
+          <Btn onClick={function(){setEditLoc(true);}} style={{display:"inline-flex",alignItems:"center",gap:8}}>
+            <Locate size={14}/>Set My Location
+          </Btn>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 function Nav({active,setActive,inboxBadge,notifBadge}) {
   var items=[
     {id:"home",  Icon:Home,         label:"Home"},
     {id:"inbox", Icon:Zap,          label:"Catch", badge:inboxBadge},
-    {id:"lists", Icon:ShoppingCart, label:"Lists"},
+    {id:"discover",Icon:Compass,      label:"Discover"},
     {id:"notif", Icon:Bell,         label:"Alerts",badge:notifBadge},
     {id:"more",  Icon:Settings,     label:"More"},
   ];
@@ -4571,6 +4658,10 @@ export default function App() {
   const [showBanner,setShowBanner] = useState(true);
   const [paid,setPaid]           = useState(false);
   const [showPaywall,setShowPaywall] = useState(false);
+  const [showAdd,setShowAdd]=useState(false);
+  const [showVoice,setShowVoice]=useState(false);
+  const [showSearch,setShowSearch]=useState(false);
+  const [searchQuery,setSearchQuery]=useState("");
   const [familyId,setFamilyId]   = useState(null);
   const [pendingInvite,setPendingInvite] = useState(null);
 
@@ -4873,8 +4964,9 @@ export default function App() {
   const upc=events.filter(e=>e.date>=todayStr&&e.date<=addDays(todayStr,2)).length;
 
   const screen=()=>{
-    if(tab==="home")    return <DashScreen events={events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)}/>;
+    if(tab==="home")    return <DashScreen events={events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)}/>;
     if(tab==="inbox")   return <InboxScreen members={members} onAdd={addEvent}/>;
+    if(tab==="discover") return <DiscoverScreen members={members} onAdd={addEvent} user={user}/>;
     if(tab==="lists")   return <ListsScreen members={members}/>;
     if(tab==="members") return <MembersScreen members={members} setMembers={setMembers} events={events}/>;
     if(tab==="notif")   return <NotifScreen events={events} members={members} onSelectEvent={ev=>{setGlobalSel(ev);setTab("home");}}/>;
@@ -4911,15 +5003,8 @@ export default function App() {
                   {m.photo?<img src={m.photo} style={{width:"100%",height:"100%",objectFit:"cover"}} alt={m.name}/>:m.emoji}
                 </div>
               ))}
-              {paid
-                ? <div style={{background:"rgba(83,136,122,.15)",border:"1px solid rgba(83,136,122,.3)",borderRadius:99,padding:"4px 10px",display:"flex",alignItems:"center",gap:4}}>
-                    <Check size={10} color="var(--sage3)"/>
-                    <span style={{fontSize:15,fontWeight:700,color:"var(--sage3)"}}>Family</span>
-                  </div>
-                : <button onClick={()=>setShowPaywall(true)} style={{background:"linear-gradient(135deg,var(--sage),var(--sage2))",color:"var(--cream)",borderRadius:99,padding:"5px 12px",fontSize:15,fontWeight:700,border:"none",boxShadow:"0 2px 12px rgba(58,100,89,.4)"}}>
-                    {trial&&trial.left}d free
-                  </button>
-              }
+              
+              <button onClick={function(){setShowSearch(function(v){if(v){setSearchQuery("");}return !v;});}} style={{width:32,height:32,background:showSearch?"var(--sage4)":"var(--ink3)",border:"1px solid "+(showSearch?"var(--sage2)":"var(--border2)"),borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Search size={15} color={showSearch?"var(--sage)":"var(--cream3)"}/></button>
               <button onClick={()=>go("notif")} style={{width:32,height:32,background:"var(--ink3)",border:"1px solid var(--border2)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",position:"relative",flexShrink:0}}>
                 <Bell size={15} color="var(--cream3)"/>
                 {upc>0&&<div style={{position:"absolute",top:-3,right:-3,background:"var(--red)",color:"var(--cream)",borderRadius:"50%",width:14,height:14,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800,border:"2px solid var(--ink)"}}>{upc}</div>}
@@ -4932,11 +5017,69 @@ export default function App() {
             <TrialBanner daysLeft={trial.left} onUpgrade={()=>setShowPaywall(true)}/>
           )}
 
-          {screen()}
+          {showSearch&&(
+            <div style={{marginBottom:12}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,background:"#fff",borderRadius:12,padding:"10px 14px",border:"1.5px solid var(--sage2)",boxShadow:"0 2px 8px rgba(45,90,61,.08)"}}>
+                <Search size={15} color="var(--sage)"/>
+                <input
+                  autoFocus
+                  placeholder="Search events, kids, locations…"
+                  value={searchQuery}
+                  onChange={function(e){setSearchQuery(e.target.value);}}
+                  style={{background:"transparent",border:"none",padding:0,fontSize:16,flex:1,color:"var(--cream)",outline:"none",fontFamily:"inherit"}}
+                />
+                {searchQuery&&<button onClick={function(){setSearchQuery("");}} style={{background:"none",border:"none",color:"var(--cream3)",display:"flex",padding:2,flexShrink:0}}><X size={13}/></button>}
+              </div>
+              {searchQuery.trim()&&(function(){
+                var q=searchQuery.toLowerCase().trim();
+                var results=events.filter(function(ev){
+                  return ev.title.toLowerCase().includes(q)||
+                    (ev.location&&ev.location.toLowerCase().includes(q))||
+                    (ev.notes&&ev.notes.toLowerCase().includes(q))||
+                    (function(){var m=members.find(function(m){return m.id===ev.memberId;});return m&&m.name.toLowerCase().includes(q);})();
+                }).sort(function(a,b){return a.date.localeCompare(b.date);});
+                if(results.length===0) return (
+                  <div style={{textAlign:"center",padding:"24px 0",color:"var(--cream3)",fontSize:15}}>No events found for "{searchQuery}"</div>
+                );
+                return (
+                  <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
+                    <p style={{fontSize:12,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em",paddingLeft:2}}>{results.length} result{results.length===1?"":"s"}</p>
+                    {results.map(function(ev){
+                      var m=members.find(function(m){return m.id===ev.memberId;})||{emoji:"👤",color:"var(--cream3)",name:"?"};
+                      var isToday=ev.date===todayStr;
+                      var isPast=ev.date<todayStr;
+                      return (
+                        <div key={ev.id} onClick={function(){setGlobalSel(ev);setShowSearch(false);setSearchQuery("");go("home");}}
+                          style={{background:"#fff",border:"1px solid var(--border2)",borderLeft:"4px solid "+ev.color,borderRadius:14,padding:"12px 14px",cursor:"pointer",opacity:isPast?0.65:1}}
+                        >
+                          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+                            <div style={{width:30,height:30,borderRadius:10,background:ev.color+"15",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{m.emoji}</div>
+                            <div style={{flex:1,minWidth:0}}>
+                              <p style={{fontWeight:700,fontSize:15,color:"var(--cream)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ev.title}</p>
+                              <p style={{fontSize:13,color:m.color,fontWeight:600}}>{m.name}</p>
+                            </div>
+                            <div style={{textAlign:"right",flexShrink:0}}>
+                              <p style={{fontSize:12,fontWeight:600,color:isToday?"var(--sage2)":"var(--cream3)",background:isToday?"rgba(45,90,61,.08)":"var(--ink4)",borderRadius:99,padding:"2px 8px"}}>{isToday?"Today":ev.date}</p>
+                              {ev.time&&<p style={{fontSize:12,color:"var(--cream3)",marginTop:2}}>{ev.time}</p>}
+                            </div>
+                          </div>
+                          {ev.location&&<p style={{fontSize:13,color:"var(--cream3)",display:"flex",alignItems:"center",gap:4,marginTop:2}}><MapPin size={11} color="var(--sage3)"/>{ev.location}</p>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+          {!showSearch&&screen()}
+          {showSearch&&!searchQuery.trim()&&screen()}
 
         </div>
       </div>
       <Nav active={tab} setActive={go} inboxBadge={inboxBadge} notifBadge={upc&&notif.enabled?upc:0}/>
+      {showAdd&&<AddSheet members={members} events={events} onAdd={function(ev){addEvent(ev);setShowAdd(false);}} onClose={function(){setShowAdd(false);}}/> }
+      {showVoice&&<VoiceSheet members={members} onAdd={function(ev){addEvent(ev);}} onClose={function(){setShowVoice(false);}}/> }
     </>
   );
 }
