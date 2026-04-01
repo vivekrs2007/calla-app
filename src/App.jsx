@@ -1390,96 +1390,256 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:600,display:"flex",alignItems:"flex-end"}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
       <div style={{position:"fixed",bottom:0,left:0,right:0,height:"92dvh",background:"var(--ink2)",borderRadius:"20px 20px 0 0",display:"flex",flexDirection:"column",overflow:"hidden"}}>
-        {/* Fixed header */}
-        <div style={{flexShrink:0,padding:"12px 20px 0"}}>
-          <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"0 auto 14px"}}/>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-            <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <div style={{width:10,height:10,borderRadius:"50%",background:ev.color,flexShrink:0}}/>
-              <h2 style={{fontSize:17,fontWeight:800,color:"var(--cream)",lineHeight:1.2}}>{ev.title}</h2>
+        <div style={{flex:1,minHeight:0,overflowY:"scroll",WebkitOverflowScrolling:"touch",overscrollBehavior:"contain",padding:"8px 20px calc(env(safe-area-inset-bottom,20px) + 32px)"}}>
+        <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 16px"}}/>
+
+        {/* Header */}
+        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:16}}>
+          <div style={{flex:1}}>
+            <div style={{display:"flex",gap:8,marginBottom:8,flexWrap:"wrap"}}>
+              <Pill color={m.color} bg={m.color+"15"}>
+                {m.photo?<img src={m.photo} style={{width:14,height:14,borderRadius:"50%",objectFit:"cover"}} alt=""/>:m.emoji} {m.name}
+              </Pill>
+              {ev.recurring&&<Pill color="var(--sage3)" bg="rgba(67,143,126,.14)"><Repeat size={10}/> Recurring</Pill>}
             </div>
-            <Btn v="icon" onClick={onClose}><X size={18}/></Btn>
+            <h2 style={{fontSize:22,fontWeight:800,letterSpacing:"-.3px",lineHeight:1.2}}>{ev.title}</h2>
           </div>
+          <button onClick={onClose} style={{width:32,height:32,borderRadius:"50%",background:"var(--ink4)",border:"none",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:12,minHeight:"auto",minWidth:"auto"}}>
+            <X size={16} color="var(--cream3)"/>
+          </button>
         </div>
-        {/* Scrollable content */}
-        <div style={{flex:1,minHeight:0,overflowY:"scroll",WebkitOverflowScrolling:"touch",overscrollBehavior:"contain",padding:"0 20px 16px"}}>
-          <div style={{display:"flex",flexDirection:"column",gap:14}}>
-          {/* Member chip */}
-          {mem&&(
-            <div style={{display:"flex",alignItems:"center",gap:8,background:mem.color+"12",borderRadius:99,padding:"6px 14px",alignSelf:"flex-start",border:"1px solid "+mem.color+"30"}}>
-              <span style={{fontSize:16}}>{mem.emoji}</span>
-              <span style={{fontSize:14,fontWeight:600,color:mem.color}}>{mem.name}</span>
+
+        {/* Details */}
+        <div style={{display:"flex",flexDirection:"column",gap:2,marginBottom:16}}>
+          {[[Calendar,fd(ev.date),"Date"],[Clock,ev.time||"No time","Time"],ev.cost?[DollarSign,"$"+ev.cost+" / "+(ev.costType||"one-time"),"Cost"]:null].filter(Boolean).map(([Icon,val,label])=>(
+            <div key={label} style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderBottom:"1px solid #F3F4F6"}}>
+              <div style={{width:34,height:34,background:"var(--sage-light)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Icon size={15} color="var(--sage)"/></div>
+              <div><p style={{fontSize:15,color:"#2d4a2d",fontWeight:700,textTransform:"uppercase",letterSpacing:".04em"}}>{label}</p><p style={{fontSize:15,fontWeight:600,marginTop:1}}>{val}</p></div>
             </div>
-          )}
-          {/* Date/time */}
-          <div style={{background:"var(--ink3)",borderRadius:12,padding:"12px 14px",display:"flex",flexDirection:"column",gap:6}}>
-            <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <Calendar size={14} color="var(--sage)"/>
-              <span style={{fontSize:15,fontWeight:600,color:"var(--cream)"}}>{ev.date}</span>
+          ))}
+        </div>
+
+        {/* Location */}
+        {ev.location?(
+          <div style={{marginBottom:16}}>
+            <div style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderBottom:"1px solid #F3F4F6",marginBottom:10}}>
+              <div style={{width:34,height:34,background:"var(--sage-light)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><MapPin size={15} color="var(--sage)"/></div>
+              <div style={{flex:1}}>
+                <p style={{fontSize:15,color:"#2d4a2d",fontWeight:700,textTransform:"uppercase",letterSpacing:".04em"}}>Location</p>
+                <p style={{fontSize:15,fontWeight:600,color:"var(--sage3)",marginTop:1,cursor:"pointer"}} onClick={()=>openMaps(ev.location)}>{ev.location}</p>
+              </div>
             </div>
-            {ev.time&&(
-              <div style={{display:"flex",alignItems:"center",gap:8}}>
-                <Clock size={14} color="var(--sage)"/>
-                <span style={{fontSize:15,color:"var(--cream)"}}>{ev.time}{ev.endTime?" – "+ev.endTime:""}</span>
+            <div style={{borderRadius:16,overflow:"hidden",border:"1px solid var(--border2)",marginBottom:10,position:"relative"}}>
+              <iframe title="Location" src={"https://www.openstreetmap.org/export/embed.html?layer=mapnik&query="+encodeURIComponent(ev.location)} width="100%" height="160" style={{display:"block",border:"none"}} loading="lazy"/>
+              <button onClick={()=>openMaps(ev.location)} style={{position:"absolute",top:8,right:8,background:"var(--ink2)",borderRadius:8,padding:"5px 10px",display:"flex",alignItems:"center",gap:5,boxShadow:"0 2px 8px rgba(0,0,0,.14)",border:"1px solid var(--border)",minHeight:"auto",minWidth:"auto"}}><MapPin size={11} color="var(--sage2)"/><span style={{fontSize:15,fontWeight:700,color:"var(--sage3)"}}>Open</span></button>
+            </div>
+            <button onClick={()=>openDirs(ev.location)} style={{width:"100%",background:"var(--sage-light)",border:"1.5px solid var(--sage-mid)",borderRadius:12,padding:"12px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontWeight:700,fontSize:15,color:"var(--sage)",cursor:"pointer"}}><MapPin size={16}/>Get Directions</button>
+          </div>
+        ):(
+          <div style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderBottom:"1px solid #F3F4F6",marginBottom:16}}>
+            <div style={{width:34,height:34,background:"var(--ink4)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><MapPin size={15} color="#D1D5DB"/></div>
+            <div><p style={{fontSize:15,color:"#2d4a2d",fontWeight:700,textTransform:"uppercase",letterSpacing:".04em"}}>Location</p><p style={{fontSize:15,color:"var(--border3)",marginTop:1}}>Not set</p></div>
+          </div>
+        )}
+
+        {/* Notes */}
+        {ev.notes&&<Card style={{marginBottom:16,background:"var(--ink3)"}}><div style={{display:"flex",gap:10}}><FileText size={15} color="var(--cream3)" style={{marginTop:2,flexShrink:0}}/><p style={{fontSize:15,color:"var(--cream2)",lineHeight:1.65}}>{ev.notes}</p></div></Card>}
+
+        {/* Packing */}
+        {ev.packingList&&ev.packingList.length>0&&(
+          <Card style={{marginBottom:16}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+              <Package size={15} color="var(--sage)"/>
+              <p style={{fontWeight:700,fontSize:15}}>Packing List</p>
+              {Object.values(packed).filter(Boolean).length>0&&<Pill color="var(--sage)" bg="var(--sage-light)" style={{marginLeft:"auto"}}>{Object.values(packed).filter(Boolean).length}/{ev.packingList.length} packed</Pill>}
+            </div>
+            {ev.packingList.map((item,i)=>(
+              <div key={i} onClick={()=>setPacked(p=>({...p,[i]:!p[i]}))} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:i<ev.packingList.length-1?"1px solid #F3F4F6":"none",cursor:"pointer",transition:"background .15s"}}>
+                <div style={{width:22,height:22,borderRadius:6,border:"1.5px solid "+(packed[i]?"var(--sage2)":"var(--border2)"),background:packed[i]?"var(--sage)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all .15s"}}>{packed[i]&&<Check size={12} color="#fff"/>}</div>
+                <p style={{fontSize:15,color:packed[i]?"#9CA3AF":"var(--ink)",textDecoration:packed[i]?"line-through":"none"}}>{item}</p>
+              </div>
+            ))}
+            {ev.packingList.length>0&&Object.values(packed).filter(Boolean).length===ev.packingList.length&&<p style={{fontSize:15,color:"var(--sage)",fontWeight:700,marginTop:10,display:"flex",alignItems:"center",gap:5}}><Check size={12}/>All packed!</p>}
+          </Card>
+        )}
+
+        {/* Comments + @tagging */}
+        <div style={{marginBottom:16}}>
+          {/* Header */}
+          <button onClick={()=>setShowComments(s=>!s)}
+            style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"none",padding:"0 0 14px",width:"100%",justifyContent:"flex-start"}}>
+            <div style={{width:28,height:28,borderRadius:8,background:"rgba(67,143,126,.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              <MessageCircle size={14} color="var(--sage3)"/>
+            </div>
+            <p style={{fontWeight:600,fontSize:16,color:"var(--cream)"}}>Notes & Comments</p>
+            {comments.length>0&&(
+              <div style={{background:"var(--sage)",borderRadius:99,minWidth:20,height:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 6px"}}>
+                <span style={{fontSize:11,fontWeight:700,color:"var(--cream)"}}>{comments.length}</span>
               </div>
             )}
-          </div>
-          {/* Location */}
-          {ev.location&&(
-            <div style={{display:"flex",alignItems:"flex-start",gap:8,background:"var(--ink3)",borderRadius:12,padding:"12px 14px"}}>
-              <MapPin size={14} color="var(--sage)" style={{flexShrink:0,marginTop:2}}/>
-              <span style={{fontSize:15,color:"var(--cream)"}}>{ev.location}</span>
-            </div>
-          )}
-          {/* Notes */}
-          {ev.notes&&(
-            <div style={{background:"var(--ink3)",borderRadius:12,padding:"12px 14px"}}>
-              <p style={{fontSize:13,fontWeight:600,color:"var(--cream3)",marginBottom:4}}>NOTES</p>
-              <p style={{fontSize:15,color:"var(--cream)",lineHeight:1.6}}>{ev.notes}</p>
-            </div>
-          )}
-          {/* Packing list */}
-          {ev.packingList&&ev.packingList.length>0&&(
-            <div style={{background:"var(--ink3)",borderRadius:12,padding:"12px 14px"}}>
-              <p style={{fontSize:13,fontWeight:600,color:"var(--cream3)",marginBottom:8}}>PACKING LIST</p>
-              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                {ev.packingList.map(function(item,i){return(
-                  <span key={i} style={{fontSize:14,background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:99,padding:"4px 10px",color:"var(--cream)"}}>{item}</span>
-                );})}
-              </div>
-            </div>
-          )}
-          {/* Cost */}
-          {ev.cost&&(
-            <div style={{display:"flex",alignItems:"center",gap:8,background:"var(--ink3)",borderRadius:12,padding:"12px 14px"}}>
-              <DollarSign size={14} color="var(--sage)"/>
-              <span style={{fontSize:15,color:"var(--cream)"}}>${ev.cost} {ev.costType||"one-time"}</span>
-            </div>
-          )}
-          {/* Recurring */}
-          {ev.recurring&&(
-            <div style={{display:"flex",alignItems:"center",gap:8,background:"rgba(45,90,61,.06)",borderRadius:12,padding:"10px 14px",border:"1px solid rgba(45,90,61,.12)"}}>
-              <Repeat size={14} color="var(--sage)"/>
-              <span style={{fontSize:14,color:"var(--sage2)",fontWeight:600}}>Repeats {ev.recurFreq||"weekly"}{ev.recurEnd?" until "+ev.recurEnd:""}</span>
-            </div>
-          )}
-          </div>
-        </div>
-        {/* Sticky footer with actions */}
-        <div style={{flexShrink:0,padding:"12px 20px",paddingBottom:"calc(env(safe-area-inset-bottom,16px) + 12px)",background:"var(--ink2)",borderTop:"1px solid var(--border)",display:"flex",gap:10}}>
-          <button onClick={function(){onDelete(ev.id);onClose();}}
-            style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"rgba(196,90,90,.08)",color:"var(--rose)",border:"1px solid rgba(196,90,90,.2)",borderRadius:10,padding:"10px 0",fontWeight:600,fontSize:14}}>
-            <Trash2 size={14}/>Delete
+            <div style={{marginLeft:"auto",color:"var(--cream3)"}}>{showComments?<ChevronUp size={15}/>:<ChevronDown size={15}/>}</div>
           </button>
-          <Btn onClick={function(){onEdit&&onEdit(ev);}} style={{flex:2,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-            <Check size={14}/>Edit Event
+
+          {showComments&&(
+            <>
+              {/* @mention hint — only show when no comments yet */}
+              {comments.length===0&&(
+                <div style={{display:"flex",alignItems:"center",gap:10,background:"var(--ink3)",borderRadius:14,padding:"12px 14px",marginBottom:14,border:"1px solid var(--border)"}}>
+                  <span style={{fontSize:20,flexShrink:0}}>💬</span>
+                  <div>
+                    <p style={{fontSize:14,fontWeight:500,color:"var(--cream2)",marginBottom:2}}>Leave a note for the family</p>
+                    <p style={{fontSize:12,color:"var(--cream3)",fontWeight:300}}>Type <strong style={{color:"var(--sage3)",fontWeight:600}}>@name</strong> to tag someone — they'll get notified instantly</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Comment bubbles */}
+              {comments.length>0&&(
+                <div style={{display:"flex",flexDirection:"column",gap:14,marginBottom:14}}>
+                  {comments.map(c=>{
+                    const taggedMs=(c.taggedIds||[]).map(id=>members.find(m=>m.id===id)).filter(Boolean);
+                    return (
+                      <div key={c.id} style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+                        {/* Avatar */}
+                        <div style={{width:32,height:32,borderRadius:10,background:"var(--sage)",backgroundImage:"linear-gradient(135deg,var(--sage),var(--sage2))",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0,boxShadow:"0 2px 8px rgba(46,107,94,.25)"}}>
+                          {c.authorEmoji||"👤"}
+                        </div>
+                        <div style={{flex:1,minWidth:0}}>
+                          {/* Author + time */}
+                          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>
+                            <p style={{fontSize:13,fontWeight:700,color:"var(--cream2)"}}>{c.author}</p>
+                            <span style={{width:3,height:3,borderRadius:"50%",background:"var(--border3)",flexShrink:0,display:"inline-block"}}/>
+                            <p style={{fontSize:12,color:"var(--cream3)",fontWeight:300}}>{c.date} · {c.time}</p>
+                          </div>
+                          {/* Bubble */}
+                          <div style={{background:"var(--ink3)",borderRadius:"4px 16px 16px 16px",padding:"11px 14px",border:"1px solid var(--border2)",marginBottom:taggedMs.length>0?8:0}}>
+                            <p style={{fontSize:15,color:"var(--cream)",lineHeight:1.6}}>{renderCommentText(c.text)}</p>
+                          </div>
+                          {/* Tagged members */}
+                          {taggedMs.length>0&&(
+                            <div style={{display:"flex",gap:5,flexWrap:"wrap",alignItems:"center",marginTop:5}}>
+                              <Bell size={11} color="var(--cream3)"/>
+                              <span style={{fontSize:12,color:"var(--cream3)",fontWeight:300}}>Notified:</span>
+                              {taggedMs.map(tm=>(
+                                <div key={tm.id} style={{display:"flex",alignItems:"center",gap:4,background:tm.color+"18",borderRadius:99,padding:"3px 9px",border:"1px solid "+tm.color+"35"}}>
+                                  <span style={{fontSize:13}}>{tm.photo?<img src={tm.photo} style={{width:12,height:12,borderRadius:"50%",objectFit:"cover"}} alt=""/>:tm.emoji}</span>
+                                  <span style={{fontSize:12,fontWeight:700,color:tm.color}}>{tm.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* @mention picker */}
+              {showMentionPicker&&filteredMembers.length>0&&(
+                <div className="fu" style={{background:"var(--ink3)",border:"1px solid var(--border2)",borderRadius:16,marginBottom:10,overflow:"hidden",boxShadow:"0 16px 40px rgba(0,0,0,.4)"}}>
+                  <div style={{padding:"10px 14px 8px",borderBottom:"1px solid var(--border)"}}>
+                    <p style={{fontSize:11,color:"var(--cream3)",fontWeight:700,textTransform:"uppercase",letterSpacing:".1em"}}>Tag a family member</p>
+                  </div>
+                  {filteredMembers.map((member,i)=>(
+                    <div key={member.id} onMouseDown={()=>insertMention(member)}
+                      style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",cursor:"pointer",borderBottom:i<filteredMembers.length-1?"1px solid var(--border)":"none",transition:"background .15s"}}
+                      onMouseEnter={e=>e.currentTarget.style.background="var(--ink4)"}
+                      onMouseLeave={e=>e.currentTarget.style.background="transparent"}
+                    >
+                      <div style={{width:38,height:38,borderRadius:12,background:member.color+"18",border:"1.5px solid "+member.color+"40",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",fontSize:20,flexShrink:0}}>
+                        {member.photo?<img src={member.photo} style={{width:"100%",height:"100%",objectFit:"cover"}} alt=""/>:member.emoji}
+                      </div>
+                      <div style={{flex:1}}>
+                        <p style={{fontWeight:600,fontSize:15,color:"var(--cream)"}}>@{member.name}</p>
+                        <p style={{fontSize:12,color:"var(--cream3)",marginTop:1,fontWeight:300}}>Tap to tag · instant notification</p>
+                      </div>
+                      <div style={{width:28,height:28,borderRadius:8,background:member.color+"22",border:"1px solid "+member.color+"44",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                        <Bell size={13} color={member.color}/>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Comment input */}
+              <div style={{display:"flex",gap:10,alignItems:"flex-end"}}>
+                <div style={{width:32,height:32,borderRadius:10,background:"linear-gradient(135deg,var(--sage),var(--sage2))",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:14,boxShadow:"0 2px 8px rgba(46,107,94,.25)"}}>👤</div>
+                <div style={{flex:1,background:"var(--ink3)",borderRadius:16,padding:"11px 14px",border:"1px solid var(--border2)",transition:"border-color .2s,box-shadow .2s"}}
+                  onFocusCapture={e=>{e.currentTarget.style.borderColor="var(--sage2)";e.currentTarget.style.boxShadow="0 0 0 3px rgba(67,143,126,.12)";}}
+                  onBlurCapture={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.boxShadow="none";}}
+                >
+                  <input
+                    ref={commentInputRef}
+                    placeholder="Add a note, or @ to loop someone in…"
+                    value={commentText}
+                    onChange={e=>handleCommentInput(e.target.value)}
+                    onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&addComment()}
+                    onBlur={()=>setTimeout(()=>setShowMentionPicker(false),150)}
+                    style={{background:"transparent",border:"none",padding:0,fontSize:15,width:"100%",color:"var(--cream)"}}
+                  />
+                  {commentText.trim()&&(
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:10,paddingTop:10,borderTop:"1px solid var(--border)"}}>
+                      <div style={{display:"flex",gap:5,flexWrap:"wrap",flex:1}}>
+                        {extractMentions(commentText).map(tm=>(
+                          <div key={tm.id} style={{display:"flex",alignItems:"center",gap:4,background:tm.color+"18",borderRadius:99,padding:"3px 9px",border:"1px solid "+tm.color+"35"}}>
+                            <Bell size={10} color={tm.color}/>
+                            <span style={{fontSize:12,fontWeight:700,color:tm.color}}>{tm.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <button onClick={addComment}
+                        style={{width:32,height:32,borderRadius:10,background:"var(--sage)",backgroundImage:"linear-gradient(135deg,var(--sage),var(--sage2))",display:"flex",alignItems:"center",justifyContent:"center",border:"none",flexShrink:0,boxShadow:"0 4px 12px rgba(46,107,94,.4)"}}>
+                        <Send size={14} color="var(--cream)"/>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Share + Delete row */}
+        <div style={{display:"flex",gap:10,marginBottom:0}}>
+          <button
+            onClick={()=>setShowShare(true)}
+            style={{flex:1,background:"var(--sage-light)",border:"1.5px solid var(--sage-mid)",borderRadius:12,padding:"13px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontWeight:700,fontSize:15,color:"var(--sage)",cursor:"pointer"}}
+          >
+            <Share2 size={16}/>Share Event
+          </button>
+          <Btn v="danger" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}} onClick={function(){setConfirmDelete(true);}}>
+            <Trash2 size={15}/>Delete
           </Btn>
         </div>
+
+        {/* Share Sheet */}
+        {showShare&&<ShareSheet ev={ev} onClose={()=>setShowShare(false)}/>}
+
+        {/* Delete confirmation sheet */}
+        {confirmDelete&&(
+          <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:600,display:"flex",alignItems:"flex-end"}} onClick={function(){setConfirmDelete(false);}}>
+            <div className="fu" style={{background:"#f5f0e8",borderRadius:"20px 20px 0 0",padding:"24px 20px 40px",width:"100%"}} onClick={function(e){e.stopPropagation();}}>
+              <div style={{width:36,height:4,borderRadius:2,background:"var(--ink4)",margin:"0 auto 20px"}}/>
+              <div style={{textAlign:"center",marginBottom:24}}>
+                <div style={{width:56,height:56,background:"rgba(168,56,56,.08)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px",border:"1px solid rgba(168,56,56,.2)"}}><Trash2 size={22} color="var(--rose)"/></div>
+                <p style={{fontSize:19,fontWeight:800,color:"#1a2e1a",marginBottom:6,fontFamily:"'Playfair Display',Georgia,serif"}}>Delete this event?</p>
+                <p style={{fontSize:15,color:"#2d5a3d",fontWeight:600}}>{ev.title}</p>
+                <p style={{fontSize:13,color:"var(--cream3)",marginTop:6,fontWeight:400}}>This cannot be undone.</p>
+              </div>
+              <div style={{display:"flex",gap:10}}>
+                <button onClick={function(){setConfirmDelete(false);}} style={{flex:1,padding:"14px",borderRadius:12,background:"#fff",border:"1.5px solid var(--border2)",fontWeight:600,fontSize:15,color:"var(--cream2)",boxShadow:"0 1px 3px rgba(45,60,45,.06)"}}>Keep it</button>
+                <button onClick={function(){onDelete(ev.id);}} style={{flex:1,padding:"14px",borderRadius:12,background:"#a83838",border:"none",fontWeight:700,fontSize:15,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}><Trash2 size={14}/>Delete</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
+/* ─── Add Sheet ─────────────────────────────────────────────────────────── */
 function AddSheet({members,onAdd,onClose,events=[]}) {
   useScrollLock(true);  // Lock background scroll while modal is open
   const [ev,setEv]=useState({title:"",memberId:members[0]&&members[0].id||"",date:todayStr,time:smartTime(),endTime:"",location:"",recurring:false,recurFreq:"weekly",recurEnd:addDays(todayStr,84),notes:"",packingList:[],cost:"",costType:"one-time",_pack:""});
@@ -1574,6 +1734,7 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
           <Btn onClick={submit} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,width:"100%"}}>
             {ev.recurring?<><Repeat size={15}/>Add Recurring</>:<><Check size={15}/>Add to Calendar</>}
           </Btn>
+        </div>
         </div>
       </div>
     </div>
@@ -4808,7 +4969,7 @@ export default function App() {
     <><GS/><Toasts toasts={toasts}/><PaywallScreen trialLeft={trial?trial.left:0} onPay={()=>{setPaid(true);setShowPaywall(false);toast({icon:"🎉",title:"You're a Calla Family member!",color:"var(--sage2)"});}} onDismiss={()=>setShowPaywall(false)}/></>
   );
 
-  const go=t=>{setTab(t);if(t==="inbox")setInboxBadge(0);};
+  const go=t=>{setTab(t);if(t==="inbox")setInboxBadge(0);setShowSearch(false);setSearchQuery("");};
   const upc=events.filter(e=>e.date>=todayStr&&e.date<=addDays(todayStr,2)).length;
 
   const screen=()=>{
@@ -4843,7 +5004,7 @@ export default function App() {
             {/* Right: avatars + badge + bell */}
             <div style={{display:"flex",alignItems:"center",gap:6}}>
               {members.slice(0,3).map(m=>(
-                <div key={m.id} onClick={()=>go("more")} title={m.name}
+                <div key={m.id} onClick={function(){go("home");}} title={m.name}
                   style={{width:28,height:28,borderRadius:"50%",background:m.color+"18",border:"1.5px solid "+m.color+"35",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,cursor:"pointer",overflow:"hidden",flexShrink:0,transition:"transform .15s"}}
                   onMouseEnter={e=>e.currentTarget.style.transform="scale(1.1)"}
                   onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}
@@ -4926,7 +5087,7 @@ export default function App() {
         </div>
       </div>
       <Nav active={tab} setActive={go} inboxBadge={inboxBadge} notifBadge={upc&&notif.enabled?upc:0}/>
-      {showGlobalEv&&globalSel&&<EventSheet ev={globalSel} members={members} onClose={function(){setShowGlobalEv(false);setGlobalSel(null);}} onDelete={function(id){delEvent(id);setShowGlobalEv(false);setGlobalSel(null);}} onEdit={function(ev){delEvent(ev.id);addEvent(ev);setShowGlobalEv(false);setGlobalSel(null);}}/> }
+      {showGlobalEv&&globalSel&&<EventSheet ev={globalSel} members={members} onClose={function(){setShowGlobalEv(false);setGlobalSel(null);}} onDelete={function(id){delEvent(id);setShowGlobalEv(false);setGlobalSel(null);}} user={user}/> }
       {showAdd&&<AddSheet members={members} events={events} onAdd={function(ev){addEvent(ev);setShowAdd(false);}} onClose={function(){setShowAdd(false);}}/> }
       {showVoice&&<VoiceSheet members={members} onAdd={function(ev){addEvent(ev);}} onClose={function(){setShowVoice(false);}}/> }
     </>
