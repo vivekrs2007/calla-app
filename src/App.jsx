@@ -566,7 +566,7 @@ function Auth({onLogin}) {
                 <div style={{width:7,height:7,borderRadius:"50%",background:"#febc2e"}}/>
                 <div style={{width:7,height:7,borderRadius:"50%",background:"#28c840"}}/>
                 <div style={{flex:1,background:"rgba(245,240,232,.08)",borderRadius:5,height:16,marginLeft:4,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  <span style={{fontSize:8,color:"rgba(245,240,232,.4)"}}>getcalla.ca</span>
+                  <span style={{fontSize:10,color:"rgba(245,240,232,.4)"}}>getcalla.ca</span>
                 </div>
               </div>
               <div style={{background:"rgba(245,240,232,.05)",borderRadius:12,padding:"10px"}}>
@@ -594,7 +594,7 @@ function Auth({onLogin}) {
                   </div>
                   <div style={{flex:1}}>
                     <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Soccer Practice · Added ✓</p>
-                    <p style={{fontSize:9,color:"rgba(245,240,232,.45)"}}>Sat · 10:00am · Riverside Field</p>
+                    <p style={{fontSize:11,color:"rgba(245,240,232,.45)"}}>Sat · 10:00am · Riverside Field</p>
                   </div>
                 </div>
               </div>
@@ -611,12 +611,12 @@ function Auth({onLogin}) {
               <div style={{display:"flex",gap:6,marginBottom:10}}>
                 <div style={{flex:1,background:"rgba(59,130,246,.12)",border:"1px solid rgba(59,130,246,.22)",borderRadius:10,padding:"8px 10px",textAlign:"center"}}>
                   <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.85)",marginBottom:2}}>📋 Paste it in</p>
-                  <p style={{fontSize:9,color:"rgba(245,240,232,.45)",lineHeight:1.4}}>Copy any email text, paste into Calla</p>
+                  <p style={{fontSize:11,color:"rgba(245,240,232,.45)",lineHeight:1.4}}>Copy any email text, paste into Calla</p>
                 </div>
                 <div style={{width:1,background:"rgba(245,240,232,.1)",flexShrink:0}}/>
                 <div style={{flex:1,background:"rgba(45,90,61,.15)",border:"1px solid rgba(45,90,61,.25)",borderRadius:10,padding:"8px 10px",textAlign:"center"}}>
                   <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.85)",marginBottom:2}}>📧 Forward it</p>
-                  <p style={{fontSize:9,color:"rgba(245,240,232,.45)",lineHeight:1.4}}>Forward to your Calla address</p>
+                  <p style={{fontSize:11,color:"rgba(245,240,232,.45)",lineHeight:1.4}}>Forward to your Calla address</p>
                 </div>
               </div>
 
@@ -628,7 +628,7 @@ function Auth({onLogin}) {
                     <div style={{width:22,height:22,borderRadius:"50%",background:"rgba(59,130,246,.25)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,flexShrink:0}}>📧</div>
                     <div style={{flex:1}}>
                       <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.88)"}}>Riverside Soccer Club</p>
-                      <p style={{fontSize:9,color:"rgba(245,240,232,.4)"}}>Practice Tue 4pm · Game Sat 10am · Permission slip...</p>
+                      <p style={{fontSize:11,color:"rgba(245,240,232,.4)"}}>Practice Tue 4pm · Game Sat 10am · Permission slip...</p>
                     </div>
                   </div>
                   {/* Shred lines overlay */}
@@ -644,14 +644,14 @@ function Auth({onLogin}) {
                   <div style={{height:"100%",width:"100%",background:"linear-gradient(90deg,rgba(200,60,60,.6),rgba(200,60,60,.9))",borderRadius:6,animation:"shimmer 1.5s linear infinite",backgroundSize:"200% 100%"}}/>
                 </div>
                 <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
-                  <p style={{fontSize:9,color:"rgba(200,80,80,.7)",fontWeight:600}}>🗑️ Deleting email...</p>
-                  <p style={{fontSize:9,color:"rgba(200,80,80,.7)"}}>100%</p>
+                  <p style={{fontSize:11,color:"rgba(200,80,80,.7)",fontWeight:600}}>🗑️ Deleting email...</p>
+                  <p style={{fontSize:11,color:"rgba(200,80,80,.7)"}}>100%</p>
                 </div>
               </div>
 
               {/* Events extracted — safe */}
               <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:10}}>
-                <p style={{fontSize:9,fontWeight:700,color:"rgba(245,240,232,.4)",letterSpacing:".06em",marginBottom:2}}>EVENTS EXTRACTED · SAVED TO CALENDAR</p>
+                <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.4)",letterSpacing:".06em",marginBottom:2}}>EVENTS EXTRACTED · SAVED TO CALENDAR</p>
                 {[
                   {emoji:"⚽",title:"Soccer Practice",date:"Tue Mar 26 · 4:00pm"},
                   {emoji:"🏆",title:"Soccer Game",date:"Sat Mar 29 · 10:00am"},
@@ -660,7 +660,7 @@ function Auth({onLogin}) {
                     <span style={{fontSize:12}}>{ev.emoji}</span>
                     <div style={{flex:1}}>
                       <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.9)"}}>{ev.title}</p>
-                      <p style={{fontSize:9,color:"rgba(245,240,232,.5)"}}>{ev.date}</p>
+                      <p style={{fontSize:11,color:"rgba(245,240,232,.5)"}}>{ev.date}</p>
                     </div>
                     <div style={{width:14,height:14,borderRadius:"50%",background:"rgba(61,122,82,.6)",display:"flex",alignItems:"center",justifyContent:"center"}}><Check size={7} color="#f5f0e8"/></div>
                   </div>
@@ -669,7 +669,7 @@ function Auth({onLogin}) {
 
               {/* Privacy guarantees */}
               <div style={{background:"rgba(245,240,232,.05)",borderRadius:10,padding:"10px 12px",border:"1px solid rgba(245,240,232,.1)"}}>
-                <p style={{fontSize:9,fontWeight:700,color:"rgba(245,240,232,.5)",letterSpacing:".07em",marginBottom:7}}>🔒 OUR PRIVACY GUARANTEES</p>
+                <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.5)",letterSpacing:".07em",marginBottom:7}}>🔒 OUR PRIVACY GUARANTEES</p>
                 {[
                   "Email deleted immediately — never stored on our servers",
                   "We never read, share or sell your email content",
@@ -678,7 +678,7 @@ function Auth({onLogin}) {
                 ].map(function(pt,i){return(
                   <div key={i} style={{display:"flex",alignItems:"flex-start",gap:6,marginBottom:i<3?5:0}}>
                     <div style={{width:12,height:12,borderRadius:"50%",background:"rgba(61,122,82,.5)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}}><Check size={6} color="#f5f0e8"/></div>
-                    <p style={{fontSize:9,color:"rgba(245,240,232,.7)",lineHeight:1.45,fontWeight:400}}>{pt}</p>
+                    <p style={{fontSize:11,color:"rgba(245,240,232,.7)",lineHeight:1.45,fontWeight:400}}>{pt}</p>
                   </div>
                 );})}
               </div>
@@ -691,20 +691,20 @@ function Auth({onLogin}) {
         {cur.visual&&cur.visual.type==="superpowers"&&(
           <div className="fu" style={{marginBottom:8}}>
             <div style={{background:"rgba(245,240,232,.06)",border:"1px solid rgba(245,240,232,.12)",borderRadius:20,padding:"14px"}}>
-              <p style={{fontSize:9,fontWeight:700,color:"rgba(245,240,232,.4)",letterSpacing:".08em",marginBottom:6}}>SATURDAY · MARCH 29</p>
+              <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.4)",letterSpacing:".08em",marginBottom:6}}>SATURDAY · MARCH 29</p>
               <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:10}}>
                 <div style={{background:"rgba(124,58,237,.18)",border:"1px solid rgba(124,58,237,.28)",borderRadius:9,padding:"9px 10px",display:"flex",gap:8,alignItems:"center"}}>
                   <span style={{fontSize:14}}>⚽</span>
                   <div style={{flex:1}}>
                     <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Soccer Game</p>
-                    <p style={{fontSize:9,color:"rgba(245,240,232,.5)"}}>10:00am · Riverside Field · Emma</p>
+                    <p style={{fontSize:11,color:"rgba(245,240,232,.5)"}}>10:00am · Riverside Field · Emma</p>
                   </div>
                 </div>
                 <div style={{background:"rgba(196,149,58,.14)",border:"1px solid rgba(196,149,58,.28)",borderRadius:9,padding:"9px 10px",display:"flex",gap:8,alignItems:"center"}}>
                   <span style={{fontSize:14}}>🎹</span>
                   <div style={{flex:1}}>
                     <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Piano Recital</p>
-                    <p style={{fontSize:9,color:"rgba(245,240,232,.5)"}}>10:30am · Music Academy · Liam</p>
+                    <p style={{fontSize:11,color:"rgba(245,240,232,.5)"}}>10:30am · Music Academy · Liam</p>
                   </div>
                 </div>
               </div>
@@ -712,7 +712,7 @@ function Auth({onLogin}) {
                 <span style={{fontSize:14,animation:"pulse 2s infinite"}}>⚡</span>
                 <div style={{flex:1}}>
                   <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Conflict detected</p>
-                  <p style={{fontSize:9,color:"rgba(245,240,232,.5)"}}>30 min gap — who's taking which kid?</p>
+                  <p style={{fontSize:11,color:"rgba(245,240,232,.5)"}}>30 min gap — who's taking which kid?</p>
                 </div>
               </div>
               <div style={{display:"flex",gap:6}}>
@@ -721,7 +721,7 @@ function Auth({onLogin}) {
                     <span style={{fontSize:14}}>{p.emoji}</span>
                     <div>
                       <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.85)"}}>{p.name} notified</p>
-                      <p style={{fontSize:9,color:"rgba(245,240,232,.4)"}}>instantly ✓</p>
+                      <p style={{fontSize:11,color:"rgba(245,240,232,.4)"}}>instantly ✓</p>
                     </div>
                   </div>
                 );})}
@@ -743,7 +743,7 @@ function Auth({onLogin}) {
                 ].map(function(m,i){return(
                   <div key={i} style={{textAlign:"center"}}>
                     <div style={{width:36,height:36,borderRadius:10,background:m.color+"33",border:"1.5px solid "+m.color+"55",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,margin:"0 auto 4px"}}>{m.emoji}</div>
-                    <p style={{fontSize:9,color:"rgba(245,240,232,.55)",fontWeight:500}}>{m.name}</p>
+                    <p style={{fontSize:11,color:"rgba(245,240,232,.55)",fontWeight:500}}>{m.name}</p>
                   </div>
                 );})}
               </div>
@@ -756,7 +756,7 @@ function Auth({onLogin}) {
             <div style={{background:"rgba(245,240,232,.07)",borderRadius:14,padding:"12px 14px",border:"1px solid rgba(245,240,232,.12)"}}>
               {cur.visual.items.map(function(item,i){return(
                 <div key={i} style={{display:"flex",alignItems:"center",gap:9,marginBottom:i<cur.visual.items.length-1?9:0}}>
-                  <div style={{width:18,height:18,borderRadius:"50%",background:"rgba(61,122,82,.4)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:9,fontWeight:800,color:"rgba(245,240,232,.9)"}}>{item.icon}</div>
+                  <div style={{width:18,height:18,borderRadius:"50%",background:"rgba(61,122,82,.4)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:11,fontWeight:800,color:"rgba(245,240,232,.9)"}}>{item.icon}</div>
                   <p style={{fontSize:12,color:"rgba(245,240,232,.78)",fontWeight:400}}>{item.text}</p>
                 </div>
               );})}
@@ -806,7 +806,7 @@ function Auth({onLogin}) {
       <div className="fu" style={{width:"100%",maxWidth:380}}>
         <div style={{textAlign:"center",marginBottom:24}}>
           <div style={{width:52,height:52,background:"var(--sage)",borderRadius:16,display:"inline-flex",alignItems:"center",justifyContent:"center",marginBottom:14}}><span style={{fontSize:22}}>🌸</span></div>
-          <h1 style={{fontSize:26,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Lora',serif"}}>Calla</h1>
+          <h1 style={{fontSize:26,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif"}}>Calla</h1>
           <p style={{color:"var(--cream3)",fontSize:15,marginTop:3}}>The family brain you don't have to be.</p>
         </div>
 
@@ -2232,7 +2232,7 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
                         {dayEvs.slice(0,1).map(function(ev){return(
                           <div key={ev.id} onClick={function(e){e.stopPropagation();setSel(ev);}}
                             style={{background:ev.color,borderRadius:2,padding:"1px 3px",overflow:"hidden"}}>
-                            <p style={{fontSize:8,fontWeight:700,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",lineHeight:1.4}}>{ev.title}</p>
+                            <p style={{fontSize:10,fontWeight:700,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",lineHeight:1.4}}>{ev.title}</p>
                           </div>
                         );})}
                         {dayEvs.length>1&&(
@@ -4181,7 +4181,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
       per:   "/ year",
       sub:   "Full access · less than a coffee a month — your whole family, organized.",
       badge: "Only $1.66/mo",
-      color: "var(--ink)",
+      color: "#1e4d32",
     },
     {
       id:    "year30",
@@ -4244,7 +4244,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
       <div style={{ flex:1, padding:"28px 24px" }}>
 
         {/* What's included */}
-        <p style={{ fontSize:15, fontWeight:700, color:"#1a2e1a", textTransform:"uppercase", letterSpacing:".07em", marginBottom:14 }}>Everything included — no limits</p>
+        <p style={{ fontSize:15, fontWeight:700, color:"var(--cream)", textTransform:"uppercase", letterSpacing:".07em", marginBottom:14 }}>Everything included — no limits</p>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:28 }}>
           {[
             ["🎙","Voice Add","Say it, it's added"],
@@ -4265,7 +4265,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
         </div>
 
         {/* Plan picker */}
-        <p style={{ fontSize:15, fontWeight:700, color:"#1a2e1a", textTransform:"uppercase", letterSpacing:".07em", marginBottom:12 }}>Choose your plan</p>
+        <p style={{ fontSize:15, fontWeight:700, color:"var(--cream)", textTransform:"uppercase", letterSpacing:".07em", marginBottom:12 }}>Choose your plan</p>
         <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:20 }}>
           {PLANS.map(p => (
             <div
@@ -4286,7 +4286,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
             >
               {/* Radio */}
               <div style={{ width:22, height:22, borderRadius:"50%", border:"2px solid", borderColor:plan===p.id?"#fff":"#D1D5DB", background:plan===p.id?"rgba(255,255,255,.25)":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                {plan===p.id && <div style={{ width:8, height:8, borderRadius:"50%", background:"var(--ink2)" }}/>}
+                {plan===p.id && <div style={{ width:8, height:8, borderRadius:"50%", background:"#fff" }}/>}
               </div>
               <div style={{ flex:1 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
