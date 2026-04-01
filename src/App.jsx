@@ -1991,7 +1991,6 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
   const [anchor,setAnchor]=useState(todayStr);
   const [showAdd,setShowAdd]=useState(false);
   const [showVoice,setShowVoice]=useState(false);
-  const [showGlobalEv,setShowGlobalEv]=useState(false);
   const [searchQuery,setSearchQuery]=useState("");
   const [sel,setSel]=useState(null);
   const [map,setMap]=useState(false);
@@ -4667,6 +4666,7 @@ export default function App() {
   const [showPaywall,setShowPaywall] = useState(false);
   const [showAdd,setShowAdd]=useState(false);
   const [showVoice,setShowVoice]=useState(false);
+  const [showGlobalEv,setShowGlobalEv]=useState(false);
   const [showSearch,setShowSearch]=useState(false);
   const [searchQuery,setSearchQuery]=useState("");
   const [familyId,setFamilyId]   = useState(null);
