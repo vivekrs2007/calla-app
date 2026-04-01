@@ -4631,14 +4631,9 @@ function DiscoverScreen({members,onAdd,user}) {
                   {item.location&&<span style={{fontSize:12,color:"var(--cream3)",display:"flex",alignItems:"center",gap:3}}><MapPin size={11} color="var(--cream3)"/>{item.location}</span>}
                 </div>
                 <div style={{display:"flex",gap:8}}>
-                <div style={{display:"flex",gap:8}}>
                   <button onClick={function(){addToCalendar(item);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"var(--sage)",color:"var(--cream)",borderRadius:10,padding:"10px 0",fontWeight:700,fontSize:14,border:"none",flex:2}}>
                     <Check size={14}/>Add to Calla
                   </button>
-                  <button onClick={function(){var url=item.url&&item.url.length>4?item.url:"https://www.google.com/search?q="+encodeURIComponent(item.title+" "+item.location);window.open(url,"_blank");}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"var(--ink3)",color:"var(--cream3)",borderRadius:10,padding:"10px 0",fontWeight:600,fontSize:14,border:"1px solid var(--border2)",flex:1}}>
-                    <Share2 size={13}/>View
-                  </button>
-                </div>
                   <button onClick={function(){
                     var url=item.url&&item.url.length>4?item.url:"https://www.google.com/search?q="+encodeURIComponent(item.title+" "+item.location);
                     window.open(url,"_blank");
@@ -4720,7 +4715,6 @@ export default function App() {
   const [showPaywall,setShowPaywall] = useState(false);
   const [showAdd,setShowAdd]=useState(false);
   const [showVoice,setShowVoice]=useState(false);
-  const [showGlobalEv,setShowGlobalEv]=useState(false);
   const [showSearch,setShowSearch]=useState(false);
   const [searchQuery,setSearchQuery]=useState("");
   const [familyId,setFamilyId]   = useState(null);
@@ -5021,7 +5015,7 @@ export default function App() {
     <><GS/><Toasts toasts={toasts}/><PaywallScreen trialLeft={trial?trial.left:0} onPay={()=>{setPaid(true);setShowPaywall(false);toast({icon:"🎉",title:"You're a Calla Family member!",color:"var(--sage2)"});}} onDismiss={()=>setShowPaywall(false)}/></>
   );
 
-  const go=t=>{setTab(t);if(t==="inbox")setInboxBadge(0);setShowSearch(false);setSearchQuery("");};
+  const go=t=>{setTab(t);if(t==="inbox")setInboxBadge(0);};
   const upc=events.filter(e=>e.date>=todayStr&&e.date<=addDays(todayStr,2)).length;
 
   const screen=()=>{
@@ -5056,7 +5050,7 @@ export default function App() {
             {/* Right: avatars + badge + bell */}
             <div style={{display:"flex",alignItems:"center",gap:6}}>
               {members.slice(0,3).map(m=>(
-                <div key={m.id} onClick={function(){go("home");}} title={m.name}
+                <div key={m.id} onClick={()=>go("more")} title={m.name}
                   style={{width:28,height:28,borderRadius:"50%",background:m.color+"18",border:"1.5px solid "+m.color+"35",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,cursor:"pointer",overflow:"hidden",flexShrink:0,transition:"transform .15s"}}
                   onMouseEnter={e=>e.currentTarget.style.transform="scale(1.1)"}
                   onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}
@@ -5110,7 +5104,7 @@ export default function App() {
                       var isToday=ev.date===todayStr;
                       var isPast=ev.date<todayStr;
                       return (
-                        <div key={ev.id} onClick={function(){setGlobalSel(ev);setShowGlobalEv(true);setShowSearch(false);setSearchQuery("");go("home");}}
+                        <div key={ev.id} onClick={function(){setGlobalSel(ev);setShowSearch(false);setSearchQuery("");go("home");}}
                           style={{background:"#fff",border:"1px solid var(--border2)",borderLeft:"4px solid "+ev.color,borderRadius:14,padding:"12px 14px",cursor:"pointer",opacity:isPast?0.65:1}}
                         >
                           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
@@ -5139,7 +5133,6 @@ export default function App() {
         </div>
       </div>
       <Nav active={tab} setActive={go} inboxBadge={inboxBadge} notifBadge={upc&&notif.enabled?upc:0}/>
-      {showGlobalEv&&globalSel&&<EventSheet ev={globalSel} members={members} onClose={function(){setShowGlobalEv(false);setGlobalSel(null);}} onDelete={function(id){delEvent(id);setShowGlobalEv(false);setGlobalSel(null);}} user={user}/> }
       {showAdd&&<AddSheet members={members} events={events} onAdd={function(ev){addEvent(ev);setShowAdd(false);}} onClose={function(){setShowAdd(false);}}/> }
       {showVoice&&<VoiceSheet members={members} onAdd={function(ev){addEvent(ev);}} onClose={function(){setShowVoice(false);}}/> }
     </>
