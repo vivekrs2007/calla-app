@@ -4420,6 +4420,7 @@ function DiscoverScreen({members,onAdd,user}) {
                   {hasDeadline&&<span style={{fontSize:12,fontWeight:600,background:"rgba(196,90,90,.1)",color:"var(--rose)",borderRadius:99,padding:"3px 10px"}}>⏰ Deadline: {item.deadline}</span>}
                   {hasDate&&!hasDeadline&&<span style={{fontSize:12,fontWeight:600,background:"rgba(45,90,61,.08)",color:"var(--sage2)",borderRadius:99,padding:"3px 10px"}}>📅 {item.date}</span>}
                   {item.location&&<span style={{fontSize:12,color:"var(--cream3)",display:"flex",alignItems:"center",gap:3}}><MapPin size={11} color="var(--cream3)"/>{item.location}</span>}
+                </div>
                 <div style={{display:"flex",gap:8}}>
                   <button onClick={function(){addToCalendar(item);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"var(--sage)",color:"var(--cream)",borderRadius:10,padding:"10px 0",fontWeight:700,fontSize:14,border:"none",flex:2}}>
                     <Check size={14}/>Add to Calla
@@ -4428,7 +4429,6 @@ function DiscoverScreen({members,onAdd,user}) {
                     <Share2 size={13}/>View
                   </button>
                 </div>
-                </button>
               </div>
             );
           })}
