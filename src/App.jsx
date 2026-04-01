@@ -4175,12 +4175,21 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
 
   const PLANS = [
     {
-      id:    "year30",
-      label: "Yearly",
-      price: "$30",
+      id:    "year20",
+      label: "Family Plan",
+      price: "$19.99",
       per:   "/ year",
-      sub:   "Less than $2.50/month — less than a coffee",
-      badge: "Best value",
+      sub:   "Full access · less than a coffee a month — your whole family, organized.",
+      badge: "Only $1.66/mo",
+      color: "var(--ink)",
+    },
+    {
+      id:    "year30",
+      label: "Family Plan+",
+      price: "$29.99",
+      per:   "/ year",
+      sub:   "Full access + help us build more futuristic tools. Your extra $10 directly funds new smart features.",
+      badge: "Most popular",
       color: "var(--sage)",
     },
   ];
