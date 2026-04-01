@@ -500,22 +500,15 @@ function Auth({onLogin}) {
           } else if(msg.toLowerCase().includes("invalid email")){
             setAuthError("Please enter a valid email address.");
           } else if(msg.toLowerCase().includes("password")){
-            setAuthError("Password must be at least 8 characters.");
+            setAuthError("Password must be at least 6 characters.");
           } else {
             setAuthError("Something went wrong. Please try again.");
           }
           return;
         }
         var u=res.data.user;
-        if(!u){
-          setAuthError("Account created! Check your email to confirm your address before signing in.");
-          return;
-        }
-        supabase.from("profiles").upsert({id:u.id,name:name.trim(),family_name:family.trim(),setup_done:false}).then(function(pr){
-          if(pr.error){console.error("Profile upsert error:",pr.error);}
-          onLogin({id:u.id,name:name.trim()||"Parent",family:family.trim()||"My Family",email:email.trim().toLowerCase()});
-        }).catch(function(){
-          onLogin({id:u.id,name:name.trim()||"Parent",family:family.trim()||"My Family",email:email.trim().toLowerCase()});
+        supabase.from("profiles").upsert({id:u.id,name:name.trim(),family_name:family.trim(),setup_done:false,trial_start:new Date().toISOString(),paid:false}).then(function(){
+          onLogin({id:u.id,name:name.trim()||"Parent",family:family.trim()||"My Family",email:email.trim()});
         });
       });
     } else {
@@ -525,7 +518,6 @@ function Auth({onLogin}) {
         var u=res.data.user;
         var meta=u.user_metadata||{};
         localStorage.setItem("calla_setup_"+u.id,"true");
-        supabase.from("profiles").update({setup_done:true}).eq("id",u.id).then(function(){});
         onLogin({id:u.id,name:meta.name||"Parent",family:meta.family_name||"My Family",email:u.email});
       });
     }
@@ -896,15 +888,7 @@ function Auth({onLogin}) {
                 <p style={{fontSize:13,color:"var(--cream3)",textAlign:"center"}}>No credit card required · No ads · Your data is private</p>
               </div>
             )}
-            {mode==="login"&&<button type="button" onClick={function(){
-              if(!email.trim()){setAuthError("Enter your email above first.");return;}
-              setLoading(true);
-              supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(),{redirectTo:window.location.origin}).then(function(res){
-                setLoading(false);
-                if(res.error){setAuthError("Could not send reset email. Please try again.");}
-                else{setAuthError("");alert("Password reset email sent! Check your inbox.");}
-              });
-            }} style={{background:"none",border:"none",color:"var(--sage3)",fontSize:14,fontWeight:600,cursor:"pointer"}}>Forgot password?</button>}
+            {mode==="login"&&<button type="button" onClick={function(){if(!email.trim()){setAuthError("Enter your email above first.");return;}setLoading(true);supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(),{redirectTo:window.location.origin}).then(function(res){setLoading(false);if(res.error){setAuthError("Could not send reset email. Please try again.");}else{setAuthError("");alert("Password reset email sent! Check your inbox.");}});}} style={{background:"none",border:"none",color:"var(--sage3)",fontSize:14,fontWeight:600,cursor:"pointer"}}>Forgot password?</button>}
           </div>
         </Card>
 
@@ -1738,12 +1722,12 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
     {icon:"🏊",label:"Swimming Pool",keywords:["pool","swim","aquatic","leisure"]},
     {icon:"🎵",label:"Music Studio",keywords:["music","piano","guitar","violin","studio","academy"]},
     {icon:"🩰",label:"Dance Studio",keywords:["dance","ballet","studio"]},
-    {icon:"🏥",label:"Doctor - Clinic",keywords:["doctor","clinic","dentist","hospital","medical"]},
+    {icon:"🏥",label:"Doctor / Clinic",keywords:["doctor","clinic","dentist","hospital","medical"]},
     {icon:"🏫",label:"School",keywords:["school","elementary","high school","middle"]},
     {icon:"🛒",label:"Grocery Store",keywords:["grocery","supermarket","store","walmart","costco"]},
     {icon:"🎭",label:"Community Centre",keywords:["community","centre","center","hall","rec"]},
-    {icon:"🏟️",label:"Arena - Gym",keywords:["arena","gym","rink","court","complex","sportsplex"]},
-    {icon:"🌳",label:"Park - Playground",keywords:["park","playground","trail","nature"]},
+    {icon:"🏟️",label:"Arena / Gym",keywords:["arena","gym","rink","court","complex","sportsplex"]},
+    {icon:"🌳",label:"Park / Playground",keywords:["park","playground","trail","nature"]},
   ];
 
   const getSuggestions=()=>{
@@ -2059,7 +2043,7 @@ function DaySheet({date,events,members,onClose,onSelect}) {
 }
 
 /* ─── Dashboard ─────────────────────────────────────────────────────────── */
-function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,initialSel,onClearSel,onShowAdd,onShowVoice,onSelectEv}) {
+function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,initialSel,onClearSel,onShowAdd,onShowVoice,onSelectEv,trialExpired,onUpgrade}) {
   const [anchor,setAnchor]=useState(todayStr);
   const [showAdd,setShowAdd]=useState(false);
   const [showVoice,setShowVoice]=useState(false);
@@ -2100,11 +2084,11 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
     <div className="screen-enter">
       {/* ── Action buttons — VERY TOP ── */}
       <div style={{display:"flex",gap:10,marginBottom:16}}>
-        <button onClick={function(){onShowVoice();}}
+        <button onClick={function(){if(trialExpired){onUpgrade&&onUpgrade();return;}onShowVoice();}}
           style={{flex:1,background:"#fff",border:"1.5px solid var(--border2)",borderRadius:16,padding:"13px 10px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontWeight:600,fontSize:15,color:"var(--cream2)",boxShadow:"0 1px 4px rgba(45,60,45,.08)"}}>
           <Mic size={18} color="var(--sage3)"/>Voice
         </button>
-        <button onClick={function(){onShowAdd();}}
+        <button onClick={function(){if(trialExpired){onUpgrade&&onUpgrade();return;}onShowAdd();}}
           style={{flex:2,background:"linear-gradient(135deg,var(--sage),var(--sage2))",borderRadius:16,padding:"13px 10px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontWeight:700,fontSize:15,color:"#fff",boxShadow:"0 4px 16px rgba(45,90,61,.3)"}}>
           <Plus size={18}/>New Event
         </button>
@@ -4185,34 +4169,24 @@ function trialStatus(startDate) {
 
 /* Paywall / upgrade screen */
 function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
-  const [plan, setPlan]       = useState("year20");
+  const [plan, setPlan]       = useState("year30");
   const [loading, setLoading] = useState(false);
   const [done, setDone]       = useState(false);
 
   const PLANS = [
     {
-      id:    "year20",
-      label: "Yearly",
-      price: "$20",
-      per:   "/ year",
-      sub:   "Less than $2/month · Best value",
-      badge: "Most popular",
-      color: "var(--ink)",
-    },
-    {
       id:    "year30",
-      label: "Yearly+",
+      label: "Yearly",
       price: "$30",
       per:   "/ year",
-      sub:   "Supports future features & development",
-      badge: "Support us",
-      color: "#7C3AED",
+      sub:   "Less than $2.50/month — less than a coffee",
+      badge: "Best value",
+      color: "var(--sage)",
     },
   ];
 
   const pay = () => {
-    setLoading(true);
-    setTimeout(() => { setLoading(false); setDone(true); setTimeout(() => onPay(plan), 1400); }, 1800);
+    alert("Payments coming soon! We will notify you by email when Calla subscriptions are available.");
   };
 
   if (done) return (
@@ -4322,9 +4296,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
         <div style={{ background:"rgba(45,90,61,.07)", border:"1px solid rgba(83,136,122,.25)", borderRadius:12, padding:"12px 16px", marginBottom:20, display:"flex", alignItems:"center", gap:10 }}>
           <Check size={16} color="var(--sage2)" style={{ flexShrink:0 }}/>
           <p style={{ fontSize:15, color:"var(--sage3)", fontWeight:600 }}>
-            {plan==="year20"
-              ? "That's $1.67/month — less than a coffee per month to organise your whole family."
-              : "That's $2.50/month — and directly funds new features for your family."}
+            {"That's $2.50/month — less than a coffee to keep your whole family organised."}
           </p>
         </div>
 
@@ -4335,7 +4307,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
         >
           {loading
             ? <div style={{ width:18, height:18, border:"2px solid rgba(255,255,255,.3)", borderTopColor:"#fff", borderRadius:"50%", animation:"spin .7s linear infinite" }}/>
-            : <>Get Calla Family — {plan==="year20"?"$20":"$30"}/yr</>
+            : <>Get Calla Family — $30/yr (Coming Soon)</>
           }
         </button>
 
@@ -4745,7 +4717,7 @@ export default function App() {
   const [pendingInvite,setPendingInvite] = useState(null);
 
   // ── Trial scrubber ────────────────────────────────────────────────────────
-  const [simDay,setSimDay] = useState(0);
+  const [trialStart,setTrialStart] = useState(null);
 
   // ── Request push notification permission ─────────────────────────────────
   const requestNotificationPermission=function(){
@@ -4786,8 +4758,7 @@ export default function App() {
       });
     });
   };
-  const fakeStart = new Date(Date.now() - simDay * 86400000).toISOString();
-  const trial = paid ? null : trialStatus(fakeStart);
+  const trial = paid ? null : trialStatus(trialStart || new Date().toISOString());
 
   const toast=t=>{const id=genId();setToasts(p=>[...p,{...t,id}]);setTimeout(()=>setToasts(p=>p.filter(x=>x.id!==id)),3000);};
 
@@ -4806,13 +4777,14 @@ export default function App() {
         var u=session.user;
         var meta=u.user_metadata||{};
         setUser({id:u.id,name:meta.name||"Parent",family:meta.family_name||"My Family",email:u.email});
-        // Check setup_done from Supabase profile (cross-device)
-        supabase.from("profiles").select("setup_done,name,family_name").eq("id",u.id).then(function(pr){
+        supabase.from("profiles").select("setup_done,name,family_name,trial_start,paid").eq("id",u.id).then(function(pr){
           if(pr.data&&pr.data.length>0){
             var profile=pr.data[0];
             var done=profile.setup_done===true||localStorage.getItem("calla_setup_"+u.id)==="true";
             setSetupDone(done);
             if(profile.name) setUser({id:u.id,name:profile.name,family:profile.family_name||"My Family",email:u.email});
+            if(profile.trial_start) setTrialStart(profile.trial_start);
+            if(profile.paid===true) setPaid(true);
           } else {
             setSetupDone(localStorage.getItem("calla_setup_"+u.id)==="true");
           }
@@ -4828,7 +4800,7 @@ export default function App() {
     });
     var sub=supabase.auth.onAuthStateChange(function(event,session){
       if(event==="SIGNED_OUT"){
-        setUser(null);setSetupDone(false);setEvents([]);setMembers(M0);setFamilyId(null);
+        setUser(null);setSetupDone(false);setEvents([]);setMembers(M0);setFamilyId(null);setTrialStart(null);
       } else if((event==="SIGNED_IN"||event==="TOKEN_REFRESHED")&&session&&session.user){
         var u=session.user;
         var meta=u.user_metadata||{};
@@ -4889,16 +4861,7 @@ export default function App() {
   function sendInvite(partnerEmail,onSuccess,onError){
     if(!user||!user.id) return;
     var doInvite=function(fid){
-      // Check for existing pending invite first
-      supabase.from("invites").select("id,token").eq("family_id",fid).eq("invited_email",partnerEmail.trim().toLowerCase()).eq("status","pending").then(function(existing){
-        if(existing.data&&existing.data.length>0){
-          // Resend the existing link instead of creating a new one
-          var existingInvite=existing.data[0];
-          var link=window.location.origin+"?invite="+existingInvite.token;
-          onSuccess&&onSuccess(link,existingInvite.token);
-          return;
-        }
-        supabase.from("invites").insert({
+      supabase.from("invites").insert({
         family_id:fid,
         invited_by:user.id,
         invited_email:partnerEmail.trim().toLowerCase(),
@@ -4930,7 +4893,6 @@ export default function App() {
           else console.log("Email sent successfully");
         });
         onSuccess&&onSuccess(link,invite.token);
-        });
       });
     };
     if(familyId){
@@ -4968,20 +4930,6 @@ export default function App() {
         return;
       }
       var invite=res.data[0];
-      // Security: verify this invite was meant for this user
-      if(invite.invited_email&&user.email&&invite.invited_email.toLowerCase()!==user.email.toLowerCase()){
-        toast({icon:"⚠️",title:"This invite was sent to a different email address",color:"var(--rose)"});
-        return;
-      }
-      // Check expiry (7 days)
-      var created=new Date(invite.created_at);
-      var now=new Date();
-      var daysDiff=(now-created)/(1000*60*60*24);
-      if(daysDiff>7){
-        toast({icon:"⚠️",title:"This invite has expired (7 days)",color:"var(--rose)"});
-        supabase.from("invites").update({status:"expired"}).eq("id",invite.id).then(function(){});
-        return;
-      }
       var fid=invite.family_id;
       // Join the family
       supabase.from("family_members").upsert({family_id:fid,user_id:user.id,role:"parent"}).then(function(){
@@ -5090,9 +5038,16 @@ export default function App() {
   const upc=events.filter(e=>e.date>=todayStr&&e.date<=addDays(todayStr,2)).length;
 
   const screen=()=>{
-    if(tab==="home")    return <DashScreen events={events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)} onSelectEv={function(ev){setGlobalSel(ev);setShowGlobalEv(true);}}/>;
+    if(tab==="home")    return <DashScreen events={events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)} onSelectEv={function(ev){setGlobalSel(ev);setShowGlobalEv(true);}} trialExpired={!paid&&trial&&trial.expired} onUpgrade={function(){setShowPaywall(true);}}/>;
     if(tab==="inbox")   return <InboxScreen members={members} onAdd={addEvent}/>;
-    if(tab==="discover") return <DiscoverScreen members={members} onAdd={addEvent} user={user}/>;
+    if(tab==="discover") return !paid&&trial&&trial.expired ? (
+      <div style={{textAlign:"center",padding:"60px 24px"}}>
+        <div style={{fontSize:48,marginBottom:16}}>🔒</div>
+        <p style={{fontWeight:700,fontSize:18,color:"var(--cream)",marginBottom:8}}>Trial ended</p>
+        <p style={{fontSize:15,color:"var(--cream3)",marginBottom:24}}>Subscribe to keep using Discover.</p>
+        <Btn onClick={function(){setShowPaywall(true);}}>View Plans</Btn>
+      </div>
+    ) : <DiscoverScreen members={members} onAdd={addEvent} user={user}/>;
     if(tab==="lists")   return <ListsScreen members={members}/>;
     if(tab==="members") return <MembersScreen members={members} setMembers={setMembers} events={events}/>;
     if(tab==="notif")   return <NotifScreen events={events} members={members} onSelectEvent={ev=>{setGlobalSel(ev);setTab("home");}}/>;
