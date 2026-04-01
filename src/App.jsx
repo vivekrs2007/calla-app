@@ -1759,7 +1759,7 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
             <div><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>DATE *</label><input type="date" value={ev.date} onChange={e=>s("date")(e.target.value)} style={{colorScheme:"light",color:"var(--cream)",background:"#fff"}}/></div>
             <div><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>START TIME</label><input type="time" value={ev.time} onChange={e=>s("time")(e.target.value)} style={{colorScheme:"light",color:"var(--cream)",background:"#fff"}}/></div>
-            <div style={{gridColumn:"1/-1"}}><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>END TIME <span style={{fontWeight:400}}>(optional)</span></label><input type="time" value={ev.endTime||""} onChange={e=>s("endTime")(e.target.value)} style={{colorScheme:"light",color:"var(--cream)",background:"#fff"}}/></div>
+            <div style={{gridColumn:"span 2"}}><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>END TIME <span style={{fontWeight:400}}>(optional)</span></label><input type="time" value={ev.endTime||""} onChange={e=>s("endTime")(e.target.value)} style={{colorScheme:"light",color:"var(--cream)",background:"#fff"}}/></div>
           </div>
           <div style={{position:"relative"}}>
             <label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>LOCATION</label>
@@ -2043,7 +2043,7 @@ function DaySheet({date,events,members,onClose,onSelect}) {
 }
 
 /* ─── Dashboard ─────────────────────────────────────────────────────────── */
-function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,initialSel,onClearSel,onShowAdd,onShowVoice}) {
+function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,initialSel,onClearSel,onShowAdd,onShowVoice,onSelectEv}) {
   const [anchor,setAnchor]=useState(todayStr);
   const [showAdd,setShowAdd]=useState(false);
   const [showVoice,setShowVoice]=useState(false);
@@ -2103,7 +2103,7 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
             </div>
           )}
       <Briefing events={filteredEvents} members={members} onSelect={function(ev){setSel(ev);}} selMember={selMember}/>
-      <ConflictBanner items={cfls} members={members} onSelect={ev=>setSel(ev)}/>
+      <ConflictBanner items={cfls} members={members} onSelect={function(ev){if(onSelectEv)onSelectEv(ev);else setSel(ev);}}/>
 
       {/* ── Calendar header ── */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
@@ -2271,8 +2271,8 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
                 <p onClick={function(){setDayView(date);}} style={{fontSize:15,fontWeight:800,color:"var(--cream)",textAlign:"center",marginBottom:5,cursor:"pointer"}}>{new Date(date).getDate()}</p>
                 <div style={{display:"flex",flexDirection:"column",gap:2}}>
                   {dayEvs.slice(0,3).map(function(ev){return(
-                    <div key={ev.id} onClick={function(){setSel(ev);}} style={{background:ev.color+"cc",borderRadius:4,padding:"2px 4px",cursor:"pointer"}}>
-                      <p style={{fontSize:11,fontWeight:700,color:"#fff",lineHeight:1.3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ev.title}</p>
+                    <div key={ev.id} onClick={function(){if(onSelectEv)onSelectEv(ev);else setSel(ev);}} style={{background:ev.color+"cc",borderRadius:4,padding:"2px 4px",cursor:"pointer",overflow:"hidden",minWidth:0}}>
+                      <p style={{fontSize:11,fontWeight:700,color:"#fff",lineHeight:1.3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",whiteSpace:"nowrap"}}>{ev.title}</p>
                     </div>
                   );})}
                   {dayEvs.length>3&&<p style={{fontSize:11,color:isT?"rgba(255,255,255,.5)":"var(--cream3)",textAlign:"center"}}>+{dayEvs.length-3}</p>}
@@ -5027,7 +5027,7 @@ export default function App() {
   const upc=events.filter(e=>e.date>=todayStr&&e.date<=addDays(todayStr,2)).length;
 
   const screen=()=>{
-    if(tab==="home")    return <DashScreen events={events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)}/>;
+    if(tab==="home")    return <DashScreen events={events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)} onSelectEv={function(ev){setGlobalSel(ev);setShowGlobalEv(true);}}/>;
     if(tab==="inbox")   return <InboxScreen members={members} onAdd={addEvent}/>;
     if(tab==="discover") return <DiscoverScreen members={members} onAdd={addEvent} user={user}/>;
     if(tab==="lists")   return <ListsScreen members={members}/>;
