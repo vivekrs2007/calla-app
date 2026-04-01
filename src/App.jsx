@@ -1635,6 +1635,9 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
           </div>
         )}
       </div>
+        </div>
+        </div>
+      </div>
     </div>
   );
 }
