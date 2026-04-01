@@ -46,11 +46,11 @@ async function fetchAndSaveCity(
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 4000,
+        max_tokens: 6000,
         system: `You are a local events expert for ${city}. You know all the community centres, recreation halls, music schools, sports leagues, cultural events, and family activities in ${city}. Respond ONLY with a valid JSON array. No markdown, no explanation.`,
         messages: [{
           role: "user",
-          content: `List 25 diverse kids and family activities, registrations, classes, and community events in ${location} between ${today} and ${sixtyDays}.
+          content: `List 40 diverse kids and family activities, registrations, classes, and community events in ${location} between ${today} and ${sixtyDays}.
 
 Cover ALL of these categories broadly:
 ${categoryList}
@@ -66,7 +66,7 @@ Include:
 
 Use real venue names, community centres, recreation halls, and cultural centres specific to ${city}.
 
-JSON array format (25 items):
+JSON array format (40 items):
 [{
   "title": "event name",
   "category": "Soccer or Basketball or Hockey or Swimming or Music or Art or Dance or Community or Other",
