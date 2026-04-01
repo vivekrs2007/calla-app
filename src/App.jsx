@@ -402,18 +402,18 @@ const ONBOARD_SLIDES = [
   {
     bg:        "linear-gradient(160deg,#1a2e1a 0%,#2d5a3d 100%)",
     textColor: "#f5f0e8",
-    eyebrow:   "FOR PARENTS WHO DO IT ALL",
+    eyebrow:   "FAMILY CALENDAR APP",
     headline:  "Never miss a game.\nNever double-book again.",
-    sub:       "One shared family calendar that catches conflicts before your week falls apart.",
+    sub:       "One shared family calendar that catches conflicts before your week falls apart. Forward emails, snap flyers, or just say it.",
     cta:       "See how it works →",
     visual:    { type: "chaos-pills" },
   },
   {
     bg:        "linear-gradient(160deg,#1a2e1a 0%,#2d4a20 100%)",
     textColor: "#f5f0e8",
-    eyebrow:   "CATCH EVERY EVENT",
+    eyebrow:   "THREE WAYS TO ADD",
     headline:  "Forward it.\nSnap it. Say it.",
-    sub:       "School emails, flyers, and voice notes become real calendar events in seconds.",
+    sub:       "School emails, paper flyers, and voice notes become real calendar events in seconds.",
     cta:       "Show me a real example →",
     visual:    { type: "email-delete" },
   },
@@ -422,7 +422,7 @@ const ONBOARD_SLIDES = [
     textColor: "#f5f0e8",
     eyebrow:   "DISCOVER & MORNING BRIEF",
     headline:  "Find what's nearby.\nKnow what's next.",
-    sub:       "Discover activities near you and get one simple morning brief so the whole family starts the day aligned.",
+    sub:       "Discover activities near you and wake up with one simple summary of your whole day.",
     cta:       "Show me my mornings →",
     visual:    { type: "superpowers" },
   },
@@ -528,199 +528,164 @@ function Auth({onLogin}) {
 
         {/* SLIDE 1: Phone mockup — voice adding an event */}
         {cur.visual&&cur.visual.type==="chaos-pills"&&(
-          <div className="fu" style={{marginBottom:8}}>
-            <div style={{background:"rgba(245,240,232,.08)",border:"1px solid rgba(245,240,232,.15)",borderRadius:20,padding:"14px",overflow:"hidden"}}>
-              <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-                <div style={{width:7,height:7,borderRadius:"50%",background:"#ff5f57"}}/>
-                <div style={{width:7,height:7,borderRadius:"50%",background:"#febc2e"}}/>
-                <div style={{width:7,height:7,borderRadius:"50%",background:"#28c840"}}/>
-                <div style={{flex:1,background:"rgba(245,240,232,.08)",borderRadius:5,height:16,marginLeft:4,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  <span style={{fontSize:10,color:"rgba(245,240,232,.4)"}}>getcalla.ca</span>
+          <div style={{marginBottom:8}}>
+            <div style={{background:"rgba(245,240,232,.07)",border:"1px solid rgba(245,240,232,.14)",borderRadius:20,padding:"16px"}}>
+              <div style={{display:"flex",gap:8,marginBottom:10}}>
+                <div style={{flex:1,background:"rgba(45,90,61,.3)",border:"1px solid rgba(45,90,61,.5)",borderRadius:14,padding:"14px 10px",textAlign:"center"}}>
+                  <span style={{fontSize:28,display:"block",marginBottom:6}}>🧒</span>
+                  <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Saturday</p>
+                  <p style={{fontSize:10,color:"rgba(245,240,232,.5)",marginTop:2}}>Soccer · 10am</p>
+                </div>
+                <div style={{flex:1,display:"flex",flexDirection:"column",gap:6}}>
+                  <div style={{background:"rgba(45,90,61,.18)",border:"1px solid rgba(45,90,61,.3)",borderRadius:10,padding:"8px 10px",display:"flex",alignItems:"center",gap:6}}>
+                    <span style={{fontSize:14}}>👩</span>
+                    <div>
+                      <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.85)"}}>Mom · free</p>
+                      <p style={{fontSize:10,color:"rgba(100,200,120,.8)"}}>No conflicts ✓</p>
+                    </div>
+                  </div>
+                  <div style={{background:"rgba(45,90,61,.18)",border:"1px solid rgba(45,90,61,.3)",borderRadius:10,padding:"8px 10px",display:"flex",alignItems:"center",gap:6}}>
+                    <span style={{fontSize:14}}>👨</span>
+                    <div>
+                      <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.85)"}}>Dad · free</p>
+                      <p style={{fontSize:10,color:"rgba(100,200,120,.8)"}}>Ready to drive ✓</p>
+                    </div>
+                  </div>
+                  <div style={{background:"rgba(220,140,30,.12)",border:"1px solid rgba(220,140,30,.25)",borderRadius:10,padding:"8px 10px",textAlign:"center"}}>
+                    <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.85)"}}>April</p>
+                    <div style={{display:"flex",justifyContent:"center",gap:3,marginTop:4}}>
+                      {[1,2,3,4,5].map(function(d,i){return(
+                        <div key={i} style={{width:18,height:18,borderRadius:4,background:i===2?"rgba(220,140,30,.5)":"rgba(245,240,232,.08)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                          <span style={{fontSize:11,color:"rgba(245,240,232,.7)"}}>{11+d}</span>
+                        </div>
+                      );})}
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div style={{background:"rgba(245,240,232,.05)",borderRadius:12,padding:"10px"}}>
-                <div style={{display:"flex",gap:6,marginBottom:8}}>
-                  <div style={{flex:1,background:"rgba(245,240,232,.08)",borderRadius:8,padding:"8px",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
-                    <span style={{fontSize:12}}>🎙️</span>
-                    <span style={{fontSize:10,color:"rgba(245,240,232,.7)",fontWeight:600}}>Voice</span>
-                  </div>
-                  <div style={{flex:2,background:"rgba(45,90,61,.5)",borderRadius:8,padding:"8px",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                    <span style={{fontSize:10,color:"#f5f0e8",fontWeight:700}}>+ New Event</span>
-                  </div>
-                </div>
-                <div style={{background:"rgba(45,90,61,.25)",border:"1px solid rgba(245,240,232,.12)",borderRadius:10,padding:"12px",textAlign:"center",marginBottom:8}}>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:2,marginBottom:6}}>
-                    {[12,18,14,22,16,20,13,18,14].map(function(h,i){return(
-                      <div key={i} style={{width:3,height:h,borderRadius:2,background:"rgba(245,240,232,.65)",animation:"waveform .6s "+((i*0.08).toFixed(2))+"s ease-in-out infinite"}}/>
-                    );})}
-                  </div>
-                  <p style={{fontSize:10,color:"rgba(245,240,232,.5)",marginBottom:3}}>Listening...</p>
-                  <p style={{fontSize:12,color:"rgba(245,240,232,.9)",fontWeight:600,fontStyle:"italic"}}>Soccer Saturday 10am Riverside</p>
-                </div>
-                <div style={{background:"rgba(245,240,232,.07)",borderRadius:8,padding:"8px",display:"flex",gap:8,alignItems:"center"}}>
-                  <div style={{width:26,height:26,borderRadius:7,background:"rgba(124,58,237,.25)",border:"1px solid rgba(124,58,237,.4)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    <span style={{fontSize:12}}>⚽</span>
-                  </div>
-                  <div style={{flex:1}}>
-                    <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Soccer Practice · Added ✓</p>
-                    <p style={{fontSize:11,color:"rgba(245,240,232,.45)"}}>Sat · 10:00am · Riverside Field</p>
-                  </div>
-                </div>
+              <div style={{background:"rgba(245,240,232,.05)",borderRadius:10,padding:"8px 10px",display:"flex",alignItems:"center",gap:6}}>
+                <span style={{fontSize:12}}>⚡</span>
+                <p style={{fontSize:11,color:"rgba(245,240,232,.6)"}}>Conflicts caught automatically, both parents notified</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* SLIDE 2: Email deletion + privacy — the centrepiece */}
+        {/* SLIDE 2: Three ways to add — matching landing page */}
         {cur.visual&&cur.visual.type==="email-delete"&&(
           <div style={{marginBottom:8}}>
-            <div style={{background:"rgba(245,240,232,.06)",border:"1px solid rgba(245,240,232,.12)",borderRadius:20,padding:"16px"}}>
-              {/* 3 input methods */}
-              <div style={{display:"flex",gap:6,marginBottom:12}}>
-                <div style={{flex:1,background:"rgba(59,130,246,.18)",border:"1.5px solid rgba(59,130,246,.3)",borderRadius:12,padding:"10px 8px",textAlign:"center"}}>
-                  <span style={{fontSize:22,display:"block",marginBottom:4}}>📧</span>
-                  <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Forward email</p>
-                  <p style={{fontSize:10,color:"rgba(245,240,232,.45)",marginTop:2,lineHeight:1.3}}>Any school email</p>
+            <div style={{background:"rgba(245,240,232,.06)",border:"1px solid rgba(245,240,232,.12)",borderRadius:20,padding:"14px"}}>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                <div style={{display:"flex",alignItems:"center",gap:10,background:"rgba(59,130,246,.12)",border:"1px solid rgba(59,130,246,.25)",borderRadius:12,padding:"10px 12px"}}>
+                  <div style={{width:32,height:32,borderRadius:8,background:"rgba(59,130,246,.25)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <span style={{fontSize:16}}>📧</span>
+                  </div>
+                  <div style={{flex:1}}>
+                    <p style={{fontSize:12,fontWeight:700,color:"rgba(245,240,232,.9)"}}>01 · Forward it</p>
+                    <p style={{fontSize:10,color:"rgba(245,240,232,.5)",marginTop:1}}>Any school email → event created automatically</p>
+                  </div>
+                  <span style={{fontSize:11,fontWeight:700,color:"rgba(100,200,120,.9)"}}>✓</span>
                 </div>
-                <div style={{flex:1,background:"rgba(45,90,61,.2)",border:"1.5px solid rgba(45,90,61,.35)",borderRadius:12,padding:"10px 8px",textAlign:"center"}}>
-                  <span style={{fontSize:22,display:"block",marginBottom:4}}>📸</span>
-                  <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Snap a flyer</p>
-                  <p style={{fontSize:10,color:"rgba(245,240,232,.45)",marginTop:2,lineHeight:1.3}}>Photo → events</p>
+                <div style={{display:"flex",alignItems:"center",gap:10,background:"rgba(45,90,61,.15)",border:"1px solid rgba(45,90,61,.3)",borderRadius:12,padding:"10px 12px"}}>
+                  <div style={{width:32,height:32,borderRadius:8,background:"rgba(45,90,61,.3)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <span style={{fontSize:16}}>📸</span>
+                  </div>
+                  <div style={{flex:1}}>
+                    <p style={{fontSize:12,fontWeight:700,color:"rgba(245,240,232,.9)"}}>02 · Snap it</p>
+                    <p style={{fontSize:10,color:"rgba(245,240,232,.5)",marginTop:1}}>Photo of a flyer → date, time and details extracted</p>
+                  </div>
+                  <span style={{fontSize:11,fontWeight:700,color:"rgba(100,200,120,.9)"}}>✓</span>
                 </div>
-                <div style={{flex:1,background:"rgba(124,58,237,.18)",border:"1.5px solid rgba(124,58,237,.3)",borderRadius:12,padding:"10px 8px",textAlign:"center"}}>
-                  <span style={{fontSize:22,display:"block",marginBottom:4}}>🎙️</span>
-                  <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Just say it</p>
-                  <p style={{fontSize:10,color:"rgba(245,240,232,.45)",marginTop:2,lineHeight:1.3}}>Voice to calendar</p>
-                </div>
-              </div>
-              {/* Conflict + co-parent alert */}
-              <div style={{background:"rgba(220,140,30,.1)",border:"1px solid rgba(220,140,30,.25)",borderRadius:12,padding:"10px 12px",marginBottom:8,display:"flex",gap:10,alignItems:"center"}}>
-                <span style={{fontSize:16,animation:"pulse 2s infinite"}}>⚡</span>
-                <div style={{flex:1}}>
-                  <p style={{fontSize:12,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Conflict detected · 30 min gap</p>
-                  <p style={{fontSize:11,color:"rgba(245,240,232,.5)"}}>Soccer & Piano overlap Saturday</p>
-                </div>
-              </div>
-              <div style={{display:"flex",gap:6}}>
-                <div style={{flex:1,background:"rgba(45,90,61,.15)",border:"1px solid rgba(45,90,61,.25)",borderRadius:10,padding:"8px 10px",display:"flex",alignItems:"center",gap:6}}>
-                  <span style={{fontSize:14}}>👩</span>
-                  <div><p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.85)"}}>Mom notified</p><p style={{fontSize:10,color:"rgba(245,240,232,.4)"}}>instantly ✓</p></div>
-                </div>
-                <div style={{flex:1,background:"rgba(45,90,61,.15)",border:"1px solid rgba(45,90,61,.25)",borderRadius:10,padding:"8px 10px",display:"flex",alignItems:"center",gap:6}}>
-                  <span style={{fontSize:14}}>👨</span>
-                  <div><p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.85)"}}>Dad notified</p><p style={{fontSize:10,color:"rgba(245,240,232,.4)"}}>instantly ✓</p></div>
+                <div style={{display:"flex",alignItems:"center",gap:10,background:"rgba(124,58,237,.12)",border:"1px solid rgba(124,58,237,.25)",borderRadius:12,padding:"10px 12px"}}>
+                  <div style={{width:32,height:32,borderRadius:8,background:"rgba(124,58,237,.25)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <span style={{fontSize:16}}>🎙️</span>
+                  </div>
+                  <div style={{flex:1}}>
+                    <p style={{fontSize:12,fontWeight:700,color:"rgba(245,240,232,.9)"}}>03 · Say it</p>
+                    <p style={{fontSize:10,color:"rgba(245,240,232,.5)",marginTop:1}}>Voice to calendar, other parent notified instantly</p>
+                  </div>
+                  <span style={{fontSize:11,fontWeight:700,color:"rgba(100,200,120,.9)"}}>✓</span>
                 </div>
               </div>
-              {/* Privacy */}
-              <div style={{display:"flex",alignItems:"center",gap:6,marginTop:8,padding:"6px 8px",background:"rgba(245,240,232,.04)",borderRadius:8,border:"1px solid rgba(245,240,232,.07)"}}>
-                <span style={{fontSize:11}}>🔒</span>
-                <p style={{fontSize:11,color:"rgba(245,240,232,.5)"}}>Emails deleted immediately · nothing stored</p>
-              </div>
-              {/* Email deleted highlight */}
-              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:14,background:"rgba(220,60,60,.12)",border:"1px solid rgba(220,60,60,.25)",borderRadius:12,padding:"10px 14px"}}>
-                <span style={{fontSize:14}}>🗑️</span>
-                <p style={{fontSize:12,fontWeight:700,color:"rgba(255,140,140,.9)"}}>Email permanently deleted after extraction</p>
-                <span style={{fontSize:14}}>🔒</span>
+              <div style={{display:"flex",alignItems:"center",gap:6,marginTop:8,background:"rgba(220,60,60,.1)",border:"1px solid rgba(220,60,60,.2)",borderRadius:10,padding:"8px 12px"}}>
+                <span style={{fontSize:12}}>🔒</span>
+                <p style={{fontSize:11,color:"rgba(255,140,140,.85)",fontWeight:600}}>Email permanently deleted after extraction</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* SLIDE 3: Conflict detected — both parents alerted */}
+        {/* SLIDE 3: Discover + Morning Brief — matching landing page */}
         {cur.visual&&cur.visual.type==="superpowers"&&(
           <div style={{marginBottom:8}}>
             <div style={{background:"rgba(245,240,232,.06)",border:"1px solid rgba(245,240,232,.12)",borderRadius:20,padding:"14px"}}>
-              {/* Voice row */}
-              <div style={{background:"rgba(45,90,61,.2)",borderRadius:12,padding:"12px",marginBottom:8,border:"1px solid rgba(45,90,61,.3)"}}>
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-                  <span style={{fontSize:16}}>🎙️</span>
-                  <p style={{fontSize:12,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Just speak it</p>
-                  <span style={{fontSize:11,fontWeight:700,color:"rgba(100,200,120,.9)",marginLeft:"auto"}}>Added ✓</span>
+              <div style={{display:"flex",gap:8,marginBottom:10}}>
+                <div style={{flex:1,background:"rgba(45,90,61,.18)",border:"1px solid rgba(45,90,61,.3)",borderRadius:14,padding:"12px 10px"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
+                    <span style={{fontSize:16}}>🧭</span>
+                    <p style={{fontSize:12,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Nearby</p>
+                  </div>
+                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                    {["⚽ Soccer U8","🎵 Piano","🏊 Swim class"].map(function(t,i){return(
+                      <div key={i} style={{background:"rgba(45,90,61,.25)",borderRadius:7,padding:"5px 8px"}}>
+                        <p style={{fontSize:10,color:"rgba(245,240,232,.8)",fontWeight:500}}>{t}</p>
+                      </div>
+                    );})}
+                  </div>
                 </div>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:3}}>
-                  {[10,16,12,22,14,18,10,16,12].map(function(h,i){return(
-                    <div key={i} style={{width:3,height:h,borderRadius:2,background:"rgba(245,240,232,.5)",animation:"waveform .6s "+((i*0.08).toFixed(2))+"s ease-in-out infinite"}}/>
-                  );})}
+                <div style={{flex:1,background:"rgba(124,58,237,.1)",border:"1px solid rgba(124,58,237,.22)",borderRadius:14,padding:"12px 10px"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
+                    <span style={{fontSize:16}}>☀️</span>
+                    <p style={{fontSize:12,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Today</p>
+                  </div>
+                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                    <div style={{background:"rgba(0,0,0,.2)",borderRadius:7,padding:"5px 8px"}}>
+                      <p style={{fontSize:10,color:"rgba(245,240,232,.7)"}}>8:30am Soccer · Liam</p>
+                    </div>
+                    <div style={{background:"rgba(0,0,0,.2)",borderRadius:7,padding:"5px 8px"}}>
+                      <p style={{fontSize:10,color:"rgba(245,240,232,.7)"}}>3:00pm Piano · Emma</p>
+                    </div>
+                    <div style={{background:"rgba(220,140,30,.15)",borderRadius:7,padding:"5px 8px"}}>
+                      <p style={{fontSize:10,color:"rgba(220,140,30,.9)",fontWeight:600}}>⚡ Overlap at 3pm</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-              {/* 4 feature grid */}
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
-                <div style={{background:"rgba(220,140,30,.12)",border:"1px solid rgba(220,140,30,.2)",borderRadius:11,padding:"10px",textAlign:"center"}}>
-                  <span style={{fontSize:20,display:"block",marginBottom:3}}>⚡</span>
-                  <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.85)"}}>Conflict Alerts</p>
-                  <p style={{fontSize:10,color:"rgba(245,240,232,.4)",marginTop:2}}>Spots clashes instantly</p>
-                </div>
-                <div style={{background:"rgba(59,130,246,.12)",border:"1px solid rgba(59,130,246,.2)",borderRadius:11,padding:"10px",textAlign:"center"}}>
-                  <span style={{fontSize:20,display:"block",marginBottom:3}}>📸</span>
-                  <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.85)"}}>Snap a Flyer</p>
-                  <p style={{fontSize:10,color:"rgba(245,240,232,.4)",marginTop:2}}>Photo → event</p>
-                </div>
-                <div style={{background:"rgba(45,90,61,.18)",border:"1px solid rgba(45,90,61,.3)",borderRadius:11,padding:"10px",textAlign:"center"}}>
-                  <span style={{fontSize:20,display:"block",marginBottom:3}}>🧭</span>
-                  <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.85)"}}>Discover</p>
-                  <p style={{fontSize:10,color:"rgba(245,240,232,.4)",marginTop:2}}>Activities near you</p>
-                </div>
-                <div style={{background:"rgba(124,58,237,.15)",border:"1px solid rgba(124,58,237,.25)",borderRadius:11,padding:"10px",textAlign:"center"}}>
-                  <span style={{fontSize:20,display:"block",marginBottom:3}}>☀️</span>
-                  <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.85)"}}>Morning Brief</p>
-                  <p style={{fontSize:10,color:"rgba(245,240,232,.4)",marginTop:2}}>Daily SMS digest</p>
-                </div>
+              <div style={{background:"rgba(245,240,232,.05)",borderRadius:10,padding:"8px 10px",display:"flex",alignItems:"center",gap:6}}>
+                <span style={{fontSize:12}}>📱</span>
+                <p style={{fontSize:11,color:"rgba(245,240,232,.55)"}}>Morning SMS sent · wake up knowing your whole day</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* SLIDE 4: Family in sync + pricing */}
+        {/* SLIDE 4: Pricing card — matching landing page */}
         {cur.visual&&cur.visual.type==="trust"&&(
           <div style={{marginBottom:8}}>
-            {/* Discover + Morning Brief preview row */}
-            <div style={{display:"flex",gap:8,marginBottom:8}}>
-              <div style={{flex:1,background:"rgba(45,90,61,.15)",border:"1px solid rgba(45,90,61,.28)",borderRadius:14,padding:"12px 10px"}}>
-                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
-                  <span style={{fontSize:18}}>🧭</span>
-                  <p style={{fontSize:12,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Discover</p>
+            <div style={{background:"linear-gradient(160deg,rgba(45,90,61,.35) 0%,rgba(26,58,42,.5) 100%)",border:"1px solid rgba(45,90,61,.5)",borderRadius:20,padding:"18px",position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",top:-40,right:-40,width:120,height:120,borderRadius:"50%",background:"radial-gradient(circle,rgba(82,183,136,.15) 0%,transparent 70%)"}}/>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+                <span style={{fontSize:20}}>🌿</span>
+                <p style={{fontSize:14,fontWeight:800,color:"rgba(245,240,232,.95)",fontFamily:"'Playfair Display',Georgia,serif"}}>Calla Family Plan</p>
+              </div>
+              <div style={{marginBottom:10}}>
+                <div style={{display:"inline-block",background:"rgba(201,168,76,.15)",border:"1px solid rgba(201,168,76,.3)",borderRadius:20,padding:"4px 12px",marginBottom:8}}>
+                  <span style={{fontSize:11,fontWeight:700,color:"rgba(201,168,76,.9)"}}>60 days completely free</span>
                 </div>
-                <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                  {["⚽ Soccer U8","🎵 Piano","🏊 Swim class"].map(function(t,i){return(
-                    <div key={i} style={{background:"rgba(45,90,61,.2)",borderRadius:7,padding:"5px 8px"}}>
-                      <p style={{fontSize:10,color:"rgba(245,240,232,.8)",fontWeight:500}}>{t}</p>
-                    </div>
-                  );})}
+                <div style={{display:"flex",alignItems:"baseline",gap:4}}>
+                  <span style={{fontSize:32,fontWeight:900,color:"rgba(201,168,76,.95)",fontFamily:"'Playfair Display',Georgia,serif"}}>$19.99</span>
+                  <span style={{fontSize:12,color:"rgba(245,240,232,.5)"}}>per year</span>
                 </div>
               </div>
-              <div style={{flex:1,background:"rgba(124,58,237,.12)",border:"1px solid rgba(124,58,237,.25)",borderRadius:14,padding:"12px 10px"}}>
-                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
-                  <span style={{fontSize:18}}>☀️</span>
-                  <p style={{fontSize:12,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Morning Brief</p>
-                </div>
-                <div style={{background:"rgba(0,0,0,.2)",borderRadius:8,padding:"7px 8px"}}>
-                  <p style={{fontSize:10,color:"rgba(245,240,232,.8)",lineHeight:1.7}}>Good morning! ☀️ — ⚽ Emma 3:30pm — 🎹 Liam 4:00pm — ⚡ Conflict — Calla</p>
-                </div>
+              <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                {["Both parents included","All kids — unlimited","Conflict detection","Forward · Snap · Voice","Morning brief","Cancel anytime"].map(function(f,i){return(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:7}}>
+                    <span style={{fontSize:11,color:"rgba(82,183,136,.9)",fontWeight:700}}>✓</span>
+                    <p style={{fontSize:11,color:"rgba(245,240,232,.75)"}}>{f}</p>
+                  </div>
+                );})}
               </div>
             </div>
-            {/* Family sync + checklist */}
-            <div style={{background:"rgba(245,240,232,.06)",borderRadius:14,padding:"12px 14px",border:"1px solid rgba(245,240,232,.12)"}}>
-              <div style={{display:"flex",justifyContent:"space-around",marginBottom:10}}>
-                {[{emoji:"👩",name:"Mom",color:"#2d5a3d"},{emoji:"👨",name:"Dad",color:"#3d7a52"},{emoji:"👧",name:"Emma",color:"#7C3AED"},{emoji:"👦",name:"Liam",color:"#a07820"}].map(function(m,i){return(
-                  <div key={i} style={{textAlign:"center"}}>
-                    <div style={{width:32,height:32,borderRadius:10,background:m.color+"33",border:"1.5px solid "+m.color+"55",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,margin:"0 auto 4px"}}>{m.emoji}</div>
-                    <p style={{fontSize:10,color:"rgba(245,240,232,.5)",fontWeight:500}}>{m.name}</p>
-                  </div>
-                );})}              </div>
-              <div style={{height:1,background:"rgba(245,240,232,.08)",marginBottom:8}}/>
-              {[
-                "60 days completely free",
-                "Both parents · all kids included",
-                "$19.99/year after — less than a coffee",
-                "Cancel anytime. No questions.",
-              ].map(function(text,i){return(
-                <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:i<3?7:0}}>
-                  <div style={{width:16,height:16,borderRadius:"50%",background:"rgba(61,122,82,.5)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    <Check size={8} color="#f5f0e8"/>
-                  </div>
-                  <p style={{fontSize:12,color:"rgba(245,240,232,.8)",fontWeight:400}}>{text}</p>
-                </div>
-              );})}            </div>
           </div>
         )}
 
