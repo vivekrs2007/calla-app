@@ -400,61 +400,38 @@ const Toasts = ({toasts}) => (
 /* ─── Auth / Onboarding ─────────────────────────────────────────────────── */
 const ONBOARD_SLIDES = [
   {
-    // Slide 1: THE HOOK — emotional opening, name the chaos
     bg:        "linear-gradient(160deg,#1a2e1a 0%,#2d5a3d 100%)",
     textColor: "#f5f0e8",
     eyebrow:   "FOR PARENTS WHO DO IT ALL",
-    headline:  "The chaos\nends here.",
-    sub:       "Soccer at 3. Piano at 4. Permission slip due Friday. Doctor Tuesday. Sound familiar? Calla holds it all — so you don't have to.",
-    cta:       "Show me how →",
-    visual: {
-      type: "chaos-pills",
-      items: [
-        "📧 School emails",
-        "⚽ Practice times",
-        "🏥 Appointments",
-        "🎒 Permission slips",
-        "📱 Teacher texts",
-        "🍎 Snack duty",
-      ]
-    },
+    headline:  "Never miss a game.\nNever double-book again.",
+    sub:       "One smart calendar for every kid, every parent, every schedule.",
+    cta:       "Start free for 60 days →",
+    visual:    { type: "chaos-pills" },
   },
   {
-    // Slide 2: EMAIL PARSER — paste or forward, strict privacy
     bg:        "linear-gradient(160deg,#1a2a1a 0%,#1a3a2a 100%)",
     textColor: "#f5f0e8",
     eyebrow:   "YOUR PRIVACY COMES FIRST",
-    headline:  "We read it.\nWe delete it.\nWe keep nothing.",
-    sub:       "Paste any school email into Calla, or forward it directly. We extract the events — then permanently delete every word. No email is ever stored on our servers.",
+    headline:  "We keep nothing.",
+    sub:       "Forward or paste any school email. Calla pulls out the events — then permanently deletes every word.",
     cta:       "That's the promise →",
-    visual: {
-      type: "email-delete",
-    },
+    visual:    { type: "email-delete" },
   },
   {
-    // Slide 3: THE SOLUTION — show the 3 superpowers
     bg:        "linear-gradient(160deg,#1a2e1a 0%,#3d7a52 100%)",
     textColor: "#f5f0e8",
     eyebrow:   "HOW CALLA HELPS",
     headline:  "Calla catches it.\nYou catch a breath.",
-    sub:       "Paste or forward any school email. Speak an event out loud. Calla spots conflicts before they become arguments. You just show up.",
+    sub:       "Speak an event out loud. Snap a flyer. Calla spots conflicts before they become arguments.",
     cta:       "This is what I need →",
-    visual: {
-      type: "superpowers",
-      items: [
-        {icon:"📬", title:"Email Parser",    desc:"Paste it in or forward it — events extracted, email deleted"},
-        {icon:"🎙️", title:"Voice Add",       desc:"\"Soccer Saturday 10am\" → done in 3 seconds"},
-        {icon:"⚡",  title:"Conflict Alerts", desc:"Calla spots clashes before they become arguments"},
-      ]
-    },
+    visual:    { type: "superpowers" },
   },
   {
-    // Slide 4: THE CTA — remove every objection
     bg:        "linear-gradient(160deg,#1a2e1a 0%,#2d5a3d 100%)",
     textColor: "#f5f0e8",
     eyebrow:   "FREE FOR 60 DAYS",
     headline:  "Ready to get your\nbrain back?",
-    sub:       "Join thousands of parents who stopped keeping it all in their heads. No credit card needed to start.",
+    sub:       "No credit card needed. Cancel anytime.",
     cta:       "Create my family's calendar →",
     final:     true,
     visual: {
@@ -462,7 +439,7 @@ const ONBOARD_SLIDES = [
       items: [
         {icon:"✓", text:"60 days completely free"},
         {icon:"✓", text:"Both parents included"},
-        {icon:"✓", text:"$20/year after — less than a coffee a month"},
+        {icon:"✓", text:"$19.99/year after — less than a coffee a month"},
         {icon:"✓", text:"Cancel anytime. No questions."},
       ]
     },
@@ -550,52 +527,39 @@ function Auth({onLogin}) {
         </div>
 
         {/* Headline — Playfair Display, large */}
-        <h1 style={{fontSize:30,fontWeight:700,color:cur.textColor,lineHeight:1.2,letterSpacing:"-.5px",marginBottom:14,fontFamily:"'Playfair Display',Georgia,serif",whiteSpace:"pre-line"}}>{cur.headline}</h1>
+        <h1 style={{fontSize:32,fontWeight:800,color:cur.textColor,lineHeight:1.15,letterSpacing:"-.6px",marginBottom:14,fontFamily:"'Playfair Display',Georgia,serif",whiteSpace:"pre-line"}}>{cur.headline}</h1>
 
         {/* Subheadline */}
-        <p style={{fontSize:15,color:cur.textColor,opacity:.78,lineHeight:1.75,marginBottom:28,fontWeight:300,maxWidth:340}}>{cur.sub}</p>
+        <p style={{fontSize:16,color:cur.textColor,opacity:.82,lineHeight:1.7,marginBottom:20,fontWeight:300,maxWidth:340}}>{cur.sub}</p>
 
         {/* Visual block — changes per slide */}
 
         {/* SLIDE 1: Phone mockup — voice adding an event */}
         {cur.visual&&cur.visual.type==="chaos-pills"&&(
-          <div className="fu" style={{marginBottom:8}}>
-            <div style={{background:"rgba(245,240,232,.08)",border:"1px solid rgba(245,240,232,.15)",borderRadius:20,padding:"14px",overflow:"hidden"}}>
-              <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-                <div style={{width:7,height:7,borderRadius:"50%",background:"#ff5f57"}}/>
-                <div style={{width:7,height:7,borderRadius:"50%",background:"#febc2e"}}/>
-                <div style={{width:7,height:7,borderRadius:"50%",background:"#28c840"}}/>
-                <div style={{flex:1,background:"rgba(245,240,232,.08)",borderRadius:5,height:16,marginLeft:4,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  <span style={{fontSize:10,color:"rgba(245,240,232,.4)"}}>getcalla.ca</span>
+          <div style={{marginBottom:8}}>
+            <div style={{background:"rgba(245,240,232,.08)",border:"1px solid rgba(245,240,232,.15)",borderRadius:20,padding:"20px 16px"}}>
+              <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.45)",letterSpacing:".1em",marginBottom:14}}>TODAY · SATURDAY</p>
+              <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:12}}>
+                <div style={{background:"rgba(124,58,237,.25)",border:"1px solid rgba(124,58,237,.35)",borderRadius:12,padding:"12px 14px",display:"flex",gap:10,alignItems:"center"}}>
+                  <span style={{fontSize:20}}>⚽</span>
+                  <div style={{flex:1}}>
+                    <p style={{fontSize:14,fontWeight:700,color:"rgba(245,240,232,.95)"}}>Soccer Game</p>
+                    <p style={{fontSize:12,color:"rgba(245,240,232,.55)"}}>10:00am · Riverside Field · Emma</p>
+                  </div>
+                </div>
+                <div style={{background:"rgba(196,149,58,.2)",border:"1px solid rgba(196,149,58,.3)",borderRadius:12,padding:"12px 14px",display:"flex",gap:10,alignItems:"center"}}>
+                  <span style={{fontSize:20}}>🎹</span>
+                  <div style={{flex:1}}>
+                    <p style={{fontSize:14,fontWeight:700,color:"rgba(245,240,232,.95)"}}>Piano Recital</p>
+                    <p style={{fontSize:12,color:"rgba(245,240,232,.55)"}}>10:30am · Music Academy · Liam</p>
+                  </div>
                 </div>
               </div>
-              <div style={{background:"rgba(245,240,232,.05)",borderRadius:12,padding:"10px"}}>
-                <div style={{display:"flex",gap:6,marginBottom:8}}>
-                  <div style={{flex:1,background:"rgba(245,240,232,.08)",borderRadius:8,padding:"8px",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
-                    <span style={{fontSize:12}}>🎙️</span>
-                    <span style={{fontSize:10,color:"rgba(245,240,232,.7)",fontWeight:600}}>Voice</span>
-                  </div>
-                  <div style={{flex:2,background:"rgba(45,90,61,.5)",borderRadius:8,padding:"8px",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                    <span style={{fontSize:10,color:"#f5f0e8",fontWeight:700}}>+ New Event</span>
-                  </div>
-                </div>
-                <div style={{background:"rgba(45,90,61,.25)",border:"1px solid rgba(245,240,232,.12)",borderRadius:10,padding:"12px",textAlign:"center",marginBottom:8}}>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:2,marginBottom:6}}>
-                    {[12,18,14,22,16,20,13,18,14].map(function(h,i){return(
-                      <div key={i} style={{width:3,height:h,borderRadius:2,background:"rgba(245,240,232,.65)",animation:"waveform .6s "+((i*0.08).toFixed(2))+"s ease-in-out infinite"}}/>
-                    );})}
-                  </div>
-                  <p style={{fontSize:10,color:"rgba(245,240,232,.5)",marginBottom:3}}>Listening...</p>
-                  <p style={{fontSize:12,color:"rgba(245,240,232,.9)",fontWeight:600,fontStyle:"italic"}}>Soccer Saturday 10am Riverside</p>
-                </div>
-                <div style={{background:"rgba(245,240,232,.07)",borderRadius:8,padding:"8px",display:"flex",gap:8,alignItems:"center"}}>
-                  <div style={{width:26,height:26,borderRadius:7,background:"rgba(124,58,237,.25)",border:"1px solid rgba(124,58,237,.4)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    <span style={{fontSize:12}}>⚽</span>
-                  </div>
-                  <div style={{flex:1}}>
-                    <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Soccer Practice · Added ✓</p>
-                    <p style={{fontSize:11,color:"rgba(245,240,232,.45)"}}>Sat · 10:00am · Riverside Field</p>
-                  </div>
+              <div style={{background:"rgba(220,60,60,.15)",border:"1px solid rgba(220,60,60,.3)",borderRadius:12,padding:"10px 14px",display:"flex",alignItems:"center",gap:10}}>
+                <span style={{fontSize:18}}>⚡</span>
+                <div>
+                  <p style={{fontSize:13,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Conflict detected</p>
+                  <p style={{fontSize:11,color:"rgba(245,240,232,.5)"}}>Both kids need you at the same time</p>
                 </div>
               </div>
             </div>
@@ -689,42 +653,34 @@ function Auth({onLogin}) {
 
         {/* SLIDE 3: Conflict detected — both parents alerted */}
         {cur.visual&&cur.visual.type==="superpowers"&&(
-          <div className="fu" style={{marginBottom:8}}>
-            <div style={{background:"rgba(245,240,232,.06)",border:"1px solid rgba(245,240,232,.12)",borderRadius:20,padding:"14px"}}>
-              <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.4)",letterSpacing:".08em",marginBottom:6}}>SATURDAY · MARCH 29</p>
-              <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:10}}>
-                <div style={{background:"rgba(124,58,237,.18)",border:"1px solid rgba(124,58,237,.28)",borderRadius:9,padding:"9px 10px",display:"flex",gap:8,alignItems:"center"}}>
-                  <span style={{fontSize:14}}>⚽</span>
-                  <div style={{flex:1}}>
-                    <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Soccer Game</p>
-                    <p style={{fontSize:11,color:"rgba(245,240,232,.5)"}}>10:00am · Riverside Field · Emma</p>
-                  </div>
+          <div style={{marginBottom:8}}>
+            <div style={{background:"rgba(245,240,232,.06)",border:"1px solid rgba(245,240,232,.12)",borderRadius:20,padding:"16px"}}>
+              <div style={{background:"rgba(45,90,61,.2)",borderRadius:14,padding:"14px",marginBottom:10,border:"1px solid rgba(45,90,61,.3)"}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+                  <div style={{width:32,height:32,borderRadius:10,background:"rgba(245,240,232,.1)",display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:16}}>🎙️</span></div>
+                  <p style={{fontSize:13,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Just speak it</p>
                 </div>
-                <div style={{background:"rgba(196,149,58,.14)",border:"1px solid rgba(196,149,58,.28)",borderRadius:9,padding:"9px 10px",display:"flex",gap:8,alignItems:"center"}}>
-                  <span style={{fontSize:14}}>🎹</span>
-                  <div style={{flex:1}}>
-                    <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Piano Recital</p>
-                    <p style={{fontSize:11,color:"rgba(245,240,232,.5)"}}>10:30am · Music Academy · Liam</p>
-                  </div>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:3,marginBottom:8}}>
+                  {[14,20,16,26,18,22,14,20,16].map(function(h,i){return(
+                    <div key={i} style={{width:3,height:h,borderRadius:2,background:"rgba(245,240,232,.6)"}}/>
+                  );})}
+                </div>
+                <div style={{background:"rgba(245,240,232,.07)",borderRadius:8,padding:"8px 10px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <p style={{fontSize:12,color:"rgba(245,240,232,.7)",fontStyle:"italic"}}>"Soccer Saturday 10am Riverside"</p>
+                  <span style={{fontSize:12,fontWeight:700,color:"rgba(100,200,120,.9)"}}>Added ✓</span>
                 </div>
               </div>
-              <div style={{background:"rgba(220,140,30,.1)",border:"1px solid rgba(220,140,30,.25)",borderRadius:10,padding:"9px 12px",marginBottom:8,display:"flex",gap:8,alignItems:"center"}}>
-                <span style={{fontSize:14,animation:"pulse 2s infinite"}}>⚡</span>
-                <div style={{flex:1}}>
-                  <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Conflict detected</p>
-                  <p style={{fontSize:11,color:"rgba(245,240,232,.5)"}}>30 min gap — who's taking which kid?</p>
+              <div style={{display:"flex",gap:8}}>
+                <div style={{flex:1,background:"rgba(220,140,30,.12)",border:"1px solid rgba(220,140,30,.2)",borderRadius:12,padding:"12px 10px",textAlign:"center"}}>
+                  <span style={{fontSize:22,display:"block",marginBottom:4}}>⚡</span>
+                  <p style={{fontSize:12,fontWeight:700,color:"rgba(245,240,232,.85)"}}>Conflict Alerts</p>
+                  <p style={{fontSize:11,color:"rgba(245,240,232,.45)",marginTop:2}}>Spots clashes instantly</p>
                 </div>
-              </div>
-              <div style={{display:"flex",gap:6}}>
-                {[{emoji:"👩",name:"Mom"},{emoji:"👨",name:"Dad"}].map(function(p,i){return(
-                  <div key={i} style={{flex:1,background:"rgba(45,90,61,.2)",border:"1px solid rgba(45,90,61,.3)",borderRadius:9,padding:"7px 8px",display:"flex",alignItems:"center",gap:6}}>
-                    <span style={{fontSize:14}}>{p.emoji}</span>
-                    <div>
-                      <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.85)"}}>{p.name} notified</p>
-                      <p style={{fontSize:11,color:"rgba(245,240,232,.4)"}}>instantly ✓</p>
-                    </div>
-                  </div>
-                );})}
+                <div style={{flex:1,background:"rgba(59,130,246,.12)",border:"1px solid rgba(59,130,246,.2)",borderRadius:12,padding:"12px 10px",textAlign:"center"}}>
+                  <span style={{fontSize:22,display:"block",marginBottom:4}}>📸</span>
+                  <p style={{fontSize:12,fontWeight:700,color:"rgba(245,240,232,.85)"}}>Snap a Flyer</p>
+                  <p style={{fontSize:11,color:"rgba(245,240,232,.45)",marginTop:2}}>Photo → calendar event</p>
+                </div>
               </div>
             </div>
           </div>
@@ -3775,10 +3731,31 @@ function DigestScreen({members, user, onBack, toast}) {
         <ChevronLeft size={16}/>Back
       </button>
 
-      <div style={{marginBottom:22}}>
-        <h2 style={{fontSize:26,fontWeight:700,letterSpacing:"-.3px",fontFamily:"\'Playfair Display\',Georgia,serif",color:"var(--cream)"}}>Morning Text</h2>
-        <p style={{fontSize:14,color:"var(--cream3)",marginTop:4,fontWeight:300}}>Daily SMS digest — customise what you receive.</p>
+      {/* Hero */}
+      <div style={{background:"linear-gradient(135deg,var(--sage),var(--sage2))",borderRadius:20,padding:"20px",marginBottom:20,position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:-20,right:-20,width:100,height:100,borderRadius:"50%",background:"rgba(255,255,255,.06)"}}/>
+        <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:14}}>
+          <div style={{width:48,height:48,borderRadius:16,background:"rgba(255,255,255,.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <span style={{fontSize:24}}>☀️</span>
+          </div>
+          <div>
+            <h2 style={{fontSize:22,fontWeight:800,color:"var(--ink)",letterSpacing:"-.3px",fontFamily:"'Playfair Display',Georgia,serif"}}>Morning Brief</h2>
+            <p style={{fontSize:13,color:"rgba(245,240,232,.75)",fontWeight:400,marginTop:2}}>Wake up knowing your whole day at a glance</p>
+          </div>
+        </div>
+        <div style={{background:"rgba(0,0,0,.2)",borderRadius:14,padding:"12px 14px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
+            <div style={{width:20,height:20,borderRadius:"50%",background:"var(--sage3)",display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:10}}>🌸</span></div>
+            <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.65)"}}>Calla · +1 (260) 236-6760</p>
+          </div>
+          <div style={{background:"rgba(255,255,255,.12)",borderRadius:"10px 10px 10px 2px",padding:"8px 12px",display:"inline-block"}}>
+            <p style={{fontSize:12,color:"rgba(245,240,232,.9)",lineHeight:1.8,whiteSpace:"pre-line"}}>
+              {"Good morning!\n\n⚽ Emma: Soccer 3:30 PM\n🎹 Liam: Piano 4:00 PM\n⚡ Conflict at 4 PM\n\n— Calla"}
+            </p>
+          </div>
+        </div>
       </div>
+
 
       {/* Unsaved changes banner */}
       {hasChanges && (
@@ -4244,7 +4221,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
       <div style={{ flex:1, padding:"28px 24px" }}>
 
         {/* What's included */}
-        <p style={{ fontSize:15, fontWeight:700, color:"var(--cream)", textTransform:"uppercase", letterSpacing:".07em", marginBottom:14 }}>Everything included — no limits</p>
+        <p style={{ fontSize:15, fontWeight:700, color:"#1a2e1a", textTransform:"uppercase", letterSpacing:".07em", marginBottom:14 }}>Everything included — no limits</p>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:28 }}>
           {[
             ["🎙","Voice Add","Say it, it's added"],
@@ -4265,7 +4242,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
         </div>
 
         {/* Plan picker */}
-        <p style={{ fontSize:15, fontWeight:700, color:"var(--cream)", textTransform:"uppercase", letterSpacing:".07em", marginBottom:12 }}>Choose your plan</p>
+        <p style={{ fontSize:15, fontWeight:700, color:"#1a2e1a", textTransform:"uppercase", letterSpacing:".07em", marginBottom:12 }}>Choose your plan</p>
         <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:20 }}>
           {PLANS.map(p => (
             <div
@@ -4286,7 +4263,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
             >
               {/* Radio */}
               <div style={{ width:22, height:22, borderRadius:"50%", border:"2px solid", borderColor:plan===p.id?"#fff":"#D1D5DB", background:plan===p.id?"rgba(255,255,255,.25)":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                {plan===p.id && <div style={{ width:8, height:8, borderRadius:"50%", background:"#fff" }}/>}
+                {plan===p.id && <div style={{ width:8, height:8, borderRadius:"50%", background:"var(--ink2)" }}/>}
               </div>
               <div style={{ flex:1 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
@@ -4553,6 +4530,26 @@ function DiscoverScreen({members,onAdd,user}) {
 
   return (
     <div style={{paddingBottom:8}}>
+      {/* Hero header */}
+      {!locSet&&!editLoc&&(
+        <div style={{background:"linear-gradient(135deg,var(--sage),var(--sage2))",borderRadius:20,padding:"20px",marginBottom:20,position:"relative",overflow:"hidden"}}>
+          <div style={{position:"absolute",top:-20,right:-20,width:80,height:80,borderRadius:"50%",background:"rgba(255,255,255,.06)"}}/>
+          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
+            <div style={{width:44,height:44,borderRadius:14,background:"rgba(255,255,255,.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              <span style={{fontSize:22}}>🧭</span>
+            </div>
+            <div>
+              <h2 style={{fontSize:20,fontWeight:800,color:"var(--ink)",fontFamily:"'Playfair Display',Georgia,serif"}}>Find activities near you</h2>
+              <p style={{fontSize:13,color:"rgba(245,240,232,.7)",marginTop:2}}>Sports, classes, community events for your kids</p>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {["⚽ Soccer","🏊 Swimming","🎵 Music","🎨 Art","🔬 STEM"].map(function(tag){return(
+              <span key={tag} style={{fontSize:12,fontWeight:600,background:"rgba(255,255,255,.12)",color:"rgba(245,240,232,.85)",borderRadius:99,padding:"4px 10px",border:"1px solid rgba(255,255,255,.15)"}}>{tag}</span>
+            );})}
+          </div>
+        </div>
+      )}
       {/* Location bar */}
       <div style={{background:"var(--ink2)",borderRadius:16,padding:"14px 16px",marginBottom:14,border:"1px solid var(--border2)"}}>
         {!editLoc&&locSet ? (
@@ -4580,9 +4577,16 @@ function DiscoverScreen({members,onAdd,user}) {
 
       {/* Search button if location set but no results yet */}
       {locSet&&!editLoc&&results.length===0&&!loading&&!error&&(
-        <Btn onClick={function(){search(city,hood);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,width:"100%",marginBottom:14}}>
-          <Compass size={15}/>Discover in {hood||city}
-        </Btn>
+        <div style={{background:"linear-gradient(135deg,var(--sage),var(--sage2))",borderRadius:16,padding:"16px 20px",marginBottom:14,display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer",boxShadow:"0 4px 16px rgba(45,90,61,.2)"}}
+          onClick={function(){search(city,hood);}}>
+          <div>
+            <p style={{fontWeight:800,fontSize:16,color:"var(--ink)",marginBottom:2}}>Find activities near you</p>
+            <p style={{fontSize:13,color:"rgba(245,240,232,.75)"}}>{hood?hood+", ":""}{city} · tap to search</p>
+          </div>
+          <div style={{width:40,height:40,borderRadius:12,background:"rgba(255,255,255,.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <Compass size={18} color="var(--ink)"/>
+          </div>
+        </div>
       )}
 
       {/* Loading */}
@@ -4631,10 +4635,10 @@ function DiscoverScreen({members,onAdd,user}) {
                 <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                   {hasDeadline&&<span style={{fontSize:12,fontWeight:600,background:"rgba(196,90,90,.1)",color:"var(--rose)",borderRadius:99,padding:"3px 10px"}}>⏰ Deadline: {item.deadline}</span>}
                   {hasDate&&!hasDeadline&&<span style={{fontSize:12,fontWeight:600,background:"rgba(45,90,61,.08)",color:"var(--sage2)",borderRadius:99,padding:"3px 10px"}}>📅 {item.date}</span>}
-                  {item.location&&<span style={{fontSize:12,color:"var(--cream3)",display:"flex",alignItems:"center",gap:3}}><MapPin size={11} color="var(--cream3)"/>{item.location}</span>}
+                  {item.location&&<span style={{fontSize:12,color:"var(--sage3)",display:"flex",alignItems:"center",gap:4,fontWeight:500}}><MapPin size={11} color="var(--cream3)"/>{item.location}</span>}
                 </div>
                 <div style={{display:"flex",gap:8}}>
-                  <button onClick={function(){addToCalendar(item);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"var(--sage)",color:"var(--cream)",borderRadius:10,padding:"10px 0",fontWeight:700,fontSize:14,border:"none",flex:2}}>
+                  <button onClick={function(){addToCalendar(item);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"linear-gradient(135deg,var(--sage),var(--sage2))",color:"var(--ink)",borderRadius:12,padding:"12px 0",fontWeight:800,fontSize:15,border:"none",flex:2,boxShadow:"0 4px 12px rgba(45,90,61,.25)"}}>
                     <Check size={14}/>Add to Calla
                   </button>
                   <button onClick={function(){var url=item.url&&item.url.length>4?item.url:"https://www.google.com/search?q="+encodeURIComponent(item.title+" "+item.location);window.open(url,"_blank");}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"var(--ink3)",color:"var(--cream3)",borderRadius:10,padding:"10px 0",fontWeight:600,fontSize:14,border:"1px solid var(--border2)",flex:1}}>
