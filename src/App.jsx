@@ -1336,7 +1336,42 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
   const [mentionSearch,setMentionSearch] = useState("");
   const [showShare,setShowShare] = useState(false);
   const commentInputRef = useRef();
+  const sheetRef = useRef();
+  const dragStartY = useRef(null);
+  const dragCurrentY = useRef(null);
   const m=members.find(x=>x.id===ev.memberId)||{emoji:"👤",color:"var(--cream3)",name:"?"};
+
+  // ── Swipe-down-to-dismiss ────────────────────────────────────────────────
+  var handleTouchStart = function(e) {
+    dragStartY.current = e.touches[0].clientY;
+    dragCurrentY.current = e.touches[0].clientY;
+    if(sheetRef.current) {
+      sheetRef.current.style.transition = "none";
+    }
+  };
+  var handleTouchMove = function(e) {
+    if(dragStartY.current === null) return;
+    var delta = e.touches[0].clientY - dragStartY.current;
+    dragCurrentY.current = e.touches[0].clientY;
+    if(delta > 0 && sheetRef.current) {
+      sheetRef.current.style.transform = "translateY("+delta+"px)";
+    }
+  };
+  var handleTouchEnd = function() {
+    if(dragStartY.current === null) return;
+    var delta = dragCurrentY.current - dragStartY.current;
+    if(sheetRef.current) {
+      sheetRef.current.style.transition = "transform .25s ease";
+    }
+    if(delta > 120) {
+      if(sheetRef.current) sheetRef.current.style.transform = "translateY(100%)";
+      setTimeout(onClose, 250);
+    } else {
+      if(sheetRef.current) sheetRef.current.style.transform = "translateY(0)";
+    }
+    dragStartY.current = null;
+    dragCurrentY.current = null;
+  };
 
   const handleCommentInput = (val) => {
     setCommentText(val);
@@ -1388,237 +1423,258 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
   const openDirs = loc=>window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(loc),"_blank");
 
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:600,display:"flex",alignItems:"flex-end"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className="sheet-enter sheet-scroll" style={{borderRadius:"20px 20px 0 0",padding:"8px 20px calc(env(safe-area-inset-bottom,20px) + 32px)",width:"100%",height:"92vh",overflowY:"scroll",overscrollBehavior:"contain",background:"var(--ink2)",WebkitOverflowScrolling:"touch",willChange:"transform"}}>
-        <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"8px auto 16px"}}/>
-
-        {/* Header */}
-        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:16}}>
-          <div style={{flex:1}}>
-            <div style={{display:"flex",gap:8,marginBottom:8,flexWrap:"wrap"}}>
-              <Pill color={m.color} bg={m.color+"15"}>
-                {m.photo?<img src={m.photo} style={{width:14,height:14,borderRadius:"50%",objectFit:"cover"}} alt=""/>:m.emoji} {m.name}
-              </Pill>
-              {ev.recurring&&<Pill color="var(--sage3)" bg="rgba(67,143,126,.14)"><Repeat size={10}/> Recurring</Pill>}
-            </div>
-            <h2 style={{fontSize:22,fontWeight:800,letterSpacing:"-.3px",lineHeight:1.2}}>{ev.title}</h2>
-          </div>
-          <button onClick={onClose} style={{width:32,height:32,borderRadius:"50%",background:"var(--ink4)",border:"none",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:12,minHeight:"auto",minWidth:"auto"}}>
-            <X size={16} color="var(--cream3)"/>
-          </button>
-        </div>
-
-        {/* Details */}
-        <div style={{display:"flex",flexDirection:"column",gap:2,marginBottom:16}}>
-          {[[Calendar,fd(ev.date),"Date"],[Clock,ev.time||"No time","Time"],ev.cost?[DollarSign,"$"+ev.cost+" / "+(ev.costType||"one-time"),"Cost"]:null].filter(Boolean).map(([Icon,val,label])=>(
-            <div key={label} style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderBottom:"1px solid #F3F4F6"}}>
-              <div style={{width:34,height:34,background:"var(--sage-light)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Icon size={15} color="var(--sage)"/></div>
-              <div><p style={{fontSize:15,color:"#2d4a2d",fontWeight:700,textTransform:"uppercase",letterSpacing:".04em"}}>{label}</p><p style={{fontSize:15,fontWeight:600,marginTop:1}}>{val}</p></div>
-            </div>
-          ))}
-        </div>
-
-        {/* Location */}
-        {ev.location?(
-          <div style={{marginBottom:16}}>
-            <div style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderBottom:"1px solid #F3F4F6",marginBottom:10}}>
-              <div style={{width:34,height:34,background:"var(--sage-light)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><MapPin size={15} color="var(--sage)"/></div>
-              <div style={{flex:1}}>
-                <p style={{fontSize:15,color:"#2d4a2d",fontWeight:700,textTransform:"uppercase",letterSpacing:".04em"}}>Location</p>
-                <p style={{fontSize:15,fontWeight:600,color:"var(--sage3)",marginTop:1,cursor:"pointer"}} onClick={()=>openMaps(ev.location)}>{ev.location}</p>
+    <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:600,display:"flex",alignItems:"flex-end"}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
+      <div
+        ref={sheetRef}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{
+          position:"fixed",bottom:0,left:0,right:0,
+          height:"92dvh",
+          background:"var(--ink2)",
+          borderRadius:"20px 20px 0 0",
+          display:"flex",flexDirection:"column",
+          overflow:"hidden",
+          transform:"translateY(0)",
+          transition:"transform .3s cubic-bezier(.32,1,.4,1)",
+          willChange:"transform",
+        }}
+      >
+        {/* ── Drag handle + close button ── */}
+        <div
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          style={{flexShrink:0,padding:"10px 20px 0",touchAction:"none"}}
+        >
+          <div style={{width:36,height:4,borderRadius:2,background:"var(--ink5)",margin:"0 auto 12px"}}/>
+          <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",paddingBottom:12,borderBottom:"1px solid var(--border)"}}>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:"flex",gap:8,marginBottom:6,flexWrap:"wrap"}}>
+                <Pill color={m.color} bg={m.color+"15"}>
+                  {m.photo?<img src={m.photo} style={{width:14,height:14,borderRadius:"50%",objectFit:"cover"}} alt=""/>:m.emoji} {m.name}
+                </Pill>
+                {ev.recurring&&<Pill color="var(--sage3)" bg="rgba(67,143,126,.14)"><Repeat size={10}/> Recurring</Pill>}
               </div>
+              <h2 style={{fontSize:20,fontWeight:800,letterSpacing:"-.3px",lineHeight:1.2,paddingRight:8}}>{ev.title}</h2>
             </div>
-            <div style={{borderRadius:16,overflow:"hidden",border:"1px solid var(--border2)",marginBottom:10,position:"relative"}}>
-              <iframe title="Location" src={"https://www.openstreetmap.org/export/embed.html?layer=mapnik&query="+encodeURIComponent(ev.location)} width="100%" height="160" style={{display:"block",border:"none"}} loading="lazy"/>
-              <button onClick={()=>openMaps(ev.location)} style={{position:"absolute",top:8,right:8,background:"var(--ink2)",borderRadius:8,padding:"5px 10px",display:"flex",alignItems:"center",gap:5,boxShadow:"0 2px 8px rgba(0,0,0,.14)",border:"1px solid var(--border)",minHeight:"auto",minWidth:"auto"}}><MapPin size={11} color="var(--sage2)"/><span style={{fontSize:15,fontWeight:700,color:"var(--sage3)"}}>Open</span></button>
-            </div>
-            <button onClick={()=>openDirs(ev.location)} style={{width:"100%",background:"var(--sage-light)",border:"1.5px solid var(--sage-mid)",borderRadius:12,padding:"12px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontWeight:700,fontSize:15,color:"var(--sage)",cursor:"pointer"}}><MapPin size={16}/>Get Directions</button>
+            <button
+              onClick={onClose}
+              style={{width:32,height:32,borderRadius:"50%",background:"var(--ink4)",border:"none",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:12,minHeight:"auto",minWidth:"auto",touchAction:"manipulation"}}
+            >
+              <X size={16} color="var(--cream3)"/>
+            </button>
           </div>
-        ):(
-          <div style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderBottom:"1px solid #F3F4F6",marginBottom:16}}>
-            <div style={{width:34,height:34,background:"var(--ink4)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><MapPin size={15} color="#D1D5DB"/></div>
-            <div><p style={{fontSize:15,color:"#2d4a2d",fontWeight:700,textTransform:"uppercase",letterSpacing:".04em"}}>Location</p><p style={{fontSize:15,color:"var(--border3)",marginTop:1}}>Not set</p></div>
-          </div>
-        )}
+        </div>
 
-        {/* Notes */}
-        {ev.notes&&<Card style={{marginBottom:16,background:"var(--ink3)"}}><div style={{display:"flex",gap:10}}><FileText size={15} color="var(--cream3)" style={{marginTop:2,flexShrink:0}}/><p style={{fontSize:15,color:"var(--cream2)",lineHeight:1.65}}>{ev.notes}</p></div></Card>}
+        {/* ── Scrollable content ── */}
+        <div style={{flex:1,minHeight:0,overflowY:"scroll",WebkitOverflowScrolling:"touch",overscrollBehavior:"contain",padding:"16px 20px"}}>
 
-        {/* Packing */}
-        {ev.packingList&&ev.packingList.length>0&&(
-          <Card style={{marginBottom:16}}>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-              <Package size={15} color="var(--sage)"/>
-              <p style={{fontWeight:700,fontSize:15}}>Packing List</p>
-              {Object.values(packed).filter(Boolean).length>0&&<Pill color="var(--sage)" bg="var(--sage-light)" style={{marginLeft:"auto"}}>{Object.values(packed).filter(Boolean).length}/{ev.packingList.length} packed</Pill>}
-            </div>
-            {ev.packingList.map((item,i)=>(
-              <div key={i} onClick={()=>setPacked(p=>({...p,[i]:!p[i]}))} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:i<ev.packingList.length-1?"1px solid #F3F4F6":"none",cursor:"pointer",transition:"background .15s"}}>
-                <div style={{width:22,height:22,borderRadius:6,border:"1.5px solid "+(packed[i]?"var(--sage2)":"var(--border2)"),background:packed[i]?"var(--sage)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all .15s"}}>{packed[i]&&<Check size={12} color="#fff"/>}</div>
-                <p style={{fontSize:15,color:packed[i]?"#9CA3AF":"var(--ink)",textDecoration:packed[i]?"line-through":"none"}}>{item}</p>
+          {/* Details */}
+          <div style={{display:"flex",flexDirection:"column",gap:2,marginBottom:16}}>
+            {[[Calendar,fd(ev.date),"Date"],[Clock,ev.time||"No time","Time"],ev.cost?[DollarSign,"$"+ev.cost+" / "+(ev.costType||"one-time"),"Cost"]:null].filter(Boolean).map(([Icon,val,label])=>(
+              <div key={label} style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderBottom:"1px solid #F3F4F6"}}>
+                <div style={{width:34,height:34,background:"var(--sage-light)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Icon size={15} color="var(--sage)"/></div>
+                <div><p style={{fontSize:15,color:"#2d4a2d",fontWeight:700,textTransform:"uppercase",letterSpacing:".04em"}}>{label}</p><p style={{fontSize:15,fontWeight:600,marginTop:1}}>{val}</p></div>
               </div>
             ))}
-            {ev.packingList.length>0&&Object.values(packed).filter(Boolean).length===ev.packingList.length&&<p style={{fontSize:15,color:"var(--sage)",fontWeight:700,marginTop:10,display:"flex",alignItems:"center",gap:5}}><Check size={12}/>All packed!</p>}
-          </Card>
-        )}
+          </div>
 
-        {/* Comments + @tagging */}
-        <div style={{marginBottom:16}}>
-          {/* Header */}
-          <button onClick={()=>setShowComments(s=>!s)}
-            style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"none",padding:"0 0 14px",width:"100%",justifyContent:"flex-start"}}>
-            <div style={{width:28,height:28,borderRadius:8,background:"rgba(67,143,126,.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-              <MessageCircle size={14} color="var(--sage3)"/>
+          {/* Location */}
+          {ev.location?(
+            <div style={{marginBottom:16}}>
+              <div style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderBottom:"1px solid #F3F4F6",marginBottom:10}}>
+                <div style={{width:34,height:34,background:"var(--sage-light)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><MapPin size={15} color="var(--sage)"/></div>
+                <div style={{flex:1}}>
+                  <p style={{fontSize:15,color:"#2d4a2d",fontWeight:700,textTransform:"uppercase",letterSpacing:".04em"}}>Location</p>
+                  <p style={{fontSize:15,fontWeight:600,color:"var(--sage3)",marginTop:1,cursor:"pointer"}} onClick={()=>openMaps(ev.location)}>{ev.location}</p>
+                </div>
+              </div>
+              <div style={{borderRadius:16,overflow:"hidden",border:"1px solid var(--border2)",marginBottom:10,position:"relative"}}>
+                <iframe title="Location" src={"https://www.openstreetmap.org/export/embed.html?layer=mapnik&query="+encodeURIComponent(ev.location)} width="100%" height="160" style={{display:"block",border:"none"}} loading="lazy"/>
+                <button onClick={()=>openMaps(ev.location)} style={{position:"absolute",top:8,right:8,background:"var(--ink2)",borderRadius:8,padding:"5px 10px",display:"flex",alignItems:"center",gap:5,boxShadow:"0 2px 8px rgba(0,0,0,.14)",border:"1px solid var(--border)",minHeight:"auto",minWidth:"auto"}}><MapPin size={11} color="var(--sage2)"/><span style={{fontSize:15,fontWeight:700,color:"var(--sage3)"}}>Open</span></button>
+              </div>
+              <button onClick={()=>openDirs(ev.location)} style={{width:"100%",background:"var(--sage-light)",border:"1.5px solid var(--sage-mid)",borderRadius:12,padding:"12px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontWeight:700,fontSize:15,color:"var(--sage)",cursor:"pointer"}}><MapPin size={16}/>Get Directions</button>
             </div>
-            <p style={{fontWeight:600,fontSize:16,color:"var(--cream)"}}>Notes & Comments</p>
-            {comments.length>0&&(
-              <div style={{background:"var(--sage)",borderRadius:99,minWidth:20,height:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 6px"}}>
-                <span style={{fontSize:11,fontWeight:700,color:"var(--cream)"}}>{comments.length}</span>
-              </div>
-            )}
-            <div style={{marginLeft:"auto",color:"var(--cream3)"}}>{showComments?<ChevronUp size={15}/>:<ChevronDown size={15}/>}</div>
-          </button>
-
-          {showComments&&(
-            <>
-              {/* @mention hint — only show when no comments yet */}
-              {comments.length===0&&(
-                <div style={{display:"flex",alignItems:"center",gap:10,background:"var(--ink3)",borderRadius:14,padding:"12px 14px",marginBottom:14,border:"1px solid var(--border)"}}>
-                  <span style={{fontSize:20,flexShrink:0}}>💬</span>
-                  <div>
-                    <p style={{fontSize:14,fontWeight:500,color:"var(--cream2)",marginBottom:2}}>Leave a note for the family</p>
-                    <p style={{fontSize:12,color:"var(--cream3)",fontWeight:300}}>Type <strong style={{color:"var(--sage3)",fontWeight:600}}>@name</strong> to tag someone — they'll get notified instantly</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Comment bubbles */}
-              {comments.length>0&&(
-                <div style={{display:"flex",flexDirection:"column",gap:14,marginBottom:14}}>
-                  {comments.map(c=>{
-                    const taggedMs=(c.taggedIds||[]).map(id=>members.find(m=>m.id===id)).filter(Boolean);
-                    return (
-                      <div key={c.id} style={{display:"flex",gap:10,alignItems:"flex-start"}}>
-                        {/* Avatar */}
-                        <div style={{width:32,height:32,borderRadius:10,background:"var(--sage)",backgroundImage:"linear-gradient(135deg,var(--sage),var(--sage2))",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0,boxShadow:"0 2px 8px rgba(46,107,94,.25)"}}>
-                          {c.authorEmoji||"👤"}
-                        </div>
-                        <div style={{flex:1,minWidth:0}}>
-                          {/* Author + time */}
-                          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>
-                            <p style={{fontSize:13,fontWeight:700,color:"var(--cream2)"}}>{c.author}</p>
-                            <span style={{width:3,height:3,borderRadius:"50%",background:"var(--border3)",flexShrink:0,display:"inline-block"}}/>
-                            <p style={{fontSize:12,color:"var(--cream3)",fontWeight:300}}>{c.date} · {c.time}</p>
-                          </div>
-                          {/* Bubble */}
-                          <div style={{background:"var(--ink3)",borderRadius:"4px 16px 16px 16px",padding:"11px 14px",border:"1px solid var(--border2)",marginBottom:taggedMs.length>0?8:0}}>
-                            <p style={{fontSize:15,color:"var(--cream)",lineHeight:1.6}}>{renderCommentText(c.text)}</p>
-                          </div>
-                          {/* Tagged members */}
-                          {taggedMs.length>0&&(
-                            <div style={{display:"flex",gap:5,flexWrap:"wrap",alignItems:"center",marginTop:5}}>
-                              <Bell size={11} color="var(--cream3)"/>
-                              <span style={{fontSize:12,color:"var(--cream3)",fontWeight:300}}>Notified:</span>
-                              {taggedMs.map(tm=>(
-                                <div key={tm.id} style={{display:"flex",alignItems:"center",gap:4,background:tm.color+"18",borderRadius:99,padding:"3px 9px",border:"1px solid "+tm.color+"35"}}>
-                                  <span style={{fontSize:13}}>{tm.photo?<img src={tm.photo} style={{width:12,height:12,borderRadius:"50%",objectFit:"cover"}} alt=""/>:tm.emoji}</span>
-                                  <span style={{fontSize:12,fontWeight:700,color:tm.color}}>{tm.name}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* @mention picker */}
-              {showMentionPicker&&filteredMembers.length>0&&(
-                <div className="fu" style={{background:"var(--ink3)",border:"1px solid var(--border2)",borderRadius:16,marginBottom:10,overflow:"hidden",boxShadow:"0 16px 40px rgba(0,0,0,.4)"}}>
-                  <div style={{padding:"10px 14px 8px",borderBottom:"1px solid var(--border)"}}>
-                    <p style={{fontSize:11,color:"var(--cream3)",fontWeight:700,textTransform:"uppercase",letterSpacing:".1em"}}>Tag a family member</p>
-                  </div>
-                  {filteredMembers.map((member,i)=>(
-                    <div key={member.id} onMouseDown={()=>insertMention(member)}
-                      style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",cursor:"pointer",borderBottom:i<filteredMembers.length-1?"1px solid var(--border)":"none",transition:"background .15s"}}
-                      onMouseEnter={e=>e.currentTarget.style.background="var(--ink4)"}
-                      onMouseLeave={e=>e.currentTarget.style.background="transparent"}
-                    >
-                      <div style={{width:38,height:38,borderRadius:12,background:member.color+"18",border:"1.5px solid "+member.color+"40",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",fontSize:20,flexShrink:0}}>
-                        {member.photo?<img src={member.photo} style={{width:"100%",height:"100%",objectFit:"cover"}} alt=""/>:member.emoji}
-                      </div>
-                      <div style={{flex:1}}>
-                        <p style={{fontWeight:600,fontSize:15,color:"var(--cream)"}}>@{member.name}</p>
-                        <p style={{fontSize:12,color:"var(--cream3)",marginTop:1,fontWeight:300}}>Tap to tag · instant notification</p>
-                      </div>
-                      <div style={{width:28,height:28,borderRadius:8,background:member.color+"22",border:"1px solid "+member.color+"44",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                        <Bell size={13} color={member.color}/>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Comment input */}
-              <div style={{display:"flex",gap:10,alignItems:"flex-end"}}>
-                <div style={{width:32,height:32,borderRadius:10,background:"linear-gradient(135deg,var(--sage),var(--sage2))",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:14,boxShadow:"0 2px 8px rgba(46,107,94,.25)"}}>👤</div>
-                <div style={{flex:1,background:"var(--ink3)",borderRadius:16,padding:"11px 14px",border:"1px solid var(--border2)",transition:"border-color .2s,box-shadow .2s"}}
-                  onFocusCapture={e=>{e.currentTarget.style.borderColor="var(--sage2)";e.currentTarget.style.boxShadow="0 0 0 3px rgba(67,143,126,.12)";}}
-                  onBlurCapture={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.boxShadow="none";}}
-                >
-                  <input
-                    ref={commentInputRef}
-                    placeholder="Add a note, or @ to loop someone in…"
-                    value={commentText}
-                    onChange={e=>handleCommentInput(e.target.value)}
-                    onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&addComment()}
-                    onBlur={()=>setTimeout(()=>setShowMentionPicker(false),150)}
-                    style={{background:"transparent",border:"none",padding:0,fontSize:15,width:"100%",color:"var(--cream)"}}
-                  />
-                  {commentText.trim()&&(
-                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:10,paddingTop:10,borderTop:"1px solid var(--border)"}}>
-                      <div style={{display:"flex",gap:5,flexWrap:"wrap",flex:1}}>
-                        {extractMentions(commentText).map(tm=>(
-                          <div key={tm.id} style={{display:"flex",alignItems:"center",gap:4,background:tm.color+"18",borderRadius:99,padding:"3px 9px",border:"1px solid "+tm.color+"35"}}>
-                            <Bell size={10} color={tm.color}/>
-                            <span style={{fontSize:12,fontWeight:700,color:tm.color}}>{tm.name}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <button onClick={addComment}
-                        style={{width:32,height:32,borderRadius:10,background:"var(--sage)",backgroundImage:"linear-gradient(135deg,var(--sage),var(--sage2))",display:"flex",alignItems:"center",justifyContent:"center",border:"none",flexShrink:0,boxShadow:"0 4px 12px rgba(46,107,94,.4)"}}>
-                        <Send size={14} color="var(--cream)"/>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
+          ):(
+            <div style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderBottom:"1px solid #F3F4F6",marginBottom:16}}>
+              <div style={{width:34,height:34,background:"var(--ink4)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><MapPin size={15} color="#D1D5DB"/></div>
+              <div><p style={{fontSize:15,color:"#2d4a2d",fontWeight:700,textTransform:"uppercase",letterSpacing:".04em"}}>Location</p><p style={{fontSize:15,color:"var(--border3)",marginTop:1}}>Not set</p></div>
+            </div>
           )}
-        </div>
 
-        {/* Share + Delete row */}
-        <div style={{display:"flex",gap:10,marginBottom:0}}>
-          <button
-            onClick={()=>setShowShare(true)}
-            style={{flex:1,background:"var(--sage-light)",border:"1.5px solid var(--sage-mid)",borderRadius:12,padding:"13px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontWeight:700,fontSize:15,color:"var(--sage)",cursor:"pointer"}}
-          >
-            <Share2 size={16}/>Share Event
-          </button>
-          <Btn v="danger" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}} onClick={function(){setConfirmDelete(true);}}>
-            <Trash2 size={15}/>Delete
-          </Btn>
-        </div>
+          {/* Notes */}
+          {ev.notes&&<Card style={{marginBottom:16,background:"var(--ink3)"}}><div style={{display:"flex",gap:10}}><FileText size={15} color="var(--cream3)" style={{marginTop:2,flexShrink:0}}/><p style={{fontSize:15,color:"var(--cream2)",lineHeight:1.65}}>{ev.notes}</p></div></Card>}
 
-        {/* Share Sheet */}
-        {showShare&&<ShareSheet ev={ev} onClose={()=>setShowShare(false)}/>}
+          {/* Packing */}
+          {ev.packingList&&ev.packingList.length>0&&(
+            <Card style={{marginBottom:16}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+                <Package size={15} color="var(--sage)"/>
+                <p style={{fontWeight:700,fontSize:15}}>Packing List</p>
+                {Object.values(packed).filter(Boolean).length>0&&<Pill color="var(--sage)" bg="var(--sage-light)" style={{marginLeft:"auto"}}>{Object.values(packed).filter(Boolean).length}/{ev.packingList.length} packed</Pill>}
+              </div>
+              {ev.packingList.map((item,i)=>(
+                <div key={i} onClick={()=>setPacked(p=>({...p,[i]:!p[i]}))} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:i<ev.packingList.length-1?"1px solid #F3F4F6":"none",cursor:"pointer",transition:"background .15s"}}>
+                  <div style={{width:22,height:22,borderRadius:6,border:"1.5px solid "+(packed[i]?"var(--sage2)":"var(--border2)"),background:packed[i]?"var(--sage)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all .15s"}}>{packed[i]&&<Check size={12} color="#fff"/>}</div>
+                  <p style={{fontSize:15,color:packed[i]?"#9CA3AF":"var(--ink)",textDecoration:packed[i]?"line-through":"none"}}>{item}</p>
+                </div>
+              ))}
+              {ev.packingList.length>0&&Object.values(packed).filter(Boolean).length===ev.packingList.length&&<p style={{fontSize:15,color:"var(--sage)",fontWeight:700,marginTop:10,display:"flex",alignItems:"center",gap:5}}><Check size={12}/>All packed!</p>}
+            </Card>
+          )}
+
+          {/* Comments + @tagging */}
+          <div style={{marginBottom:16}}>
+            <button onClick={()=>setShowComments(s=>!s)}
+              style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"none",padding:"0 0 14px",width:"100%",justifyContent:"flex-start"}}>
+              <div style={{width:28,height:28,borderRadius:8,background:"rgba(67,143,126,.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                <MessageCircle size={14} color="var(--sage3)"/>
+              </div>
+              <p style={{fontWeight:600,fontSize:16,color:"var(--cream)"}}>Notes & Comments</p>
+              {comments.length>0&&(
+                <div style={{background:"var(--sage)",borderRadius:99,minWidth:20,height:20,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 6px"}}>
+                  <span style={{fontSize:11,fontWeight:700,color:"var(--cream)"}}>{comments.length}</span>
+                </div>
+              )}
+              <div style={{marginLeft:"auto",color:"var(--cream3)"}}>{showComments?<ChevronUp size={15}/>:<ChevronDown size={15}/>}</div>
+            </button>
+
+            {showComments&&(
+              <>
+                {comments.length===0&&(
+                  <div style={{display:"flex",alignItems:"center",gap:10,background:"var(--ink3)",borderRadius:14,padding:"12px 14px",marginBottom:14,border:"1px solid var(--border)"}}>
+                    <span style={{fontSize:20,flexShrink:0}}>💬</span>
+                    <div>
+                      <p style={{fontSize:14,fontWeight:500,color:"var(--cream2)",marginBottom:2}}>Leave a note for the family</p>
+                      <p style={{fontSize:12,color:"var(--cream3)",fontWeight:300}}>Type <strong style={{color:"var(--sage3)",fontWeight:600}}>@name</strong> to tag someone</p>
+                    </div>
+                  </div>
+                )}
+
+                {comments.length>0&&(
+                  <div style={{display:"flex",flexDirection:"column",gap:14,marginBottom:14}}>
+                    {comments.map(c=>{
+                      const taggedMs=(c.taggedIds||[]).map(id=>members.find(m=>m.id===id)).filter(Boolean);
+                      return (
+                        <div key={c.id} style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+                          <div style={{width:32,height:32,borderRadius:10,background:"var(--sage)",backgroundImage:"linear-gradient(135deg,var(--sage),var(--sage2))",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0,boxShadow:"0 2px 8px rgba(46,107,94,.25)"}}>
+                            {c.authorEmoji||"👤"}
+                          </div>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>
+                              <p style={{fontSize:13,fontWeight:700,color:"var(--cream2)"}}>{c.author}</p>
+                              <span style={{width:3,height:3,borderRadius:"50%",background:"var(--border3)",flexShrink:0,display:"inline-block"}}/>
+                              <p style={{fontSize:12,color:"var(--cream3)",fontWeight:300}}>{c.date} · {c.time}</p>
+                            </div>
+                            <div style={{background:"var(--ink3)",borderRadius:"4px 16px 16px 16px",padding:"11px 14px",border:"1px solid var(--border2)",marginBottom:taggedMs.length>0?8:0}}>
+                              <p style={{fontSize:15,color:"var(--cream)",lineHeight:1.6}}>{renderCommentText(c.text)}</p>
+                            </div>
+                            {taggedMs.length>0&&(
+                              <div style={{display:"flex",gap:5,flexWrap:"wrap",alignItems:"center",marginTop:5}}>
+                                <Bell size={11} color="var(--cream3)"/>
+                                <span style={{fontSize:12,color:"var(--cream3)",fontWeight:300}}>Notified:</span>
+                                {taggedMs.map(tm=>(
+                                  <div key={tm.id} style={{display:"flex",alignItems:"center",gap:4,background:tm.color+"18",borderRadius:99,padding:"3px 9px",border:"1px solid "+tm.color+"35"}}>
+                                    <span style={{fontSize:13}}>{tm.photo?<img src={tm.photo} style={{width:12,height:12,borderRadius:"50%",objectFit:"cover"}} alt=""/>:tm.emoji}</span>
+                                    <span style={{fontSize:12,fontWeight:700,color:tm.color}}>{tm.name}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {showMentionPicker&&filteredMembers.length>0&&(
+                  <div className="fu" style={{background:"var(--ink3)",border:"1px solid var(--border2)",borderRadius:16,marginBottom:10,overflow:"hidden",boxShadow:"0 16px 40px rgba(0,0,0,.4)"}}>
+                    <div style={{padding:"10px 14px 8px",borderBottom:"1px solid var(--border)"}}>
+                      <p style={{fontSize:11,color:"var(--cream3)",fontWeight:700,textTransform:"uppercase",letterSpacing:".1em"}}>Tag a family member</p>
+                    </div>
+                    {filteredMembers.map((member,i)=>(
+                      <div key={member.id} onMouseDown={()=>insertMention(member)}
+                        style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",cursor:"pointer",borderBottom:i<filteredMembers.length-1?"1px solid var(--border)":"none",transition:"background .15s"}}
+                        onMouseEnter={e=>e.currentTarget.style.background="var(--ink4)"}
+                        onMouseLeave={e=>e.currentTarget.style.background="transparent"}
+                      >
+                        <div style={{width:38,height:38,borderRadius:12,background:member.color+"18",border:"1.5px solid "+member.color+"40",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",fontSize:20,flexShrink:0}}>
+                          {member.photo?<img src={member.photo} style={{width:"100%",height:"100%",objectFit:"cover"}} alt=""/>:member.emoji}
+                        </div>
+                        <div style={{flex:1}}>
+                          <p style={{fontWeight:600,fontSize:15,color:"var(--cream)"}}>@{member.name}</p>
+                          <p style={{fontSize:12,color:"var(--cream3)",marginTop:1,fontWeight:300}}>Tap to tag · instant notification</p>
+                        </div>
+                        <div style={{width:28,height:28,borderRadius:8,background:member.color+"22",border:"1px solid "+member.color+"44",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                          <Bell size={13} color={member.color}/>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div style={{display:"flex",gap:10,alignItems:"flex-end"}}>
+                  <div style={{width:32,height:32,borderRadius:10,background:"linear-gradient(135deg,var(--sage),var(--sage2))",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:14,boxShadow:"0 2px 8px rgba(46,107,94,.25)"}}>👤</div>
+                  <div style={{flex:1,background:"var(--ink3)",borderRadius:16,padding:"11px 14px",border:"1px solid var(--border2)",transition:"border-color .2s,box-shadow .2s"}}
+                    onFocusCapture={e=>{e.currentTarget.style.borderColor="var(--sage2)";e.currentTarget.style.boxShadow="0 0 0 3px rgba(67,143,126,.12)";}}
+                    onBlurCapture={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.boxShadow="none";}}
+                  >
+                    <input
+                      ref={commentInputRef}
+                      placeholder="Add a note, or @ to loop someone in…"
+                      value={commentText}
+                      onChange={e=>handleCommentInput(e.target.value)}
+                      onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&addComment()}
+                      onBlur={()=>setTimeout(()=>setShowMentionPicker(false),150)}
+                      style={{background:"transparent",border:"none",padding:0,fontSize:15,width:"100%",color:"var(--cream)"}}
+                    />
+                    {commentText.trim()&&(
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:10,paddingTop:10,borderTop:"1px solid var(--border)"}}>
+                        <div style={{display:"flex",gap:5,flexWrap:"wrap",flex:1}}>
+                          {extractMentions(commentText).map(tm=>(
+                            <div key={tm.id} style={{display:"flex",alignItems:"center",gap:4,background:tm.color+"18",borderRadius:99,padding:"3px 9px",border:"1px solid "+tm.color+"35"}}>
+                              <Bell size={10} color={tm.color}/>
+                              <span style={{fontSize:12,fontWeight:700,color:tm.color}}>{tm.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <button onClick={addComment}
+                          style={{width:32,height:32,borderRadius:10,background:"var(--sage)",backgroundImage:"linear-gradient(135deg,var(--sage),var(--sage2))",display:"flex",alignItems:"center",justifyContent:"center",border:"none",flexShrink:0,boxShadow:"0 4px 12px rgba(46,107,94,.4)"}}>
+                          <Send size={14} color="var(--cream)"/>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Share + Delete row */}
+          <div style={{display:"flex",gap:10,paddingBottom:"calc(env(safe-area-inset-bottom,16px) + 8px)"}}>
+            <button
+              onClick={()=>setShowShare(true)}
+              style={{flex:1,background:"var(--sage-light)",border:"1.5px solid var(--sage-mid)",borderRadius:12,padding:"13px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontWeight:700,fontSize:15,color:"var(--sage)",cursor:"pointer"}}
+            >
+              <Share2 size={16}/>Share Event
+            </button>
+            <Btn v="danger" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}} onClick={function(){setConfirmDelete(true);}}>
+              <Trash2 size={15}/>Delete
+            </Btn>
+          </div>
+
+          {/* Share Sheet */}
+          {showShare&&<ShareSheet ev={ev} onClose={()=>setShowShare(false)}/>}
+
+        </div>
 
         {/* Delete confirmation sheet */}
         {confirmDelete&&(
-          <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:600,display:"flex",alignItems:"flex-end"}} onClick={function(){setConfirmDelete(false);}}>
-            <div className="fu" style={{background:"#f5f0e8",borderRadius:"20px 20px 0 0",padding:"24px 20px 40px",width:"100%"}} onClick={function(e){e.stopPropagation();}}>
+          <div style={{position:"fixed",inset:0,background:"rgba(26,46,26,.5)",zIndex:700,display:"flex",alignItems:"flex-end"}} onClick={function(){setConfirmDelete(false);}}>
+            <div className="fu" style={{background:"#f5f0e8",borderRadius:"20px 20px 0 0",padding:"24px 20px",paddingBottom:"calc(env(safe-area-inset-bottom,20px) + 20px)",width:"100%"}} onClick={function(e){e.stopPropagation();}}>
               <div style={{width:36,height:4,borderRadius:2,background:"var(--ink4)",margin:"0 auto 20px"}}/>
               <div style={{textAlign:"center",marginBottom:24}}>
                 <div style={{width:56,height:56,background:"rgba(168,56,56,.08)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px",border:"1px solid rgba(168,56,56,.2)"}}><Trash2 size={22} color="var(--rose)"/></div>
@@ -2538,7 +2594,7 @@ function FlyerScanner({members, onAdd}) {
                       onChange={function(e) { updateEv(ev.id, {time: e.target.value}); }}
                       style={{fontSize:14,padding:"8px 10px"}}/>
                   </div>
-                  <div style={{gridColumn:"1/-1"}}>
+                  <div style={{gridColumn:"span 2"}}>
                     <label style={{fontSize:12,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5,letterSpacing:".04em"}}>LOCATION</label>
                     <input value={ev.location}
                       onChange={function(e) { updateEv(ev.id, {location: e.target.value}); }}
@@ -2546,7 +2602,7 @@ function FlyerScanner({members, onAdd}) {
                       style={{fontSize:14,padding:"8px 10px"}}/>
                   </div>
                   {ev.notes ? (
-                    <div style={{gridColumn:"1/-1"}}>
+                    <div style={{gridColumn:"span 2"}}>
                       <label style={{fontSize:12,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5,letterSpacing:".04em"}}>NOTES</label>
                       <input value={ev.notes}
                         onChange={function(e) { updateEv(ev.id, {notes: e.target.value}); }}
@@ -2554,7 +2610,7 @@ function FlyerScanner({members, onAdd}) {
                     </div>
                   ) : null}
                   {/* For which member */}
-                  <div style={{gridColumn:"1/-1"}}>
+                  <div style={{gridColumn:"span 2"}}>
                     <label style={{fontSize:12,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:7,letterSpacing:".04em"}}>FOR</label>
                     <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
                       {members && members.map(function(m) {
@@ -3126,12 +3182,12 @@ function InboxScreen({members,onAdd}) {
                     <input type="time" value={ev.time} onChange={e=>setExtracted(x=>x.map(i=>i.id===ev.id?{...i,time:e.target.value}:i))} style={{fontSize:14,padding:"8px 10px"}}/>
                   </div>
                   {!ev.isCancelled&&(
-                    <div style={{gridColumn:"1/-1"}}>
+                    <div style={{gridColumn:"span 2"}}>
                       <label style={{fontSize:12,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5,letterSpacing:".04em"}}>LOCATION</label>
                       <input value={ev.location} onChange={e=>setExtracted(x=>x.map(i=>i.id===ev.id?{...i,location:e.target.value}:i))} placeholder="Add location…" style={{fontSize:14,padding:"8px 10px"}}/>
                     </div>
                   )}
-                  <div style={{gridColumn:"1/-1"}}>
+                  <div style={{gridColumn:"span 2"}}>
                     <label style={{fontSize:12,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:7,letterSpacing:".04em"}}>FOR</label>
                     <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
                       {members.map(function(m){
@@ -3592,7 +3648,7 @@ function NotifSettingsScreen({settings,setSettings,members,onBack,requestPermiss
             <div style={{padding:"14px 18px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,borderTop:"1px solid rgba(240,236,226,.06)"}}>
               <div><label style={{fontSize:12,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:6,letterSpacing:".05em"}}>FROM</label><input type="time" value={settings.quietHours.from||"22:00"} onChange={e=>setSettings(p=>({...p,quietHours:{...p.quietHours,from:e.target.value}}))}/></div>
               <div><label style={{fontSize:12,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:6,letterSpacing:".05em"}}>TO</label><input type="time" value={settings.quietHours.to||"07:00"} onChange={e=>setSettings(p=>({...p,quietHours:{...p.quietHours,to:e.target.value}}))}/></div>
-              {settings.quietHours.from&&settings.quietHours.to&&settings.quietHours.from>settings.quietHours.to&&<p style={{fontSize:13,color:"var(--sage3)",gridColumn:"1/-1",marginTop:4}}>ℹ️ Spans midnight — silent until {settings.quietHours.to} next morning</p>}
+              {settings.quietHours.from&&settings.quietHours.to&&settings.quietHours.from>settings.quietHours.to&&<p style={{fontSize:13,color:"var(--sage3)",gridColumn:"span 2",marginTop:4}}>ℹ️ Spans midnight — silent until {settings.quietHours.to} next morning</p>}
             </div>
           )}
         </div>
@@ -4422,83 +4478,38 @@ function ListsScreen({members}) {
 function DiscoverScreen({members,onAdd,user}) {
   var [city,setCity]=useState(function(){return localStorage.getItem("calla_city")||"";});
   var [hood,setHood]=useState(function(){return localStorage.getItem("calla_hood")||"";});
-  var [radius,setRadius]=useState(function(){return parseInt(localStorage.getItem("calla_radius")||"10");});
   var [results,setResults]=useState([]);
   var [loading,setLoading]=useState(false);
   var [error,setError]=useState("");
   var [editLoc,setEditLoc]=useState(false);
   var [lastSearch,setLastSearch]=useState("");
-  var [filter,setFilter]=useState("All");
-  var [gpsLoading,setGpsLoading]=useState(false);
-  var [gpsError,setGpsError]=useState("");
-
-  var categories=["All","Soccer","Basketball","Hockey","Swimming","Music","Art","Dance","Community","STEM","Outdoor","Other"];
-  var catEmoji={"Soccer":"⚽","Basketball":"🏀","Hockey":"🏒","Swimming":"🏊","Music":"🎵","Art":"🎨","Dance":"💃","Community":"🏘️","STEM":"🔬","Outdoor":"🌲","Other":"📅"};
 
   function saveLocation() {
     localStorage.setItem("calla_city", city);
     localStorage.setItem("calla_hood", hood);
-    localStorage.setItem("calla_radius", String(radius));
     setEditLoc(false);
-    if(city) search(city, hood, radius);
+    if(city) search(city, hood);
   }
 
-  function useGPS() {
-    if(!navigator.geolocation) { setGpsError("GPS not available on this device."); return; }
-    setGpsLoading(true);
-    setGpsError("");
-    navigator.geolocation.getCurrentPosition(
-      function(pos) {
-        fetch("https://nominatim.openstreetmap.org/reverse?format=json&lat="+pos.coords.latitude+"&lon="+pos.coords.longitude, {
-          headers:{"User-Agent":"Calla Family Calendar / getcalla.ca"}
-        }).then(function(r){return r.json();}).then(function(d){
-          var addr=d.address||{};
-          var detectedCity=addr.city||addr.town||addr.village||addr.county||"";
-          var detectedHood=addr.suburb||addr.neighbourhood||addr.quarter||"";
-          setCity(detectedCity);
-          setHood(detectedHood);
-          localStorage.setItem("calla_city",detectedCity);
-          localStorage.setItem("calla_hood",detectedHood);
-          localStorage.setItem("calla_radius",String(radius));
-          setGpsLoading(false);
-          setEditLoc(false);
-          if(detectedCity) search(detectedCity, detectedHood, radius);
-        }).catch(function(){
-          setGpsError("Could not detect location. Enter manually.");
-          setGpsLoading(false);
-        });
-      },
-      function(err) {
-        setGpsError(err.code===1?"Location permission denied. Enable in Settings.":"Could not get location. Enter manually.");
-        setGpsLoading(false);
-      },
-      {timeout:10000,enableHighAccuracy:false}
-    );
-  }
-
-  function search(c, h, r) {
+  function search(c, h) {
     var loc = h ? h+", "+c : c;
     if(!loc.trim()) return;
-    var rad = r||radius;
     setLoading(true);
     setError("");
     setResults([]);
     setLastSearch(loc);
+    var prompt = "Search the web for upcoming kids activities, sports registrations, music classes, recreational programs, and community events near "+loc+". Include registration deadlines. Today is "+new Date().toISOString().slice(0,10)+". Return ONLY a JSON array (no markdown) of up to 12 items. Each item must have: title (string), category (one of: Soccer, Basketball, Hockey, Swimming, Music, Art, Dance, Community, Other), date (YYYY-MM-DD or empty string if unknown), deadline (YYYY-MM-DD or empty string), location (string), description (string, max 100 chars), url (string or empty). Only include real, specific, verifiable events.";
     fetch("https://pqvxzsrpifiuovhtxldp.supabase.co/functions/v1/scan-flyer", {
       method:"POST",
       headers:{"Content-Type":"application/json","Authorization":"Bearer "+window.__supabaseAnonKey},
-      body:JSON.stringify({type:"discover",location:loc,radius:rad})
+      body:JSON.stringify({type:"discover",location:loc})
     }).then(function(r){return r.json();}).then(function(d){
-      if(d.error) { setError("Could not load results. Try again."); setLoading(false); return; }
-      var text = d.result||"";
+      var text = d.result||d.text||"";
       try {
         var clean = text.replace(/```json|```/g,"").trim();
         var parsed = JSON.parse(clean);
-        if(Array.isArray(parsed) && parsed.length > 0) {
-          setResults(parsed);
-        } else {
-          setError("No active events found near "+loc+". Try a broader radius or check back later.");
-        }
+        if(Array.isArray(parsed)) setResults(parsed);
+        else setError("No results found. Try a different area.");
       } catch(e) {
         setError("Could not load results. Try again.");
       }
@@ -4509,109 +4520,104 @@ function DiscoverScreen({members,onAdd,user}) {
     });
   }
 
+  var categories=["All","Soccer","Basketball","Hockey","Swimming","Music","Art","Dance","Community","Other"];
+  var [filter,setFilter]=useState("All");
+
+  var catEmoji={"Soccer":"⚽","Basketball":"🏀","Hockey":"🏒","Swimming":"🏊","Music":"🎵","Art":"🎨","Dance":"💃","Community":"🏘️","Other":"📅"};
+
   function addToCalendar(item) {
-    var mem=members[0]||{id:"",color:"#2d5a3d"};
+    var mem = members[0]||{id:"",color:"#2d5a3d"};
     onAdd({
-      id:Date.now().toString(),title:item.title,
+      id:Date.now().toString(),
+      title:item.title,
       date:item.deadline||item.date||new Date().toISOString().slice(0,10),
-      time:"",endTime:"",location:item.location||"",
+      time:"",endTime:"",
+      location:item.location||"",
       notes:item.description+(item.url?" | "+item.url:""),
-      memberId:mem.id,color:mem.color,
+      memberId:mem.id,
+      color:mem.color,
       recurring:false,recurFreq:"weekly",recurEnd:"",
       cost:"",costType:"one-time",packingList:[],
     });
+    toast_({icon:"✅",title:"Added to calendar!",body:item.title,color:"var(--sage2)"});
+  }
+
+  function toast_(t){
     var el=document.createElement("div");
-    el.style.cssText="position:fixed;top:calc(env(safe-area-inset-top,20px)+60px);left:50%;transform:translateX(-50%);background:var(--ink2);border:1px solid var(--border2);border-radius:12px;padding:10px 16px;z-index:9999;font-size:14px;font-weight:600;color:var(--cream);box-shadow:0 4px 20px rgba(0,0,0,.15);white-space:nowrap;";
-    el.textContent="✅ Added to calendar!";
+    el.style.cssText="position:fixed;top:calc(env(safe-area-inset-top,20px)+60px);left:50%;transform:translateX(-50%);background:var(--ink2);border:1px solid var(--border2);borderRadius:12px;padding:10px 16px;zIndex:9999;fontSize:14px;fontWeight:600;color:var(--cream);boxShadow:0 4px 20px rgba(0,0,0,.15);whiteSpace:nowrap;";
+    el.textContent=t.icon+" "+t.title;
     document.body.appendChild(el);
     setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},2500);
   }
 
-  var filtered=filter==="All"?results:results.filter(function(r){return r.category===filter;});
-  var locSet=city.trim().length>0;
+  var filtered = filter==="All" ? results : results.filter(function(r){return r.category===filter;});
+
+  var locSet = city.trim().length > 0;
 
   return (
     <div style={{paddingBottom:8}}>
+      {/* Location bar */}
       <div style={{background:"var(--ink2)",borderRadius:16,padding:"14px 16px",marginBottom:14,border:"1px solid var(--border2)"}}>
         {!editLoc&&locSet ? (
-          <div>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <Locate size={16} color="var(--sage)"/>
-                <div>
-                  <p style={{fontWeight:700,fontSize:15,color:"var(--cream)"}}>{hood?hood+", ":""}{city}</p>
-                  <p style={{fontSize:12,color:"var(--cream3)"}}>Within {radius}km</p>
-                </div>
-              </div>
-              <button onClick={function(){setEditLoc(true);}} style={{background:"var(--ink3)",border:"1px solid var(--border2)",borderRadius:8,padding:"6px 12px",fontSize:13,fontWeight:600,color:"var(--cream3)"}}>Change</button>
-            </div>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
             <div style={{display:"flex",alignItems:"center",gap:10}}>
-              <span style={{fontSize:12,color:"var(--cream3)",flexShrink:0}}>5km</span>
-              <input type="range" min={5} max={25} step={5} value={radius}
-                onChange={function(e){var v=parseInt(e.target.value);setRadius(v);localStorage.setItem("calla_radius",String(v));}}
-                onMouseUp={function(){search(city,hood,radius);}}
-                onTouchEnd={function(){search(city,hood,radius);}}
-                style={{flex:1,accentColor:"var(--sage)"}}
-              />
-              <span style={{fontSize:12,color:"var(--cream3)",flexShrink:0}}>25km</span>
-              <span style={{fontSize:13,fontWeight:700,color:"var(--sage)",minWidth:36,textAlign:"right"}}>{radius}km</span>
+              <Locate size={16} color="var(--sage)"/>
+              <div>
+                <p style={{fontWeight:700,fontSize:15,color:"var(--cream)"}}>{hood?hood+", ":""}{city}</p>
+                <p style={{fontSize:12,color:"var(--cream3)"}}>Your discovery area</p>
+              </div>
             </div>
+            <button onClick={function(){setEditLoc(true);}} style={{background:"var(--ink3)",border:"1px solid var(--border2)",borderRadius:8,padding:"6px 12px",fontSize:13,fontWeight:600,color:"var(--cream3)"}}>Change</button>
           </div>
         ) : (
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
             <p style={{fontWeight:700,fontSize:15,color:"var(--cream)"}}>Set your location</p>
-            <button onClick={useGPS} disabled={gpsLoading} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,background:"rgba(45,90,61,.08)",border:"1.5px solid var(--sage2)",borderRadius:10,padding:"10px 0",fontWeight:700,fontSize:14,color:"var(--sage)",width:"100%"}}>
-              {gpsLoading?<><div style={{width:14,height:14,border:"2px solid var(--sage2)",borderTopColor:"transparent",borderRadius:"50%",animation:"spin .7s linear infinite"}}/> Detecting…</>:<><Locate size={14}/>Use My Location</>}
-            </button>
-            {gpsError&&<p style={{fontSize:13,color:"var(--rose)",textAlign:"center"}}>{gpsError}</p>}
-            <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <div style={{flex:1,height:1,background:"var(--border2)"}}/>
-              <span style={{fontSize:12,color:"var(--cream3)"}}>or enter manually</span>
-              <div style={{flex:1,height:1,background:"var(--border2)"}}/>
-            </div>
             <input placeholder="City (e.g. Ottawa)" value={city} onChange={function(e){setCity(e.target.value);}} style={{fontSize:15}}/>
             <input placeholder="Neighbourhood (e.g. Riverside South)" value={hood} onChange={function(e){setHood(e.target.value);}} style={{fontSize:15}}/>
-            <div>
-              <p style={{fontSize:13,color:"var(--cream3)",marginBottom:6}}>Radius: <span style={{fontWeight:700,color:"var(--sage)"}}>{radius}km</span></p>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <span style={{fontSize:12,color:"var(--cream3)"}}>5km</span>
-                <input type="range" min={5} max={25} step={5} value={radius} onChange={function(e){setRadius(parseInt(e.target.value));}} style={{flex:1,accentColor:"var(--sage)"}}/>
-                <span style={{fontSize:12,color:"var(--cream3)"}}>25km</span>
-              </div>
-            </div>
-            <Btn onClick={saveLocation} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}><Locate size={14}/>Save & Search</Btn>
+            <Btn onClick={saveLocation} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+              <Locate size={14}/>Save & Search
+            </Btn>
           </div>
         )}
       </div>
 
+      {/* Search button if location set but no results yet */}
       {locSet&&!editLoc&&results.length===0&&!loading&&!error&&(
-        <Btn onClick={function(){search(city,hood,radius);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,width:"100%",marginBottom:14}}>
-          <Compass size={15}/>Discover within {radius}km of {hood||city}
+        <Btn onClick={function(){search(city,hood);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,width:"100%",marginBottom:14}}>
+          <Compass size={15}/>Discover in {hood||city}
         </Btn>
       )}
 
+      {/* Loading */}
       {loading&&(
         <div style={{textAlign:"center",padding:"48px 0"}}>
           <div style={{width:32,height:32,border:"3px solid var(--border2)",borderTopColor:"var(--sage2)",borderRadius:"50%",animation:"spin .7s linear infinite",margin:"0 auto 16px"}}/>
-          <p style={{fontSize:15,color:"var(--cream3)",fontWeight:500}}>Searching within {radius}km of {lastSearch}…</p>
-          <p style={{fontSize:13,color:"var(--cream3)",marginTop:4}}>Finding active registrations and events</p>
+          <p style={{fontSize:15,color:"var(--cream3)",fontWeight:500}}>Searching {lastSearch}…</p>
+          <p style={{fontSize:13,color:"var(--cream3)",marginTop:4}}>Finding registrations & events</p>
         </div>
       )}
 
+      {/* Error */}
       {error&&<div style={{background:"rgba(196,90,90,.08)",border:"1px solid rgba(196,90,90,.2)",borderRadius:12,padding:"14px 16px",marginBottom:14,fontSize:14,color:"var(--rose)"}}>{error}</div>}
 
+      {/* Category filter */}
       {results.length>0&&(
         <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:8,marginBottom:12,WebkitOverflowScrolling:"touch"}}>
           {categories.map(function(c){
             var active=filter===c;
-            return (<button key={c} onClick={function(){setFilter(c);}} style={{flexShrink:0,padding:"6px 14px",borderRadius:99,background:active?"var(--sage)":"var(--ink2)",color:active?"var(--cream)":"var(--cream3)",border:"1px solid "+(active?"var(--sage2)":"var(--border2)"),fontSize:13,fontWeight:600,whiteSpace:"nowrap"}}>{c==="All"?"All":catEmoji[c]+" "+c}</button>);
+            return (
+              <button key={c} onClick={function(){setFilter(c);}} style={{flexShrink:0,padding:"6px 14px",borderRadius:99,background:active?"var(--sage)":"var(--ink2)",color:active?"var(--cream)":"var(--cream3)",border:"1px solid "+(active?"var(--sage2)":"var(--border2)"),fontSize:13,fontWeight:600,whiteSpace:"nowrap"}}>
+                {c==="All"?"All":catEmoji[c]+" "+c}
+              </button>
+            );
           })}
         </div>
       )}
 
+      {/* Results */}
       {filtered.length>0&&(
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          <p style={{fontSize:12,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em"}}>{filtered.length} result{filtered.length===1?"":"s"} within {radius}km of {lastSearch}</p>
+          <p style={{fontSize:12,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em"}}>{filtered.length} result{filtered.length===1?"":"s"} near {lastSearch}</p>
           {filtered.map(function(item,i){
             var emoji=catEmoji[item.category]||"📅";
             var hasDeadline=item.deadline&&item.deadline.length>0;
@@ -4631,7 +4637,6 @@ function DiscoverScreen({members,onAdd,user}) {
                   {item.location&&<span style={{fontSize:12,color:"var(--cream3)",display:"flex",alignItems:"center",gap:3}}><MapPin size={11} color="var(--cream3)"/>{item.location}</span>}
                 </div>
                 <div style={{display:"flex",gap:8}}>
-                <div style={{display:"flex",gap:8}}>
                   <button onClick={function(){addToCalendar(item);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"var(--sage)",color:"var(--cream)",borderRadius:10,padding:"10px 0",fontWeight:700,fontSize:14,border:"none",flex:2}}>
                     <Check size={14}/>Add to Calla
                   </button>
@@ -4639,33 +4644,30 @@ function DiscoverScreen({members,onAdd,user}) {
                     <Share2 size={13}/>View
                   </button>
                 </div>
-                  <button onClick={function(){
-                    var url=item.url&&item.url.length>4?item.url:"https://www.google.com/search?q="+encodeURIComponent(item.title+" "+item.location);
-                    window.open(url,"_blank");
-                  }} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"var(--ink3)",color:"var(--cream3)",borderRadius:10,padding:"10px 0",fontWeight:600,fontSize:14,border:"1px solid var(--border2)",flex:1}}>
-                    <Share2 size={13}/>View
-                  </button>
-                </div>
               </div>
             );
           })}
-          <button onClick={function(){search(city,hood,radius);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:10,padding:"10px 0",fontWeight:600,fontSize:14,color:"var(--cream3)",width:"100%",marginTop:4}}>
+          <button onClick={function(){search(city,hood);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:10,padding:"10px 0",fontWeight:600,fontSize:14,color:"var(--cream3)",width:"100%",marginTop:4}}>
             <Compass size={14}/>Refresh results
           </button>
         </div>
       )}
 
+      {/* Empty — no location */}
       {!locSet&&!editLoc&&(
         <div style={{textAlign:"center",padding:"48px 20px"}}>
           <div style={{fontSize:48,marginBottom:16}}>🧭</div>
           <p style={{fontWeight:700,fontSize:18,color:"var(--cream)",marginBottom:8}}>Discover local activities</p>
-          <p style={{fontSize:15,color:"var(--cream3)",lineHeight:1.6,marginBottom:24}}>Find upcoming kids sports registrations, music classes, community events and more near you.</p>
-          <Btn onClick={function(){setEditLoc(true);}} style={{display:"inline-flex",alignItems:"center",gap:8}}><Locate size={14}/>Set My Location</Btn>
+          <p style={{fontSize:15,color:"var(--cream3)",lineHeight:1.6,marginBottom:24}}>Set your city and neighbourhood to find upcoming kids sports, music classes, and community events near you.</p>
+          <Btn onClick={function(){setEditLoc(true);}} style={{display:"inline-flex",alignItems:"center",gap:8}}>
+            <Locate size={14}/>Set My Location
+          </Btn>
         </div>
       )}
     </div>
   );
 }
+
 
 function Nav({active,setActive,inboxBadge,notifBadge}) {
   var items=[
