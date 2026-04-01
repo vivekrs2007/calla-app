@@ -616,6 +616,12 @@ function Auth({onLogin}) {
                 <span style={{fontSize:11}}>🔒</span>
                 <p style={{fontSize:11,color:"rgba(245,240,232,.5)"}}>Emails deleted immediately · nothing stored</p>
               </div>
+              {/* Email deleted highlight */}
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:14,background:"rgba(220,60,60,.12)",border:"1px solid rgba(220,60,60,.25)",borderRadius:12,padding:"10px 14px"}}>
+                <span style={{fontSize:14}}>🗑️</span>
+                <p style={{fontSize:12,fontWeight:700,color:"rgba(255,140,140,.9)"}}>Email permanently deleted after extraction</p>
+                <span style={{fontSize:14}}>🔒</span>
+              </div>
             </div>
           </div>
         )}
