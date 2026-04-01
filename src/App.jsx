@@ -484,14 +484,14 @@ function Auth({onLogin}) {
       if(!email.trim()){setAuthError("Please enter your email address.");return;}
       if(!email.includes("@")||!email.includes(".")){setAuthError("Please enter a valid email address.");return;}
       if(!pass.trim()){setAuthError("Please choose a password.");return;}
-      if(pass.length<6){setAuthError("Password must be at least 6 characters.");return;}
+      if(pass.length<8){setAuthError("Password must be at least 8 characters.");return;}
     } else {
       if(!email.trim()){setAuthError("Please enter your email address.");return;}
       if(!pass.trim()){setAuthError("Please enter your password.");return;}
     }
     setLoading(true);
     if(mode==="signup"){
-      supabase.auth.signUp({email:email.trim(),password:pass,options:{data:{name:name.trim(),family_name:family.trim()}}}).then(function(res){
+      supabase.auth.signUp({email:email.trim().toLowerCase(),password:pass,options:{data:{name:name.trim(),family_name:family.trim()}}}).then(function(res){
         setLoading(false);
         if(res.error){
           var msg=res.error.message||"";
@@ -500,24 +500,32 @@ function Auth({onLogin}) {
           } else if(msg.toLowerCase().includes("invalid email")){
             setAuthError("Please enter a valid email address.");
           } else if(msg.toLowerCase().includes("password")){
-            setAuthError("Password must be at least 6 characters.");
+            setAuthError("Password must be at least 8 characters.");
           } else {
             setAuthError("Something went wrong. Please try again.");
           }
           return;
         }
         var u=res.data.user;
-        supabase.from("profiles").upsert({id:u.id,name:name.trim(),family_name:family.trim()}).then(function(){
-          onLogin({id:u.id,name:name.trim()||"Parent",family:family.trim()||"My Family",email:email.trim()});
+        if(!u){
+          setAuthError("Account created! Check your email to confirm your address before signing in.");
+          return;
+        }
+        supabase.from("profiles").upsert({id:u.id,name:name.trim(),family_name:family.trim(),setup_done:false}).then(function(pr){
+          if(pr.error){console.error("Profile upsert error:",pr.error);}
+          onLogin({id:u.id,name:name.trim()||"Parent",family:family.trim()||"My Family",email:email.trim().toLowerCase()});
+        }).catch(function(){
+          onLogin({id:u.id,name:name.trim()||"Parent",family:family.trim()||"My Family",email:email.trim().toLowerCase()});
         });
       });
     } else {
-      supabase.auth.signInWithPassword({email:email.trim(),password:pass}).then(function(res){
+      supabase.auth.signInWithPassword({email:email.trim().toLowerCase(),password:pass}).then(function(res){
         setLoading(false);
         if(res.error){setAuthError("Wrong email or password — try again.");return;}
         var u=res.data.user;
         var meta=u.user_metadata||{};
         localStorage.setItem("calla_setup_"+u.id,"true");
+        supabase.from("profiles").update({setup_done:true}).eq("id",u.id).then(function(){});
         onLogin({id:u.id,name:meta.name||"Parent",family:meta.family_name||"My Family",email:u.email});
       });
     }
@@ -851,7 +859,7 @@ function Auth({onLogin}) {
               )}
             </div>
             <div style={{position:"relative"}}>
-              <input placeholder="Choose a password (6+ characters)" type={showPass?"text":"password"} value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()} style={{paddingRight:44}}/>
+              <input placeholder="Choose a password (8+ characters)" type={showPass?"text":"password"} value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()} style={{paddingRight:44}}/>
               {mode==="signup"&&pass.length>0&&(function(){
                 var str=pass.length>=10&&/[A-Z]/.test(pass)&&/[0-9]/.test(pass)?3:pass.length>=6?2:1;
                 var cols=["var(--rose)","var(--gold2)","var(--sage2)"];
@@ -888,7 +896,15 @@ function Auth({onLogin}) {
                 <p style={{fontSize:13,color:"var(--cream3)",textAlign:"center"}}>No credit card required · No ads · Your data is private</p>
               </div>
             )}
-            {mode==="login"&&<button type="button" onClick={function(){alert("We will send a reset link to your email.");}} style={{background:"none",border:"none",color:"var(--sage3)",fontSize:14,fontWeight:600,cursor:"pointer"}}>Forgot password?</button>}
+            {mode==="login"&&<button type="button" onClick={function(){
+              if(!email.trim()){setAuthError("Enter your email above first.");return;}
+              setLoading(true);
+              supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(),{redirectTo:window.location.origin}).then(function(res){
+                setLoading(false);
+                if(res.error){setAuthError("Could not send reset email. Please try again.");}
+                else{setAuthError("");alert("Password reset email sent! Check your inbox.");}
+              });
+            }} style={{background:"none",border:"none",color:"var(--sage3)",fontSize:14,fontWeight:600,cursor:"pointer"}}>Forgot password?</button>}
           </div>
         </Card>
 
@@ -1722,12 +1738,12 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
     {icon:"🏊",label:"Swimming Pool",keywords:["pool","swim","aquatic","leisure"]},
     {icon:"🎵",label:"Music Studio",keywords:["music","piano","guitar","violin","studio","academy"]},
     {icon:"🩰",label:"Dance Studio",keywords:["dance","ballet","studio"]},
-    {icon:"🏥",label:"Doctor / Clinic",keywords:["doctor","clinic","dentist","hospital","medical"]},
+    {icon:"🏥",label:"Doctor - Clinic",keywords:["doctor","clinic","dentist","hospital","medical"]},
     {icon:"🏫",label:"School",keywords:["school","elementary","high school","middle"]},
     {icon:"🛒",label:"Grocery Store",keywords:["grocery","supermarket","store","walmart","costco"]},
     {icon:"🎭",label:"Community Centre",keywords:["community","centre","center","hall","rec"]},
-    {icon:"🏟️",label:"Arena / Gym",keywords:["arena","gym","rink","court","complex","sportsplex"]},
-    {icon:"🌳",label:"Park / Playground",keywords:["park","playground","trail","nature"]},
+    {icon:"🏟️",label:"Arena - Gym",keywords:["arena","gym","rink","court","complex","sportsplex"]},
+    {icon:"🌳",label:"Park - Playground",keywords:["park","playground","trail","nature"]},
   ];
 
   const getSuggestions=()=>{
@@ -4790,14 +4806,37 @@ export default function App() {
         var u=session.user;
         var meta=u.user_metadata||{};
         setUser({id:u.id,name:meta.name||"Parent",family:meta.family_name||"My Family",email:u.email});
-        var done=localStorage.getItem("calla_setup_"+u.id);
-        setSetupDone(done==="true");
-        loadUserData(u.id);
+        // Check setup_done from Supabase profile (cross-device)
+        supabase.from("profiles").select("setup_done,name,family_name").eq("id",u.id).then(function(pr){
+          if(pr.data&&pr.data.length>0){
+            var profile=pr.data[0];
+            var done=profile.setup_done===true||localStorage.getItem("calla_setup_"+u.id)==="true";
+            setSetupDone(done);
+            if(profile.name) setUser({id:u.id,name:profile.name,family:profile.family_name||"My Family",email:u.email});
+          } else {
+            setSetupDone(localStorage.getItem("calla_setup_"+u.id)==="true");
+          }
+          loadUserData(u.id);
+        }).catch(function(){
+          setSetupDone(localStorage.getItem("calla_setup_"+u.id)==="true");
+          loadUserData(u.id);
+        });
       }
+      setAuthLoading(false);
+    }).catch(function(){
       setAuthLoading(false);
     });
     var sub=supabase.auth.onAuthStateChange(function(event,session){
-      if(event==="SIGNED_OUT"){setUser(null);setSetupDone(false);setEvents([]);setMembers(M0);setFamilyId(null);}
+      if(event==="SIGNED_OUT"){
+        setUser(null);setSetupDone(false);setEvents([]);setMembers(M0);setFamilyId(null);
+      } else if((event==="SIGNED_IN"||event==="TOKEN_REFRESHED")&&session&&session.user){
+        var u=session.user;
+        var meta=u.user_metadata||{};
+        setUser(function(prev){
+          if(prev&&prev.id===u.id) return prev;
+          return {id:u.id,name:meta.name||"Parent",family:meta.family_name||"My Family",email:u.email};
+        });
+      }
     });
     return function(){sub.data.subscription.unsubscribe();};
   },[]);
@@ -4850,7 +4889,16 @@ export default function App() {
   function sendInvite(partnerEmail,onSuccess,onError){
     if(!user||!user.id) return;
     var doInvite=function(fid){
-      supabase.from("invites").insert({
+      // Check for existing pending invite first
+      supabase.from("invites").select("id,token").eq("family_id",fid).eq("invited_email",partnerEmail.trim().toLowerCase()).eq("status","pending").then(function(existing){
+        if(existing.data&&existing.data.length>0){
+          // Resend the existing link instead of creating a new one
+          var existingInvite=existing.data[0];
+          var link=window.location.origin+"?invite="+existingInvite.token;
+          onSuccess&&onSuccess(link,existingInvite.token);
+          return;
+        }
+        supabase.from("invites").insert({
         family_id:fid,
         invited_by:user.id,
         invited_email:partnerEmail.trim().toLowerCase(),
@@ -4882,6 +4930,7 @@ export default function App() {
           else console.log("Email sent successfully");
         });
         onSuccess&&onSuccess(link,invite.token);
+        });
       });
     };
     if(familyId){
@@ -4919,6 +4968,20 @@ export default function App() {
         return;
       }
       var invite=res.data[0];
+      // Security: verify this invite was meant for this user
+      if(invite.invited_email&&user.email&&invite.invited_email.toLowerCase()!==user.email.toLowerCase()){
+        toast({icon:"⚠️",title:"This invite was sent to a different email address",color:"var(--rose)"});
+        return;
+      }
+      // Check expiry (7 days)
+      var created=new Date(invite.created_at);
+      var now=new Date();
+      var daysDiff=(now-created)/(1000*60*60*24);
+      if(daysDiff>7){
+        toast({icon:"⚠️",title:"This invite has expired (7 days)",color:"var(--rose)"});
+        supabase.from("invites").update({status:"expired"}).eq("id",invite.id).then(function(){});
+        return;
+      }
       var fid=invite.family_id;
       // Join the family
       supabase.from("family_members").upsert({family_id:fid,user_id:user.id,role:"parent"}).then(function(){
