@@ -4422,38 +4422,83 @@ function ListsScreen({members}) {
 function DiscoverScreen({members,onAdd,user}) {
   var [city,setCity]=useState(function(){return localStorage.getItem("calla_city")||"";});
   var [hood,setHood]=useState(function(){return localStorage.getItem("calla_hood")||"";});
+  var [radius,setRadius]=useState(function(){return parseInt(localStorage.getItem("calla_radius")||"10");});
   var [results,setResults]=useState([]);
   var [loading,setLoading]=useState(false);
   var [error,setError]=useState("");
   var [editLoc,setEditLoc]=useState(false);
   var [lastSearch,setLastSearch]=useState("");
+  var [filter,setFilter]=useState("All");
+  var [gpsLoading,setGpsLoading]=useState(false);
+  var [gpsError,setGpsError]=useState("");
+
+  var categories=["All","Soccer","Basketball","Hockey","Swimming","Music","Art","Dance","Community","STEM","Outdoor","Other"];
+  var catEmoji={"Soccer":"⚽","Basketball":"🏀","Hockey":"🏒","Swimming":"🏊","Music":"🎵","Art":"🎨","Dance":"💃","Community":"🏘️","STEM":"🔬","Outdoor":"🌲","Other":"📅"};
 
   function saveLocation() {
     localStorage.setItem("calla_city", city);
     localStorage.setItem("calla_hood", hood);
+    localStorage.setItem("calla_radius", String(radius));
     setEditLoc(false);
-    if(city) search(city, hood);
+    if(city) search(city, hood, radius);
   }
 
-  function search(c, h) {
+  function useGPS() {
+    if(!navigator.geolocation) { setGpsError("GPS not available on this device."); return; }
+    setGpsLoading(true);
+    setGpsError("");
+    navigator.geolocation.getCurrentPosition(
+      function(pos) {
+        fetch("https://nominatim.openstreetmap.org/reverse?format=json&lat="+pos.coords.latitude+"&lon="+pos.coords.longitude, {
+          headers:{"User-Agent":"Calla Family Calendar / getcalla.ca"}
+        }).then(function(r){return r.json();}).then(function(d){
+          var addr=d.address||{};
+          var detectedCity=addr.city||addr.town||addr.village||addr.county||"";
+          var detectedHood=addr.suburb||addr.neighbourhood||addr.quarter||"";
+          setCity(detectedCity);
+          setHood(detectedHood);
+          localStorage.setItem("calla_city",detectedCity);
+          localStorage.setItem("calla_hood",detectedHood);
+          localStorage.setItem("calla_radius",String(radius));
+          setGpsLoading(false);
+          setEditLoc(false);
+          if(detectedCity) search(detectedCity, detectedHood, radius);
+        }).catch(function(){
+          setGpsError("Could not detect location. Enter manually.");
+          setGpsLoading(false);
+        });
+      },
+      function(err) {
+        setGpsError(err.code===1?"Location permission denied. Enable in Settings.":"Could not get location. Enter manually.");
+        setGpsLoading(false);
+      },
+      {timeout:10000,enableHighAccuracy:false}
+    );
+  }
+
+  function search(c, h, r) {
     var loc = h ? h+", "+c : c;
     if(!loc.trim()) return;
+    var rad = r||radius;
     setLoading(true);
     setError("");
     setResults([]);
     setLastSearch(loc);
-    var prompt = "Search the web for upcoming kids activities, sports registrations, music classes, recreational programs, and community events near "+loc+". Include registration deadlines. Today is "+new Date().toISOString().slice(0,10)+". Return ONLY a JSON array (no markdown) of up to 12 items. Each item must have: title (string), category (one of: Soccer, Basketball, Hockey, Swimming, Music, Art, Dance, Community, Other), date (YYYY-MM-DD or empty string if unknown), deadline (YYYY-MM-DD or empty string), location (string), description (string, max 100 chars), url (string or empty). Only include real, specific, verifiable events.";
     fetch("https://pqvxzsrpifiuovhtxldp.supabase.co/functions/v1/scan-flyer", {
       method:"POST",
       headers:{"Content-Type":"application/json","Authorization":"Bearer "+window.__supabaseAnonKey},
-      body:JSON.stringify({type:"discover",location:loc})
+      body:JSON.stringify({type:"discover",location:loc,radius:rad})
     }).then(function(r){return r.json();}).then(function(d){
-      var text = d.result||d.text||"";
+      if(d.error) { setError("Could not load results. Try again."); setLoading(false); return; }
+      var text = d.result||"";
       try {
         var clean = text.replace(/```json|```/g,"").trim();
         var parsed = JSON.parse(clean);
-        if(Array.isArray(parsed)) setResults(parsed);
-        else setError("No results found. Try a different area.");
+        if(Array.isArray(parsed) && parsed.length > 0) {
+          setResults(parsed);
+        } else {
+          setError("No active events found near "+loc+". Try a broader radius or check back later.");
+        }
       } catch(e) {
         setError("Could not load results. Try again.");
       }
@@ -4464,104 +4509,109 @@ function DiscoverScreen({members,onAdd,user}) {
     });
   }
 
-  var categories=["All","Soccer","Basketball","Hockey","Swimming","Music","Art","Dance","Community","STEM","Outdoor","Other"];
-  var [filter,setFilter]=useState("All");
-
-  var catEmoji={"Soccer":"⚽","Basketball":"🏀","Hockey":"🏒","Swimming":"🏊","Music":"🎵","Art":"🎨","Dance":"💃","Community":"🏘️","STEM":"🔬","Outdoor":"🌲","Other":"📅"};
-
   function addToCalendar(item) {
-    var mem = members[0]||{id:"",color:"#2d5a3d"};
+    var mem=members[0]||{id:"",color:"#2d5a3d"};
     onAdd({
-      id:Date.now().toString(),
-      title:item.title,
+      id:Date.now().toString(),title:item.title,
       date:item.deadline||item.date||new Date().toISOString().slice(0,10),
-      time:"",endTime:"",
-      location:item.location||"",
+      time:"",endTime:"",location:item.location||"",
       notes:item.description+(item.url?" | "+item.url:""),
-      memberId:mem.id,
-      color:mem.color,
+      memberId:mem.id,color:mem.color,
       recurring:false,recurFreq:"weekly",recurEnd:"",
       cost:"",costType:"one-time",packingList:[],
     });
-    toast_({icon:"✅",title:"Added to calendar!",body:item.title,color:"var(--sage2)"});
-  }
-
-  function toast_(t){
     var el=document.createElement("div");
-    el.style.cssText="position:fixed;top:calc(env(safe-area-inset-top,20px)+60px);left:50%;transform:translateX(-50%);background:var(--ink2);border:1px solid var(--border2);borderRadius:12px;padding:10px 16px;zIndex:9999;fontSize:14px;fontWeight:600;color:var(--cream);boxShadow:0 4px 20px rgba(0,0,0,.15);whiteSpace:nowrap;";
-    el.textContent=t.icon+" "+t.title;
+    el.style.cssText="position:fixed;top:calc(env(safe-area-inset-top,20px)+60px);left:50%;transform:translateX(-50%);background:var(--ink2);border:1px solid var(--border2);border-radius:12px;padding:10px 16px;z-index:9999;font-size:14px;font-weight:600;color:var(--cream);box-shadow:0 4px 20px rgba(0,0,0,.15);white-space:nowrap;";
+    el.textContent="✅ Added to calendar!";
     document.body.appendChild(el);
     setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},2500);
   }
 
-  var filtered = filter==="All" ? results : results.filter(function(r){return r.category===filter;});
-
-  var locSet = city.trim().length > 0;
+  var filtered=filter==="All"?results:results.filter(function(r){return r.category===filter;});
+  var locSet=city.trim().length>0;
 
   return (
     <div style={{paddingBottom:8}}>
-      {/* Location bar */}
       <div style={{background:"var(--ink2)",borderRadius:16,padding:"14px 16px",marginBottom:14,border:"1px solid var(--border2)"}}>
         {!editLoc&&locSet ? (
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-            <div style={{display:"flex",alignItems:"center",gap:10}}>
-              <Locate size={16} color="var(--sage)"/>
-              <div>
-                <p style={{fontWeight:700,fontSize:15,color:"var(--cream)"}}>{hood?hood+", ":""}{city}</p>
-                <p style={{fontSize:12,color:"var(--cream3)"}}>Your discovery area</p>
+          <div>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <Locate size={16} color="var(--sage)"/>
+                <div>
+                  <p style={{fontWeight:700,fontSize:15,color:"var(--cream)"}}>{hood?hood+", ":""}{city}</p>
+                  <p style={{fontSize:12,color:"var(--cream3)"}}>Within {radius}km</p>
+                </div>
               </div>
+              <button onClick={function(){setEditLoc(true);}} style={{background:"var(--ink3)",border:"1px solid var(--border2)",borderRadius:8,padding:"6px 12px",fontSize:13,fontWeight:600,color:"var(--cream3)"}}>Change</button>
             </div>
-            <button onClick={function(){setEditLoc(true);}} style={{background:"var(--ink3)",border:"1px solid var(--border2)",borderRadius:8,padding:"6px 12px",fontSize:13,fontWeight:600,color:"var(--cream3)"}}>Change</button>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <span style={{fontSize:12,color:"var(--cream3)",flexShrink:0}}>5km</span>
+              <input type="range" min={5} max={25} step={5} value={radius}
+                onChange={function(e){var v=parseInt(e.target.value);setRadius(v);localStorage.setItem("calla_radius",String(v));}}
+                onMouseUp={function(){search(city,hood,radius);}}
+                onTouchEnd={function(){search(city,hood,radius);}}
+                style={{flex:1,accentColor:"var(--sage)"}}
+              />
+              <span style={{fontSize:12,color:"var(--cream3)",flexShrink:0}}>25km</span>
+              <span style={{fontSize:13,fontWeight:700,color:"var(--sage)",minWidth:36,textAlign:"right"}}>{radius}km</span>
+            </div>
           </div>
         ) : (
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
             <p style={{fontWeight:700,fontSize:15,color:"var(--cream)"}}>Set your location</p>
+            <button onClick={useGPS} disabled={gpsLoading} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,background:"rgba(45,90,61,.08)",border:"1.5px solid var(--sage2)",borderRadius:10,padding:"10px 0",fontWeight:700,fontSize:14,color:"var(--sage)",width:"100%"}}>
+              {gpsLoading?<><div style={{width:14,height:14,border:"2px solid var(--sage2)",borderTopColor:"transparent",borderRadius:"50%",animation:"spin .7s linear infinite"}}/> Detecting…</>:<><Locate size={14}/>Use My Location</>}
+            </button>
+            {gpsError&&<p style={{fontSize:13,color:"var(--rose)",textAlign:"center"}}>{gpsError}</p>}
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <div style={{flex:1,height:1,background:"var(--border2)"}}/>
+              <span style={{fontSize:12,color:"var(--cream3)"}}>or enter manually</span>
+              <div style={{flex:1,height:1,background:"var(--border2)"}}/>
+            </div>
             <input placeholder="City (e.g. Ottawa)" value={city} onChange={function(e){setCity(e.target.value);}} style={{fontSize:15}}/>
             <input placeholder="Neighbourhood (e.g. Riverside South)" value={hood} onChange={function(e){setHood(e.target.value);}} style={{fontSize:15}}/>
-            <Btn onClick={saveLocation} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-              <Locate size={14}/>Save & Search
-            </Btn>
+            <div>
+              <p style={{fontSize:13,color:"var(--cream3)",marginBottom:6}}>Radius: <span style={{fontWeight:700,color:"var(--sage)"}}>{radius}km</span></p>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <span style={{fontSize:12,color:"var(--cream3)"}}>5km</span>
+                <input type="range" min={5} max={25} step={5} value={radius} onChange={function(e){setRadius(parseInt(e.target.value));}} style={{flex:1,accentColor:"var(--sage)"}}/>
+                <span style={{fontSize:12,color:"var(--cream3)"}}>25km</span>
+              </div>
+            </div>
+            <Btn onClick={saveLocation} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}><Locate size={14}/>Save & Search</Btn>
           </div>
         )}
       </div>
 
-      {/* Search button if location set but no results yet */}
       {locSet&&!editLoc&&results.length===0&&!loading&&!error&&(
-        <Btn onClick={function(){search(city,hood);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,width:"100%",marginBottom:14}}>
-          <Compass size={15}/>Discover in {hood||city}
+        <Btn onClick={function(){search(city,hood,radius);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,width:"100%",marginBottom:14}}>
+          <Compass size={15}/>Discover within {radius}km of {hood||city}
         </Btn>
       )}
 
-      {/* Loading */}
       {loading&&(
         <div style={{textAlign:"center",padding:"48px 0"}}>
           <div style={{width:32,height:32,border:"3px solid var(--border2)",borderTopColor:"var(--sage2)",borderRadius:"50%",animation:"spin .7s linear infinite",margin:"0 auto 16px"}}/>
-          <p style={{fontSize:15,color:"var(--cream3)",fontWeight:500}}>Searching {lastSearch}…</p>
-          <p style={{fontSize:13,color:"var(--cream3)",marginTop:4}}>Finding registrations & events</p>
+          <p style={{fontSize:15,color:"var(--cream3)",fontWeight:500}}>Searching within {radius}km of {lastSearch}…</p>
+          <p style={{fontSize:13,color:"var(--cream3)",marginTop:4}}>Finding active registrations and events</p>
         </div>
       )}
 
-      {/* Error */}
       {error&&<div style={{background:"rgba(196,90,90,.08)",border:"1px solid rgba(196,90,90,.2)",borderRadius:12,padding:"14px 16px",marginBottom:14,fontSize:14,color:"var(--rose)"}}>{error}</div>}
 
-      {/* Category filter */}
       {results.length>0&&(
         <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:8,marginBottom:12,WebkitOverflowScrolling:"touch"}}>
           {categories.map(function(c){
             var active=filter===c;
-            return (
-              <button key={c} onClick={function(){setFilter(c);}} style={{flexShrink:0,padding:"6px 14px",borderRadius:99,background:active?"var(--sage)":"var(--ink2)",color:active?"var(--cream)":"var(--cream3)",border:"1px solid "+(active?"var(--sage2)":"var(--border2)"),fontSize:13,fontWeight:600,whiteSpace:"nowrap"}}>
-                {c==="All"?"All":catEmoji[c]+" "+c}
-              </button>
-            );
+            return (<button key={c} onClick={function(){setFilter(c);}} style={{flexShrink:0,padding:"6px 14px",borderRadius:99,background:active?"var(--sage)":"var(--ink2)",color:active?"var(--cream)":"var(--cream3)",border:"1px solid "+(active?"var(--sage2)":"var(--border2)"),fontSize:13,fontWeight:600,whiteSpace:"nowrap"}}>{c==="All"?"All":catEmoji[c]+" "+c}</button>);
           })}
         </div>
       )}
 
-      {/* Results */}
       {filtered.length>0&&(
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          <p style={{fontSize:12,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em"}}>{filtered.length} result{filtered.length===1?"":"s"} near {lastSearch}</p>
+          <p style={{fontSize:12,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em"}}>{filtered.length} result{filtered.length===1?"":"s"} within {radius}km of {lastSearch}</p>
           {filtered.map(function(item,i){
             var emoji=catEmoji[item.category]||"📅";
             var hasDeadline=item.deadline&&item.deadline.length>0;
@@ -4594,27 +4644,23 @@ function DiscoverScreen({members,onAdd,user}) {
               </div>
             );
           })}
-          <button onClick={function(){search(city,hood);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:10,padding:"10px 0",fontWeight:600,fontSize:14,color:"var(--cream3)",width:"100%",marginTop:4}}>
+          <button onClick={function(){search(city,hood,radius);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:10,padding:"10px 0",fontWeight:600,fontSize:14,color:"var(--cream3)",width:"100%",marginTop:4}}>
             <Compass size={14}/>Refresh results
           </button>
         </div>
       )}
 
-      {/* Empty — no location */}
       {!locSet&&!editLoc&&(
         <div style={{textAlign:"center",padding:"48px 20px"}}>
           <div style={{fontSize:48,marginBottom:16}}>🧭</div>
           <p style={{fontWeight:700,fontSize:18,color:"var(--cream)",marginBottom:8}}>Discover local activities</p>
-          <p style={{fontSize:15,color:"var(--cream3)",lineHeight:1.6,marginBottom:24}}>Set your city and neighbourhood to find upcoming kids sports, music classes, and community events near you.</p>
-          <Btn onClick={function(){setEditLoc(true);}} style={{display:"inline-flex",alignItems:"center",gap:8}}>
-            <Locate size={14}/>Set My Location
-          </Btn>
+          <p style={{fontSize:15,color:"var(--cream3)",lineHeight:1.6,marginBottom:24}}>Find upcoming kids sports registrations, music classes, community events and more near you.</p>
+          <Btn onClick={function(){setEditLoc(true);}} style={{display:"inline-flex",alignItems:"center",gap:8}}><Locate size={14}/>Set My Location</Btn>
         </div>
       )}
     </div>
   );
 }
-
 
 function Nav({active,setActive,inboxBadge,notifBadge}) {
   var items=[
