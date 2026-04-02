@@ -85,18 +85,18 @@ const GS = () => (
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&display=swap');
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
-      /* ── Warm Ivory Theme ── */
-      --ink:   #f5f0e8;
-      --ink2:  #efe9de;
-      --ink3:  #e8e0d2;
-      --ink4:  #ddd5c4;
-      --ink5:  #cfc6b4;
+      /* ── Warm Linen Theme ── */
+      --ink:   #f2ede4;
+      --ink2:  #ede8df;
+      --ink3:  #e6e0d5;
+      --ink4:  #ddd7cc;
+      --ink5:  #d0c9bc;
       --cream: #1a2e1a;
       --cream2:#2d4a2d;
       --cream3:#5a6e5a;
-      --sage:  #2d5a3d;
-      --sage2: #3d7a52;
-      --sage3: #52a06e;
+      --sage:  #1a3a2a;
+      --sage2: #2d6a45;
+      --sage3: #4a9a65;
       --sage4: rgba(45,90,61,.1);
       --gold:  #a07820;
       --gold2: #c49a30;
@@ -1955,7 +1955,7 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
             </div>
             {showLocDrop&&(<div style={{position:"absolute",top:"100%",left:0,right:0,background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,.12)",zIndex:50,overflow:"hidden",marginTop:4}}>{getSuggestions().map((v,i)=>(<div key={i} onClick={()=>{s("location")(v.label);setLocQuery("");setShowLocDrop(false);}} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",cursor:"pointer",borderBottom:i<getSuggestions().length-1?"1px solid #F3F4F6":"none"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(45,60,45,.05)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}><span style={{fontSize:20,flexShrink:0}}>{v.icon}</span><div><p style={{fontSize:15,fontWeight:600,color:"var(--cream)"}}>{v.label}</p><p style={{fontSize:15,color:"var(--cream3)"}}>{v.keywords.slice(0,3).join(", ")}</p></div><MapPin size={13} color="#D1D5DB" style={{marginLeft:"auto",flexShrink:0}}/></div>))}{locQuery.trim()&&(<div onClick={()=>{s("location")(locQuery.trim());setShowLocDrop(false);}} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",cursor:"pointer",background:"rgba(45,90,61,.07)",borderTop:"1px solid var(--border2)"}}><Check size={15} color="var(--sage2)" style={{flexShrink:0}}/><p style={{fontSize:15,fontWeight:600,color:"var(--sage2)"}}>Use "{locQuery.trim()}"</p></div>)}</div>)}
           </div>
-          {recurSuggest&&(<div className="fu" style={{background:"rgba(67,143,126,.1)",border:"1px solid rgba(67,143,126,.3)",borderRadius:12,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:18,flexShrink:0}}>🔄</span><div style={{flex:1}}><p style={{fontSize:14,fontWeight:600,color:"var(--sage3)",marginBottom:1}}>Looks like a regular event</p><p style={{fontSize:12,color:"var(--cream3)",fontWeight:300}}>Set as weekly recurring?</p></div><button onClick={function(){s("recurring")(true);setRecurSuggest(false);}} style={{background:"var(--sage)",color:"var(--cream)",borderRadius:8,padding:"7px 12px",fontSize:13,fontWeight:700,border:"none",flexShrink:0}}>Weekly ✓</button><button onClick={function(){setRecurSuggest(false);}} style={{background:"transparent",color:"var(--cream3)",border:"none",fontSize:18,lineHeight:1,padding:"2px 6px"}}>×</button></div>)}
+          {recurSuggest&&(<div className="fu" style={{background:"rgba(67,143,126,.1)",border:"1px solid rgba(67,143,126,.3)",borderRadius:12,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:18,flexShrink:0}}>🔄</span><div style={{flex:1}}><p style={{fontSize:14,fontWeight:600,color:"var(--sage3)",marginBottom:1}}>Looks like a regular event</p><p style={{fontSize:12,color:"var(--cream3)",fontWeight:300}}>Set as weekly recurring?</p></div><button onClick={function(){s("recurring")(true);setRecurSuggest(false);}} style={{background:"var(--sage)",color:"var(--ink)",borderRadius:8,padding:"7px 12px",fontSize:13,fontWeight:700,border:"none",flexShrink:0}}>Weekly ✓</button><button onClick={function(){setRecurSuggest(false);}} style={{background:"transparent",color:"var(--cream3)",border:"none",fontSize:18,lineHeight:1,padding:"2px 6px"}}>×</button></div>)}
           <Card style={{background:"var(--ink3)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}><div style={{display:"flex",alignItems:"center",gap:10}}><Repeat size={15} color="var(--cream3)"/><div><p style={{fontWeight:600,fontSize:15}}>Recurring</p><p style={{fontSize:15,color:"var(--cream3)"}}>Repeat automatically</p></div></div><Toggle on={ev.recurring} onChange={()=>s("recurring")(!ev.recurring)}/></div>
             {ev.recurring&&(<div style={{marginTop:14,display:"flex",flexDirection:"column",gap:10}}><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{["daily","weekly","biweekly","monthly"].map(f=>(<button key={f} onClick={()=>s("recurFreq")(f)} style={{padding:"6px 14px",borderRadius:99,background:ev.recurFreq===f?"var(--sage)":"var(--ink4)",color:ev.recurFreq===f?"var(--cream)":"var(--cream3)",fontSize:15,fontWeight:600,border:"1.5px solid",borderColor:ev.recurFreq===f?"var(--sage2)":"var(--border2)",textTransform:"capitalize"}}>{f}</button>))}</div><div><label style={{fontSize:15,color:"var(--cream3)",fontWeight:600,display:"block",marginBottom:5}}>UNTIL</label><input type="date" value={ev.recurEnd} onChange={e=>s("recurEnd")(e.target.value)} style={{colorScheme:"light",color:"var(--cream)",background:"#fff"}}/></div><p style={{fontSize:15,color:"var(--sage2)",fontWeight:600}}>Creates ~{recurCount(ev.recurFreq,ev.date,ev.recurEnd)} events</p></div>)}
@@ -1964,7 +1964,7 @@ function AddSheet({members,onAdd,onClose,events=[]}) {
           <Card style={{background:"var(--ink3)"}}>
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:ev.packingList&&ev.packingList.length?12:0}}><Package size={15} color="var(--cream3)"/><p style={{fontWeight:600,fontSize:15}}>Packing List</p><div style={{display:"flex",gap:6,marginLeft:"auto"}}>{[["⚽","cleats,water bottle,jersey,shin guards"],["🎵","instrument,sheet music,lesson book"]].map(([ico,items])=>(<button key={ico} onClick={()=>{const ex=ev.packingList||[];const add=items.split(",").filter(i=>!ex.includes(i));setEv(p=>({...p,packingList:[...ex,...add]}));}} style={{background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:99,padding:"3px 10px",fontSize:15,fontWeight:500}}>{ico}</button>))}</div></div>
             {ev.packingList&&ev.packingList.length>0&&(<div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>{ev.packingList.map((item,i)=>(<div key={i} style={{display:"flex",alignItems:"center",gap:5,background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:99,padding:"4px 10px 4px 12px"}}><span style={{fontSize:15}}>{item}</span><button onClick={()=>setEv(p=>({...p,packingList:p.packingList.filter((_,j)=>j!==i)}))} style={{background:"none",color:"var(--cream3)",display:"flex",padding:2}}><X size={11}/></button></div>))}</div>)}
-            <div style={{display:"flex",gap:8}}><input placeholder="What's needed?" value={ev._pack} onChange={e=>s("_pack")(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addPack()} style={{fontSize:15}}/><button onClick={addPack} style={{background:"var(--sage)",color:"var(--cream)",borderRadius:8,padding:"0 14px",fontWeight:700,fontSize:18,flexShrink:0}}>+</button></div>
+            <div style={{display:"flex",gap:8}}><input placeholder="What's needed?" value={ev._pack} onChange={e=>s("_pack")(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addPack()} style={{fontSize:15}}/><button onClick={addPack} style={{background:"var(--sage)",color:"var(--ink)",borderRadius:8,padding:"0 14px",fontWeight:700,fontSize:18,flexShrink:0}}>+</button></div>
           </Card>
           <div style={{display:"flex",gap:10}}><div style={{position:"relative",flex:1}}><DollarSign size={13} color="#9CA3AF" style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)"}}/><input placeholder="Monthly cost ($)" type="number" value={ev.cost} onChange={e=>s("cost")(e.target.value)} style={{paddingLeft:32}}/></div><select value={ev.costType} onChange={e=>s("costType")(e.target.value)} style={{width:"auto",minWidth:110,fontSize:15}}><option value="one-time">one-time</option><option value="monthly">/ month</option><option value="session">/ session</option><option value="season">/ season</option></select></div>
           {addError&&<div style={{background:"rgba(196,90,90,.1)",border:"1px solid rgba(196,90,90,.25)",borderRadius:12,padding:"10px 14px",marginBottom:8,fontSize:14,color:"var(--rose)",lineHeight:1.6}}>{addError}</div>}
@@ -2265,18 +2265,26 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
     return MONTHS[d.getMonth()]+" "+d.getFullYear();
   };
 
+  var dashHour=new Date().getHours();
+  var dashGreet=dashHour<12?"Good morning":dashHour<17?"Good afternoon":"Good evening";
+  var dashDay=new Date().toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});
+
   return (
     <div className="screen-enter">
-      {/* ── Action buttons — VERY TOP ── */}
-      <div style={{display:"flex",gap:10,marginBottom:16}}>
-        <button onClick={function(){if(trialExpired){onUpgrade&&onUpgrade();return;}onShowVoice();}}
-          style={{flex:1,background:"#fff",border:"1.5px solid var(--border2)",borderRadius:16,padding:"13px 10px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontWeight:600,fontSize:15,color:"var(--cream2)",boxShadow:"0 1px 4px rgba(45,60,45,.08)"}}>
-          <Mic size={18} color="var(--sage3)"/>Voice
-        </button>
-        <button onClick={function(){if(trialExpired){onUpgrade&&onUpgrade();return;}onShowAdd();}}
-          style={{flex:2,background:"linear-gradient(135deg,var(--sage),var(--sage2))",borderRadius:16,padding:"13px 10px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontWeight:700,fontSize:15,color:"#fff",boxShadow:"0 4px 16px rgba(45,90,61,.3)"}}>
-          <Plus size={18}/>New Event
-        </button>
+      {/* ── Hero header ── */}
+      <div style={{background:"var(--sage)",margin:"-16px -16px 16px",padding:"16px 16px 14px"}}>
+        <p style={{fontSize:11,fontWeight:600,color:"rgba(245,240,232,.45)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:4,fontFamily:"-apple-system,sans-serif"}}>{dashDay}</p>
+        <p style={{fontSize:22,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px",marginBottom:12}}>{dashGreet},<br/><em style={{fontStyle:"italic",color:"#c9a84c"}}>Belkuni Family.</em></p>
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={function(){if(trialExpired){onUpgrade&&onUpgrade();return;}onShowAdd();}}
+            style={{background:"#f5f0e8",color:"var(--sage)",border:"none",borderRadius:100,padding:"8px 16px",fontSize:13,fontWeight:700,display:"flex",alignItems:"center",gap:6,fontFamily:"-apple-system,sans-serif"}}>
+            <Plus size={14}/>Quick Add
+          </button>
+          <button onClick={function(){if(trialExpired){onUpgrade&&onUpgrade();return;}onShowVoice();}}
+            style={{background:"rgba(245,240,232,.15)",color:"#f5f0e8",border:"1.5px solid rgba(245,240,232,.35)",borderRadius:100,padding:"8px 16px",fontSize:13,fontWeight:700,display:"flex",alignItems:"center",gap:6,fontFamily:"-apple-system,sans-serif"}}>
+            <Mic size={14} color="#f5f0e8"/>Voice
+          </button>
+        </div>
       </div>
 
       {showBanner&&<ValueBanner onDismiss={onBannerDismiss}/>}
@@ -2366,7 +2374,7 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
                           {ev.time&&<div style={{display:"flex",alignItems:"center",gap:5,marginTop:3}}><Clock size={12} color="var(--sage3)"/><p style={{fontSize:13,color:"var(--cream3)"}}>{ev.time}</p></div>}
                         </div>
                         <div style={{display:"flex",flexDirection:"column",gap:6,flexShrink:0}}>
-                          <button onClick={function(){openDirections(ev.location);}} style={{background:"var(--sage)",color:"var(--cream)",borderRadius:9,padding:"9px 13px",fontSize:13,fontWeight:700,border:"none",display:"flex",alignItems:"center",gap:5}}><MapPin size={13}/>Directions</button>
+                          <button onClick={function(){openDirections(ev.location);}} style={{background:"var(--sage)",color:"var(--ink)",borderRadius:9,padding:"9px 13px",fontSize:13,fontWeight:700,border:"none",display:"flex",alignItems:"center",gap:5}}><MapPin size={13}/>Directions</button>
                           <button onClick={function(){openInGoogle(ev.location);}} style={{background:"var(--ink4)",color:"var(--cream2)",borderRadius:9,padding:"7px 13px",fontSize:12,fontWeight:600,border:"1px solid var(--border2)"}}>Search</button>
                         </div>
                       </div>
@@ -4122,10 +4130,11 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
 
   if(!sec) return (
     <div style={{paddingBottom:8}}>
-      {/* Header */}
-      <div style={{marginBottom:24}}>
-        <h1 style={{fontSize:28,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",lineHeight:1}}>More</h1>
-        <p style={{fontSize:15,color:"var(--cream3)",marginTop:4,fontWeight:400}}>Settings & tools</p>
+      {/* Hero header */}
+      <div style={{background:"var(--sage)",margin:"-16px -16px 20px",padding:"16px 16px 14px",borderRadius:"0 0 20px 20px"}}>
+        <p style={{fontSize:11,fontWeight:600,color:"rgba(245,240,232,.45)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:4,fontFamily:"-apple-system,sans-serif"}}>Your account</p>
+        <p style={{fontSize:22,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>{user&&user.family||"My Family"}</p>
+        <p style={{fontSize:13,color:"rgba(245,240,232,.55)",marginTop:3,fontFamily:"-apple-system,sans-serif"}}>{user&&user.email||""}</p>
       </div>
 
       {/* Subscription card */}
@@ -4133,7 +4142,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
         <div style={{background:"linear-gradient(135deg,var(--sage),var(--sage2))",borderRadius:16,padding:"18px 20px",marginBottom:24,display:"flex",alignItems:"center",gap:14}}>
           <div style={{width:44,height:44,background:"rgba(255,255,255,.15)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>✓</div>
           <div style={{flex:1}}>
-            <p style={{fontWeight:700,color:"var(--cream)",fontSize:16}}>Calla Family · Active</p>
+            <p style={{fontWeight:700,color:"#f5f0e8",fontSize:16}}>Calla Family · Active</p>
             <p style={{fontSize:15,color:"rgba(255,255,255,.65)",marginTop:2}}>Annual plan · No ads, ever</p>
           </div>
         </div>
@@ -4800,7 +4809,7 @@ function DiscoverScreen({members,onAdd,user}) {
                   {item.location&&<span style={{fontSize:12,color:"var(--cream3)",display:"flex",alignItems:"center",gap:3}}><MapPin size={11} color="var(--cream3)"/>{item.location}</span>}
                 </div>
                 <div style={{display:"flex",gap:8}}>
-                  <button onClick={function(){addToCalendar(item);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"var(--sage)",color:"var(--cream)",borderRadius:10,padding:"10px 0",fontWeight:700,fontSize:14,border:"none",flex:2}}>
+                  <button onClick={function(){addToCalendar(item);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"var(--sage)",color:"var(--ink)",borderRadius:10,padding:"10px 0",fontWeight:700,fontSize:14,border:"none",flex:2}}>
                     <Check size={14}/>Add to Calla
                   </button>
                   <button onClick={function(){var url=item.url&&item.url.length>4?item.url:"https://www.google.com/search?q="+encodeURIComponent(item.title+" "+item.location);window.open(url,"_blank");}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"var(--ink3)",color:"var(--cream3)",borderRadius:10,padding:"10px 0",fontWeight:600,fontSize:14,border:"1px solid var(--border2)",flex:1}}>
