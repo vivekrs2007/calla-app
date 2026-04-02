@@ -15,7 +15,7 @@ const firebaseConfig = {
 // Initialize Firebase only on web, not on iOS/Capacitor
 let firebaseApp = null;
 let messaging = null;
-const isCapacitor = typeof window !== "undefined" && (window.location.protocol === "capacitor:" || window.location.hostname === "localhost");
+const isCapacitor = typeof window !== "undefined" && window.location.protocol === "capacitor:";
 
 if (!isCapacitor && typeof navigator !== "undefined" && "serviceWorker" in navigator) {
   firebaseApp = initializeApp(firebaseConfig);
@@ -3223,7 +3223,10 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
     const past=me.filter(e=>e.date<todayStr);
     return (
       <div>
-        <button onClick={()=>setProfile(null)} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",color:"var(--cream2)",fontWeight:600,fontSize:15,marginBottom:16,padding:0}}><ChevronLeft size={15}/>Family</button>
+        <div style={{position:"relative",display:"flex",alignItems:"center",marginBottom:20}}>
+          <button onClick={()=>setProfile(null)} style={{position:"absolute",left:0,display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,padding:"7px 14px"}}><ChevronLeft size={16}/>Family</button>
+          <h2 style={{flex:1,fontSize:22,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",textAlign:"center"}}>Member</h2>
+        </div>
 
         {/* Profile header */}
         <div style={{background:"linear-gradient(135deg,"+m.color+"22,"+m.color+"08)",border:"1.5px solid "+m.color+"30",borderRadius:20,padding:"24px 20px",marginBottom:20,textAlign:"center",position:"relative"}}>
@@ -3326,7 +3329,10 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
   // ── Members list ──────────────────────────────────────────────────────────
   return (
     <div>
-      {onBack&&<button onClick={onBack} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",color:"var(--cream2)",fontWeight:600,fontSize:15,marginBottom:12,padding:0}}><ChevronLeft size={15}/>Back</button>}
+      {onBack&&<div style={{position:"relative",display:"flex",alignItems:"center",marginBottom:20}}>
+        <button onClick={onBack} style={{position:"absolute",left:0,display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,padding:"7px 14px"}}><ChevronLeft size={16}/>Back</button>
+        <h2 style={{flex:1,fontSize:22,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",textAlign:"center"}}>Family Members</h2>
+      </div>}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
         <div><h1 style={{fontSize:28,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)"}}>Family</h1><p style={{fontSize:14,color:"var(--cream3)",marginTop:2}}>{members.length} member{members.length===1?"":"s"} · tap to edit profile</p></div>
         <Btn onClick={()=>setShowAdd(true)} style={{display:"flex",alignItems:"center",gap:6,padding:"10px 16px",fontSize:15}}><Plus size={14}/>Add Member</Btn>
@@ -4012,8 +4018,11 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
     </div>
   );
   if(sec==="sharing") return (
-    <div><Back/>
-      <h2 style={{fontSize:28,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",textAlign:"center",marginBottom:20}}>Family Sharing</h2>
+    <div>
+      <div style={{position:"relative",display:"flex",alignItems:"center",marginBottom:20}}>
+        <button onClick={()=>setSec(null)} style={{position:"absolute",left:0,display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,padding:"7px 14px"}}><ChevronLeft size={16}/>Back</button>
+        <h2 style={{flex:1,fontSize:22,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",textAlign:"center"}}>Family Sharing</h2>
+      </div>
 
       {/* Partner invite */}
       <Card style={{marginBottom:12}}>
@@ -4666,7 +4675,7 @@ export default function App() {
         toast({icon:"⚠️",title:"Notifications blocked",body:"Enable in your browser settings.",color:"var(--rose)"});
         return;
       }
-    const isCapacitorApp = typeof window !== "undefined" && (window.location.protocol === "capacitor:" || window.location.hostname === "localhost");
+    const isCapacitorApp = typeof window !== "undefined" && window.location.protocol === "capacitor:";
     if(isCapacitorApp) { toast({icon:"ℹ️",title:"Using native iOS notifications",color:"var(--sage2)"}); return; }
       if(!("serviceWorker" in navigator)){
         toast({icon:"⚠️",title:"Service worker not supported",color:"var(--rose)"});
