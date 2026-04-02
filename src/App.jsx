@@ -358,6 +358,234 @@ const Btn = ({children,v="primary",style={},...p}) => {
 };
 
 /* ─── Toast ─────────────────────────────────────────────────────────────── */
+/* ─── OnboardingScreen ───────────────────────────────────────────────────── */
+function OnboardingScreen({onDone}) {
+  var [slide,setSlide] = useState(0);
+  var [startX,setStartX] = useState(0);
+  var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var now = new Date();
+  var calMonth = months[now.getMonth()] + " " + now.getFullYear();
+
+  function next() { if(slide < 2) setSlide(slide+1); else onDone(); }
+  function prev() { if(slide > 0) setSlide(slide-1); }
+
+  var trackStyle = {
+    display:"flex",
+    transition:"transform .42s cubic-bezier(.77,0,.18,1)",
+    transform:"translateX(-" + (slide*100) + "%)",
+    flex:1,
+    minHeight:0,
+  };
+
+  var shell = {
+    position:"fixed",top:0,left:0,right:0,bottom:0,
+    zIndex:9999,background:"#0c1e14",
+    display:"flex",flexDirection:"column",
+    fontFamily:"-apple-system,'Helvetica Neue',sans-serif",
+    WebkitFontSmoothing:"antialiased",
+    overflow:"hidden",
+  };
+
+  var txtBlock = {
+    flexShrink:0,
+    padding:"calc(env(safe-area-inset-top,44px) + 8px) 18px 0",
+    display:"flex",flexDirection:"column",gap:5,
+  };
+
+  var cntBlock = {
+    flex:1,minHeight:0,
+    padding:"10px 16px 0",
+    display:"flex",flexDirection:"column",justifyContent:"center",
+  };
+
+  var bot = {
+    flexShrink:0,
+    padding:"8px 16px calc(env(safe-area-inset-bottom,20px) + 10px)",
+    display:"flex",flexDirection:"column",alignItems:"center",gap:8,
+  };
+
+  var logo = {fontSize:11,fontWeight:700,color:"#c9a84c",fontFamily:"Georgia,'Times New Roman',serif",letterSpacing:".01em"};
+  var eyebrow = {fontSize:10,fontWeight:600,color:"rgba(245,240,232,.45)",letterSpacing:".12em",textTransform:"uppercase"};
+  var hed = {fontSize:26,fontWeight:900,lineHeight:1.1,color:"#f5f0e8",fontFamily:"Georgia,'Times New Roman',serif",letterSpacing:"-.5px"};
+  var sub = {fontSize:14,lineHeight:1.55,color:"rgba(245,240,232,.6)",fontWeight:400};
+  var cta = {width:"100%",padding:14,background:"#f5f0e8",color:"#0f2318",border:"none",borderRadius:100,fontSize:14,fontWeight:700,fontFamily:"-apple-system,sans-serif",cursor:"pointer",letterSpacing:"-.1px"};
+  var skipBtn = {background:"none",border:"none",fontSize:11,color:"rgba(245,240,232,.3)",cursor:"pointer",padding:"2px 0"};
+  var stepTxt = {fontSize:11,color:"rgba(245,240,232,.3)"};
+
+  var slides = [
+    {bg:"linear-gradient(165deg,#1c3d2a 0%,#0f2318 55%,#0c1e14 100%)"},
+    {bg:"linear-gradient(170deg,#0d2018 0%,#112a1c 55%,#0f2318 100%)"},
+    {bg:"radial-gradient(ellipse 110% 55% at 55% 15%,#3a7a32 0%,#1a4a22 35%,#0d2016 65%,#091410 100%)"},
+  ];
+
+  var ctaLabels = ["See how it works →","That's the promise →","Create my family's calendar"];
+
+  return (
+    <div style={shell}
+      onTouchStart={function(e){setStartX(e.touches[0].clientX);}}
+      onTouchEnd={function(e){
+        var dx=e.changedTouches[0].clientX-startX;
+        if(Math.abs(dx)<44) return;
+        if(dx<0) next(); else prev();
+      }}
+    >
+      <div style={trackStyle}>
+
+        {/* ── SLIDE 1: Calendar ── */}
+        <div style={{minWidth:"100%",display:"flex",flexDirection:"column",overflow:"hidden",background:slides[0].bg}}>
+          <div style={txtBlock}>
+            <span style={logo}>{"🌿 Calla"}</span>
+            <span style={eyebrow}>Family Calendar</span>
+            <p style={hed}>Never miss a game.<br/><em style={{fontStyle:"italic"}}>Never double-book</em> again.</p>
+            <p style={sub}>One shared calendar that catches conflicts before your week falls apart.</p>
+          </div>
+          <div style={cntBlock}>
+            <div style={{background:"#fff",borderRadius:12,padding:"8px 7px 7px",display:"flex",flexDirection:"column",gap:4,overflow:"hidden"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0,marginBottom:2}}>
+                <span style={{fontSize:10,fontWeight:700,color:"#1a3a2a",fontFamily:"Georgia,serif"}}>{calMonth}</span>
+                <div style={{display:"flex",gap:5,alignItems:"center"}}>
+                  <span style={{width:5,height:5,borderRadius:"50%",background:"#2d7a4f",display:"inline-block"}}></span><span style={{fontSize:7,color:"#777"}}>Soccer</span>
+                  <span style={{width:5,height:5,borderRadius:"50%",background:"#9b59b6",display:"inline-block"}}></span><span style={{fontSize:7,color:"#777"}}>Piano</span>
+                  <span style={{width:5,height:5,borderRadius:"50%",background:"#e67e22",display:"inline-block"}}></span><span style={{fontSize:7,color:"#777"}}>School</span>
+                </div>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:1}}>
+                {["Mo","Tu","We","Th","Fr","Sa","Su"].map(function(d){return <div key={d} style={{fontSize:6,color:"#bbb",textAlign:"center",textTransform:"uppercase",fontWeight:700}}>{d}</div>;})}
+                {[null,null,null,null,null].map(function(_,i){return <div key={"e"+i}></div>;})}
+                {[
+                  {d:1,ev:[{c:"#2d7a4f",t:"U8"}]},{d:2},{d:3},{d:4,ev:[{c:"#9b59b6",t:"Piano"}]},
+                  {d:5},{d:6},{d:7},{d:8,ev:[{c:"#2d7a4f",t:"Train"}]},{d:9,ev:[{c:"#e67e22",t:"Fair"}]},
+                  {d:10},{d:11,ev:[{c:"#9b59b6",t:"Piano"}]},{d:12},
+                  {d:13,today:true},{d:14},
+                  {d:15,cf:true,ev:[{c:"#2d7a4f",t:"Final"},{c:"#e74c3c",t:"Piano ⚡"}]},{d:16},
+                  {d:17},{d:18,ev:[{c:"#9b59b6",t:"Piano"}]},{d:19},{d:20,ev:[{c:"#e67e22",t:"P.Eve"}]},{d:21},
+                  {d:22,cf:true,ev:[{c:"#2d7a4f",t:"Train"},{c:"#e74c3c",t:"Trip ⚡"}]},{d:23},
+                  {d:24},{d:25,ev:[{c:"#9b59b6",t:"Piano"}]},{d:26},{d:27},{d:28},{d:29,ev:[{c:"#2d7a4f",t:"U8"}]},{d:30},
+                ].map(function(day){
+                  return (
+                    <div key={day.d} style={{display:"flex",flexDirection:"column",gap:1,padding:1,background:day.cf?"rgba(231,76,60,.07)":"transparent",borderRadius:day.cf?3:0}}>
+                      {day.today
+                        ? <span style={{fontSize:5,background:"#1a3a2a",color:"#fff",borderRadius:"50%",width:12,height:12,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto"}}>{day.d}</span>
+                        : <span style={{fontSize:7,color:"#444",fontWeight:600,textAlign:"center",lineHeight:"12px"}}>{day.d}</span>
+                      }
+                      {(day.ev||[]).map(function(ev,i){return <div key={i} style={{fontSize:5,borderRadius:2,padding:"1px 2px",color:"#fff",overflow:"hidden",whiteSpace:"nowrap",lineHeight:1.3,background:ev.c}}>{ev.t}</div>;})}
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{background:"rgba(231,76,60,.1)",border:"1px solid rgba(231,76,60,.25)",borderRadius:6,padding:"4px 6px",fontSize:8,color:"#c0392b",fontWeight:700,textAlign:"center",flexShrink:0}}>{"⚡ 2 conflicts detected — tap to resolve"}</div>
+            </div>
+          </div>
+          <div style={bot}>
+            <div style={{display:"flex",justifyContent:"space-between",width:"100%"}}><button style={skipBtn} onClick={onDone}>Skip</button><span style={stepTxt}>1 of 3</span></div>
+            <div style={{display:"flex",gap:5}}>{[0,1,2].map(function(i){return <div key={i} style={{width:i===0?"14px":"5px",height:5,borderRadius:i===0?3:"50%",background:i===slide?"#fff":"rgba(255,255,255,.2)",transition:"all .25s"}}></div>;})}</div>
+            <button style={cta} onClick={next}>{ctaLabels[0]}</button>
+          </div>
+        </div>
+
+        {/* ── SLIDE 2: Forward / Snap / Speak ── */}
+        <div style={{minWidth:"100%",display:"flex",flexDirection:"column",overflow:"hidden",background:slides[1].bg}}>
+          <div style={txtBlock}>
+            <span style={logo}>{"🌿 Calla"}</span>
+            <span style={eyebrow}>Add events, 3 ways</span>
+            <p style={hed}>Forward it. Snap it.<br/>Speak it. Done.</p>
+            <p style={sub}>School emails, flyers, voice — Calla catches it all. Conflicts spotted instantly. Both parents notified.</p>
+          </div>
+          <div style={cntBlock}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:8}}>
+              {[["✉️","#1e3a5a","Forward email","Any school email → events"],["📷","#1a3a2a","Snap a flyer","Photo → events instantly"],["🎤","#2a1a3a","Just say it","Voice to calendar"]].map(function(mt){return (
+                <div key={mt[2]} style={{borderRadius:11,padding:"10px 8px",display:"flex",flexDirection:"column",gap:5,background:mt[1]}}>
+                  <div style={{width:28,height:28,borderRadius:8,background:"rgba(255,255,255,.14)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{mt[0]}</div>
+                  <p style={{fontSize:11,fontWeight:700,color:"#f5f0e8",lineHeight:1.2}}>{mt[2]}</p>
+                  <p style={{fontSize:9,color:"rgba(245,240,232,.48)",lineHeight:1.35}}>{mt[3]}</p>
+                </div>
+              );})}
+            </div>
+            <div style={{background:"rgba(160,80,20,.25)",border:"1px solid rgba(220,110,30,.35)",borderRadius:10,padding:"9px 10px",display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+              <div style={{width:24,height:24,borderRadius:"50%",background:"rgba(200,90,20,.3)",border:"1px solid rgba(230,110,30,.4)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,flexShrink:0}}>{"⚡"}</div>
+              <div><p style={{fontSize:10,fontWeight:700,color:"#f5a030",marginBottom:1}}>Conflict detected · 30 min gap</p><p style={{fontSize:9,color:"rgba(245,180,100,.6)"}}>Soccer &amp; Piano overlap Saturday</p></div>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:8}}>
+              {[["👩‍🦰","Mom notified"],["👨‍🦱","Dad notified"]].map(function(n){return(
+                <div key={n[1]} style={{background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.08)",borderRadius:9,padding:8,display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{fontSize:16,flexShrink:0}}>{n[0]}</span>
+                  <div><p style={{fontSize:9,color:"rgba(245,240,232,.7)",fontWeight:600}}>{n[1]}</p><p style={{fontSize:9,color:"#52b788",fontWeight:700,marginTop:2}}>{"✓ Delivered"}</p></div>
+                </div>
+              );})}
+            </div>
+            <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.07)",borderRadius:9,padding:"8px 10px",display:"flex",alignItems:"center",gap:7}}>
+              <span style={{fontSize:13}}>{"🔒"}</span>
+              <p style={{fontSize:9,color:"rgba(245,240,232,.35)"}}>Emails deleted immediately after — nothing stored on our servers</p>
+            </div>
+          </div>
+          <div style={bot}>
+            <div style={{display:"flex",justifyContent:"space-between",width:"100%"}}><button style={skipBtn} onClick={onDone}>Skip</button><span style={stepTxt}>2 of 3</span></div>
+            <div style={{display:"flex",gap:5}}>{[0,1,2].map(function(i){return <div key={i} style={{width:i===1?"14px":"5px",height:5,borderRadius:i===1?3:"50%",background:i===slide?"#fff":"rgba(255,255,255,.2)",transition:"all .25s"}}></div>;})}</div>
+            <button style={cta} onClick={next}>{ctaLabels[1]}</button>
+          </div>
+        </div>
+
+        {/* ── SLIDE 3: Family + Pricing ── */}
+        <div style={{minWidth:"100%",display:"flex",flexDirection:"column",overflow:"hidden",background:slides[2].bg}}>
+          <div style={txtBlock}>
+            <span style={{...logo,color:"#fff"}}>Calla</span>
+            <span style={eyebrow}>Start free today</span>
+            <p style={{...hed,color:"#e8d870"}}>Ready to get<br/>your brain back?</p>
+            <p style={sub}>No credit card needed. Cancel anytime.</p>
+          </div>
+          <div style={cntBlock}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginBottom:10}}>
+              <div style={{background:"rgba(255,255,255,.09)",border:"1px solid rgba(255,255,255,.14)",borderRadius:12,padding:"9px 8px"}}>
+                <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:7}}>
+                  <div style={{width:16,height:16,borderRadius:"50%",background:"rgba(255,255,255,.14)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,flexShrink:0}}>{"🧭"}</div>
+                  <span style={{fontSize:10,fontWeight:700,color:"#f5f0e8"}}>Discover</span>
+                </div>
+                {[["rgba(82,183,100,.3)","🌍","Local Activities"],["rgba(200,120,40,.3)","⚽","Soccer U8"],["rgba(200,70,70,.3)","🎹","Piano"],["rgba(100,150,200,.3)","🏊","Swim class"]].map(function(r){return(
+                  <div key={r[2]} style={{display:"flex",alignItems:"center",gap:5,padding:"3px 0",borderBottom:"1px solid rgba(255,255,255,.06)"}}>
+                    <div style={{width:15,height:15,borderRadius:"50%",background:r[0],flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8}}>{r[1]}</div>
+                    <span style={{fontSize:9,color:"rgba(245,240,232,.8)",fontWeight:500}}>{r[2]}</span>
+                  </div>
+                );})}
+              </div>
+              <div style={{background:"rgba(255,255,255,.09)",border:"1px solid rgba(255,255,255,.14)",borderRadius:12,padding:"9px 8px"}}>
+                <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:7}}>
+                  <div style={{width:16,height:16,borderRadius:"50%",background:"rgba(255,255,255,.14)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,flexShrink:0}}>{"☀️"}</div>
+                  <span style={{fontSize:10,fontWeight:700,color:"#f5f0e8"}}>Morning Brief</span>
+                </div>
+                <div style={{background:"rgba(255,255,255,.07)",borderRadius:"6px 6px 6px 0",padding:6,marginBottom:5,display:"flex",gap:5}}>
+                  <div style={{width:15,height:15,borderRadius:"50%",background:"linear-gradient(135deg,#4a9a6a,#2d6a4f)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,flexShrink:0,marginTop:1}}>{"😊"}</div>
+                  <p style={{fontSize:8,color:"rgba(245,240,232,.72)",lineHeight:1.4}}>Soccer Sat 10am. Piano conflicts — reschedule?</p>
+                </div>
+                <div style={{background:"rgba(220,120,40,.18)",border:"1px solid rgba(220,120,40,.3)",borderRadius:5,padding:"4px 6px",fontSize:8,fontWeight:700,color:"#f59b42",textAlign:"center"}}>{"⚡ Conflict warning"}</div>
+              </div>
+            </div>
+            <div style={{display:"flex",gap:10,marginBottom:10}}>
+              {[["👩","linear-gradient(135deg,#f4a56a,#e07b3a)","Mom"],["👨","linear-gradient(135deg,#9ab4f0,#6a8de0)","Dad"],["🧒","linear-gradient(135deg,#f4d06a,#e0aa3a)","Emma"],["🧒🏾","linear-gradient(135deg,#6af4c8,#3ae0a0)","Liam"]].map(function(av){return(
+                <div key={av[2]} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+                  <div style={{width:40,height:40,borderRadius:"50%",border:"1.5px solid rgba(255,255,255,.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,background:av[1]}}>{av[0]}</div>
+                  <span style={{fontSize:8,color:"rgba(245,240,232,.55)"}}>{av[2]}</span>
+                </div>
+              );})}
+            </div>
+            <div>
+              {[["60 days completely free"],["Both parents · all kids included"],["$19.99/year — less than a coffee a month"]].map(function(bl){return(
+                <div key={bl[0]} style={{display:"flex",alignItems:"center",gap:7,padding:"5px 0",borderBottom:"1px solid rgba(255,255,255,.06)",fontSize:11,color:"rgba(245,240,232,.82)"}}>
+                  <div style={{width:6,height:6,borderRadius:"50%",background:"#c9a84c",flexShrink:0}}></div>{bl[0]}
+                </div>
+              );})}
+            </div>
+          </div>
+          <div style={bot}>
+            <div style={{display:"flex",gap:5}}>{[0,1,2].map(function(i){return <div key={i} style={{width:i===2?"14px":"5px",height:5,borderRadius:i===2?3:"50%",background:i===slide?"#fff":"rgba(255,255,255,.2)",transition:"all .25s"}}></div>;})}</div>
+            <button style={cta} onClick={onDone}>{ctaLabels[2]}</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
 /* ─── PasswordChangeFields ───────────────────────────────────────────────── */
 function PasswordChangeFields({toast}) {
   var [newPass,setNewPass]=useState("");
@@ -4718,19 +4946,6 @@ export default function App() {
     if(token) setPendingInvite(token);
   },[]);
 
-  // ── Onboarding complete listener ──────────────────────────────────────────
-  useEffect(function(){
-    function handleOnboardingDone(){
-      localStorage.setItem("calla_onboarding_seen","true");
-      setShowOnboarding(false);
-      if(user&&user.id){
-        supabase.from("profiles").update({onboarding_seen:true}).eq("id",user.id).then(function(){});
-      }
-    }
-    window.addEventListener("callaOnboardingComplete",handleOnboardingDone);
-    return function(){window.removeEventListener("callaOnboardingComplete",handleOnboardingDone);};
-  },[user]);
-
   // ── Restore session on page load ──────────────────────────────────────────
   useEffect(function(){
     supabase.auth.getSession().then(function(res){
@@ -4976,13 +5191,10 @@ export default function App() {
 
   // ── Onboarding (shown after session loads, before auth) ───────────────────
   if(showOnboarding && !user) return (
-    <><GS/><div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:9999,background:"#0c1e14"}}>
-      <iframe
-        src="/onboarding.html"
-        style={{width:"100%",height:"100%",border:"none",display:"block"}}
-        title="Welcome to Calla"
-      />
-    </div></>
+    <><GS/><OnboardingScreen onDone={function(){
+      setShowOnboarding(false);
+      localStorage.setItem("calla_onboarding_seen","true");
+    }}/></>
   );
 
   // ── Step 0b: Pending invite — user is logged in, invite in URL ────────────
