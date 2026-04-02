@@ -5098,7 +5098,7 @@ export default function App() {
                   placeholder="Search events, kids, locations…"
                   value={searchQuery}
                   onChange={function(e){setSearchQuery(e.target.value);}}
-                  style={{background:"transparent",border:"none",padding:0,fontSize:16,flex:1,color:"var(--cream)",outline:"none",fontFamily:"inherit"}}
+                  style={{background:"transparent",border:"none",padding:0,fontSize:16,flex:1,color:"var(--cream)",outline:"none",fontFamily:"inherit",boxShadow:"none",WebkitAppearance:"none",appearance:"none"}}
                 />
                 {searchQuery&&<button onClick={function(){setSearchQuery("");}} style={{background:"none",border:"none",color:"var(--cream3)",display:"flex",padding:2,flexShrink:0}}><X size={13}/></button>}
               </div>
