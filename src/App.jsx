@@ -2228,7 +2228,7 @@ function DaySheet({date,events,members,onClose,onSelect}) {
 }
 
 /* ─── Dashboard ─────────────────────────────────────────────────────────── */
-function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,initialSel,onClearSel,onShowAdd,onShowVoice,onSelectEv,trialExpired,onUpgrade}) {
+function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,initialSel,onClearSel,onShowAdd,onShowVoice,onSelectEv,trialExpired,onUpgrade,topBar,selectedMemberId}) {
   const [anchor,setAnchor]=useState(todayStr);
   const [showAdd,setShowAdd]=useState(false);
   const [showVoice,setShowVoice]=useState(false);
@@ -2273,27 +2273,7 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
     <div className="screen-enter">
       {/* ── Hero header ── */}
       <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,0px) + 12px) 18px 20px",borderRadius:"0 0 24px 24px"}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:32,height:32,background:"rgba(245,240,232,.15)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,border:"1px solid rgba(245,240,232,.2)"}}>
-              <span style={{fontSize:15}}>🌸</span>
-            </div>
-            <p style={{fontWeight:700,fontSize:16,letterSpacing:"-.02em",fontFamily:"'Playfair Display',Georgia,serif",color:"#f5f0e8",lineHeight:1}}>{user.family}</p>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:5}}>
-            {members.slice(0,3).map(function(m){return(
-              <div key={m.id} onClick={function(){setSelectedMemberId(function(prev){return prev===m.id?null:m.id;});go("home");}} title={m.name}
-                style={{width:26,height:26,borderRadius:"50%",background:"rgba(245,240,232,.2)",border:selectedMemberId===m.id?"2px solid #f5f0e8":"1.5px solid rgba(245,240,232,.35)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,cursor:"pointer",overflow:"hidden",flexShrink:0}}>
-                {m.photo?<img src={m.photo} style={{width:"100%",height:"100%",objectFit:"cover"}} alt={m.name}/>:m.emoji}
-              </div>
-            );})}
-            <button onClick={function(){setShowSearch(function(v){if(v){setSearchQuery("");}return !v;});}} style={{width:28,height:28,background:"rgba(245,240,232,.15)",border:"1px solid rgba(245,240,232,.25)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Search size={13} color="#f5f0e8"/></button>
-            <button onClick={function(){go("notif");}} style={{width:28,height:28,background:"rgba(245,240,232,.15)",border:"1px solid rgba(245,240,232,.25)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",position:"relative",flexShrink:0}}>
-              <Bell size={13} color="#f5f0e8"/>
-              {upc>0&&<div style={{position:"absolute",top:-3,right:-3,background:"var(--red)",color:"#f5f0e8",borderRadius:"50%",width:13,height:13,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:800,border:"1.5px solid var(--sage)"}}>{upc}</div>}
-            </button>
-          </div>
-        </div>
+        {topBar}
         <p style={{fontSize:11,fontWeight:600,color:"rgba(245,240,232,.45)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:4,fontFamily:"-apple-system,sans-serif"}}>{dashDay}</p>
         <p style={{fontSize:22,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px",marginBottom:12}}>{dashGreet},<br/><em style={{fontStyle:"italic",color:"#c9a84c"}}>Belkuni Family.</em></p>
         <div style={{display:"flex",gap:8}}>
@@ -4119,7 +4099,7 @@ function DigestScreen({members, user, onBack, toast}) {
   );
 }
 
-function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onSignOut,notifSettings,setNotifSettings,saveMember,deleteMember,toast,familyId,sendInvite,requestPermission}) {
+function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onSignOut,notifSettings,setNotifSettings,saveMember,deleteMember,toast,familyId,sendInvite,requestPermission,topBar}) {
   const fr=useRef();
   const [confirmSignOut,setConfirmSignOut]=useState(false);
   const [sec,setSec]=useState(null),[docs,setDocs]=useState([{id:"d1",name:"Emma's Vaccination Record",memberId:"m3",emoji:"💉",date:addDays(todayStr,-30)},{id:"d2",name:"Soccer Permission Slip",memberId:"m3",emoji:"⚽",date:addDays(todayStr,-5)},{id:"d3",name:"Insurance Card",memberId:null,emoji:"🏥",date:addDays(todayStr,-60)}]);
@@ -4154,27 +4134,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
     <div style={{paddingBottom:8}}>
       {/* Hero header */}
       <div style={{background:"var(--sage)",margin:"-20px -18px 20px",padding:"calc(env(safe-area-inset-top,0px) + 12px) 18px 16px",borderRadius:"0 0 24px 24px"}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:32,height:32,background:"rgba(245,240,232,.15)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,border:"1px solid rgba(245,240,232,.2)"}}>
-              <span style={{fontSize:15}}>🌸</span>
-            </div>
-            <p style={{fontWeight:700,fontSize:16,letterSpacing:"-.02em",fontFamily:"'Playfair Display',Georgia,serif",color:"#f5f0e8",lineHeight:1}}>{user.family}</p>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:5}}>
-            {members.slice(0,3).map(function(m){return(
-              <div key={m.id} onClick={function(){setSelectedMemberId(function(prev){return prev===m.id?null:m.id;});go("home");}} title={m.name}
-                style={{width:26,height:26,borderRadius:"50%",background:"rgba(245,240,232,.2)",border:selectedMemberId===m.id?"2px solid #f5f0e8":"1.5px solid rgba(245,240,232,.35)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,cursor:"pointer",overflow:"hidden",flexShrink:0}}>
-                {m.photo?<img src={m.photo} style={{width:"100%",height:"100%",objectFit:"cover"}} alt={m.name}/>:m.emoji}
-              </div>
-            );})}
-            <button onClick={function(){setShowSearch(function(v){if(v){setSearchQuery("");}return !v;});}} style={{width:28,height:28,background:"rgba(245,240,232,.15)",border:"1px solid rgba(245,240,232,.25)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Search size={13} color="#f5f0e8"/></button>
-            <button onClick={function(){go("notif");}} style={{width:28,height:28,background:"rgba(245,240,232,.15)",border:"1px solid rgba(245,240,232,.25)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",position:"relative",flexShrink:0}}>
-              <Bell size={13} color="#f5f0e8"/>
-              {upc>0&&<div style={{position:"absolute",top:-3,right:-3,background:"var(--red)",color:"#f5f0e8",borderRadius:"50%",width:13,height:13,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:800,border:"1.5px solid var(--sage)"}}>{upc}</div>}
-            </button>
-          </div>
-        </div>
+{topBar}
         <p style={{fontSize:11,fontWeight:600,color:"rgba(245,240,232,.45)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:4,fontFamily:"-apple-system,sans-serif"}}>Your account</p>
         <p style={{fontSize:22,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>{user&&user.family||"My Family"}</p>
         <p style={{fontSize:13,color:"rgba(245,240,232,.55)",marginTop:3,fontFamily:"-apple-system,sans-serif"}}>{user&&user.email||""}</p>
@@ -5328,7 +5288,7 @@ export default function App() {
     if(tab==="lists")   return <ListsScreen members={members}/>;
     if(tab==="members") return <MembersScreen members={members} setMembers={setMembers} events={events}/>;
     if(tab==="notif")   return <NotifScreen events={events} members={members} onSelectEvent={ev=>{setGlobalSel(ev);setTab("home");}}/>;
-    if(tab==="more")    return <MoreScreen members={members} setMembers={setMembers} events={events} user={user} paid={paid} trialLeft={trial?trial.left:null} onUpgrade={()=>setShowPaywall(true)} notifSettings={notif} setNotifSettings={setNotif} saveMember={saveMember} deleteMember={deleteMember} toast={toast} familyId={familyId} sendInvite={sendInvite} requestPermission={requestNotificationPermission} onSignOut={()=>{supabase.auth.signOut();setUser(null);setSetupDone(false);setTab("home");setEvents([]);setMembers(M0);setPaid(false);setShowPaywall(false);setFamilyId(null);toast({icon:"👋",title:"Signed out",color:"var(--cream3)"});}}/>;
+    if(tab==="more")    return <MoreScreen members={members} setMembers={setMembers} events={events} user={user} paid={paid} trialLeft={trial?trial.left:null} onUpgrade={()=>setShowPaywall(true)} notifSettings={notif} setNotifSettings={setNotif} saveMember={saveMember} deleteMember={deleteMember} toast={toast} familyId={familyId} sendInvite={sendInvite} requestPermission={requestNotificationPermission} onSignOut={()=>{supabase.auth.signOut();setUser(null);setSetupDone(false);setTab("home");setEvents([]);setMembers(M0);setPaid(false);setShowPaywall(false);setFamilyId(null);toast({icon:"👋",title:"Signed out",color:"var(--cream3)"});}} topBar={topBarEl}/>;
   };
 
   return (
