@@ -920,7 +920,7 @@ function ValueBanner({onDismiss}) {
       <p style={{fontSize:22,fontWeight:800,color:"#f5f0e8",marginBottom:16,letterSpacing:"-.4px",lineHeight:1.2,paddingRight:28,fontFamily:"'Playfair Display',Georgia,serif"}}>So you don't have to.</p>
       {/* Feature pills */}
       <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
-        {[["📷","Upload Flyer"],["🧭","Discover"],["☀️","Morning Brief"]].map(([icon,label])=>(
+        {[["🎙","Voice"],["📬","Email Parser"],["⚡","Conflicts"],["🎒","Packing"],["📷","Upload Flyer"],["🧭","Discover"],["☀️","Morning Brief"]].map(([icon,label])=>(
           <div key={label} style={{background:"rgba(255,255,255,.14)",border:"1px solid rgba(255,255,255,.2)",borderRadius:99,padding:"6px 12px",display:"flex",alignItems:"center",gap:5,fontSize:13,fontWeight:600,color:"rgba(255,255,255,.92)"}}>
             <span style={{fontSize:13}}>{icon}</span>{label}
           </div>
