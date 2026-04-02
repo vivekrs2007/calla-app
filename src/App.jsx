@@ -317,7 +317,7 @@ const E0 = [
   {id:"e6",title:"Grocery Run",    memberId:"m1",date:addDays(todayStr,4), time:"10:00",location:"Whole Foods",    color:"var(--sage3)",recurring:false},
 ];
 const COLORS = ["var(--sage2)","var(--sage2)","#7C3AED","#D97706","#DC2626","#0891B2"];
-const EMOJIS = ["👩","👨","👧","👦","👵","👴","🧑"];
+const EMOJIS = ["👩‍🦰","👨‍💼","👧🏼","🧒🏽","👩🏽","👨🏿","👧🏻","🧒🏾","👩‍🍼","🧔","👩🏾‍💼","👨‍🍳"];
 
 /* ─── Conflict detection ────────────────────────────────────────────────── */
 const conflicts = events => {
@@ -3223,10 +3223,7 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
     const past=me.filter(e=>e.date<todayStr);
     return (
       <div>
-        <div style={{position:"relative",display:"flex",alignItems:"center",marginBottom:20}}>
-          <button onClick={()=>setProfile(null)} style={{position:"absolute",left:0,display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,padding:"7px 14px"}}><ChevronLeft size={16}/>Family</button>
-          <h2 style={{flex:1,fontSize:22,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",textAlign:"center"}}>Member</h2>
-        </div>
+        <button onClick={()=>setProfile(null)} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",color:"var(--cream2)",fontWeight:600,fontSize:15,marginBottom:16,padding:0}}><ChevronLeft size={15}/>Family</button>
 
         {/* Profile header */}
         <div style={{background:"linear-gradient(135deg,"+m.color+"22,"+m.color+"08)",border:"1.5px solid "+m.color+"30",borderRadius:20,padding:"24px 20px",marginBottom:20,textAlign:"center",position:"relative"}}>
@@ -3329,12 +3326,9 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
   // ── Members list ──────────────────────────────────────────────────────────
   return (
     <div>
-      {onBack&&<div style={{position:"relative",display:"flex",alignItems:"center",marginBottom:20}}>
-        <button onClick={onBack} style={{position:"absolute",left:0,display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,padding:"7px 14px"}}><ChevronLeft size={16}/>Back</button>
-        <h2 style={{flex:1,fontSize:22,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",textAlign:"center"}}>Family Members</h2>
-      </div>}
+      {onBack&&<button onClick={onBack} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",color:"var(--cream2)",fontWeight:600,fontSize:15,marginBottom:12,padding:0}}><ChevronLeft size={15}/>Back</button>}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-        <div><h1 style={{fontSize:28,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)"}}>Family</h1><p style={{fontSize:14,color:"var(--cream3)",marginTop:2}}>{members.length} member{members.length===1?"":"s"} · tap to edit profile</p></div>
+        <div><p style={{fontSize:14,color:"var(--cream3)",marginTop:2}}>{members.length} member{members.length===1?"":"s"} · tap to edit profile</p></div>
         <Btn onClick={()=>setShowAdd(true)} style={{display:"flex",alignItems:"center",gap:6,padding:"10px 16px",fontSize:15}}><Plus size={14}/>Add Member</Btn>
       </div>
 
@@ -3425,7 +3419,7 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
               <div>
                 <p style={{fontSize:15,color:"var(--cream3)",fontWeight:600,marginBottom:8}}>AVATAR</p>
                 <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                  {EMOJIS.map(e=><button key={e} onClick={()=>setNewM(p=>({...p,emoji:e}))} style={{fontSize:20,width:38,height:38,borderRadius:12,background:newM.emoji===e?"var(--ink4)":"transparent",border:newM.emoji===e?"2px solid var(--sage2)":"2px solid transparent"}}>{e}</button>)}
+                  {EMOJIS.map(e=><button key={e} onClick={()=>setNewM(p=>({...p,emoji:e}))} style={{fontSize:28,width:48,height:48,borderRadius:12,background:newM.emoji===e?"var(--ink4)":"transparent",border:newM.emoji===e?"2px solid var(--sage2)":"2px solid transparent"}}>{e}</button>)}
                 </div>
               </div>
               <div>
@@ -4018,11 +4012,8 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
     </div>
   );
   if(sec==="sharing") return (
-    <div>
-      <div style={{position:"relative",display:"flex",alignItems:"center",marginBottom:20}}>
-        <button onClick={()=>setSec(null)} style={{position:"absolute",left:0,display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,padding:"7px 14px"}}><ChevronLeft size={16}/>Back</button>
-        <h2 style={{flex:1,fontSize:22,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",textAlign:"center"}}>Family Sharing</h2>
-      </div>
+    <div><Back/>
+      <h2 style={{fontSize:28,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",textAlign:"center",marginBottom:20}}>Family Sharing</h2>
 
       {/* Partner invite */}
       <Card style={{marginBottom:12}}>
@@ -4641,6 +4632,7 @@ export default function App() {
   const [setupDone,setSetupDone] = useState(false);
   const [tab,setTab]             = useState("home");
   const [globalSel,setGlobalSel] = useState(null);
+  const [selectedMemberId,setSelectedMemberId] = useState(null);
   const [members,setMembers]     = useState(M0);
   const [events,setEvents]       = useState([]);
   const [notif,setNotif] = useState(function(){
@@ -5013,7 +5005,7 @@ export default function App() {
   const upc=events.filter(e=>e.date>=todayStr&&e.date<=addDays(todayStr,2)).length;
 
   const screen=()=>{
-    if(tab==="home")    return <DashScreen events={events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)} onSelectEv={function(ev){setGlobalSel(ev);setShowGlobalEv(true);}} trialExpired={!paid&&trial&&trial.expired} onUpgrade={function(){setShowPaywall(true);}}/>;
+    if(tab==="home")    return <DashScreen events={selectedMemberId?events.filter(function(e){return e.memberId===selectedMemberId;}):events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)} onSelectEv={function(ev){setGlobalSel(ev);setShowGlobalEv(true);}} trialExpired={!paid&&trial&&trial.expired} onUpgrade={function(){setShowPaywall(true);}} selectedMemberId={selectedMemberId} onClearMember={function(){setSelectedMemberId(null);}}/>;
     if(tab==="inbox")   return <InboxScreen members={members} onAdd={addEvent}/>;
     if(tab==="discover") return !paid&&trial&&trial.expired ? (
       <div style={{textAlign:"center",padding:"60px 24px"}}>
@@ -5051,8 +5043,8 @@ export default function App() {
             {/* Right: avatars + badge + bell */}
             <div style={{display:"flex",alignItems:"center",gap:6}}>
               {members.slice(0,3).map(m=>(
-                <div key={m.id} onClick={function(){go("home");}} title={m.name}
-                  style={{width:28,height:28,borderRadius:"50%",background:m.color+"18",border:"1.5px solid "+m.color+"35",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,cursor:"pointer",overflow:"hidden",flexShrink:0,transition:"transform .15s"}}
+                <div key={m.id} onClick={function(){setSelectedMemberId(function(prev){return prev===m.id?null:m.id;});go("home");}} title={m.name}
+                  style={{width:28,height:28,borderRadius:"50%",background:m.color+"18",border:selectedMemberId===m.id?"2.5px solid "+m.color:"1.5px solid "+m.color+"35",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,cursor:"pointer",overflow:"hidden",flexShrink:0,transition:"transform .15s",boxShadow:selectedMemberId===m.id?"0 0 0 2px var(--ink), 0 0 0 4px "+m.color:"none"}}
                   onMouseEnter={e=>e.currentTarget.style.transform="scale(1.1)"}
                   onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}
                 >
