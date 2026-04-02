@@ -4723,7 +4723,7 @@ export default function App() {
     supabase.auth.getSession().then(function(res){
       if(!res.data.session){
         var seen=localStorage.getItem("calla_onboarding_seen");
-        if(!seen && isCapacitor) setShowOnboarding(true);
+        if(!seen) setShowOnboarding(true);
       }
       var session=res.data.session;
       if(session&&session.user){
@@ -4738,10 +4738,10 @@ export default function App() {
             if(profile.name) setUser({id:u.id,name:profile.name,family:profile.family_name||"My Family",email:u.email});
             if(profile.trial_start) setTrialStart(profile.trial_start);
             if(profile.paid===true) setPaid(true);
-            if(!profile.onboarding_seen && isCapacitor) setShowOnboarding(true);
+            if(!profile.onboarding_seen) setShowOnboarding(true);
           } else {
             setSetupDone(localStorage.getItem("calla_setup_"+u.id)==="true");
-            if(isCapacitor) setShowOnboarding(true);
+            setShowOnboarding(true);
           }
           loadUserData(u.id);
         }).catch(function(){
