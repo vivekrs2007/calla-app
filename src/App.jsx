@@ -86,10 +86,10 @@ const GS = () => (
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
       /* ── Warm Linen Theme ── */
-      --ink:   #f2ede4;
-      --ink2:  #ede8df;
-      --ink3:  #e6e0d5;
-      --ink4:  #ddd7cc;
+      --ink:   #f0ebe0;
+      --ink2:  #eae4d8;
+      --ink3:  #e3ddd0;
+      --ink4:  #dad4c8;
       --ink5:  #d0c9bc;
       --cream: #1a2e1a;
       --cream2:#2d4a2d;
@@ -3228,13 +3228,13 @@ function InboxScreen({members,onAdd}) {
 
   return (
     <div className="screen-enter">
-      <h1 style={{fontSize:28,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",lineHeight:1,marginBottom:4}}>Catch</h1>
-      <p style={{fontSize:15,color:"var(--cream3)",marginBottom:16}}>Extract events from emails or flyers — instantly.</p>
-
-      {/* Tab switcher */}
-      <div style={{display:"flex",background:"var(--ink3)",borderRadius:12,padding:4,marginBottom:16,gap:2}}>
-        <Tab id="email" icon="📧" label="Email"/>
-        <Tab id="flyer" icon="📄" label="Flyer"/>
+      {/* Hero header — matches mockup */}
+      <div style={{background:"var(--sage)",margin:"-16px -16px 16px",padding:"20px 16px 18px",borderRadius:"0 0 20px 20px"}}>
+        <p style={{fontSize:24,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.2,letterSpacing:"-.4px",marginBottom:14,textAlign:"center"}}>Calla Remembers<br/>Everything.</p>
+        <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+          <button onClick={function(){setTab("email");}} style={{background:tab==="email"?"#f5f0e8":"transparent",color:tab==="email"?"var(--sage)":"#f5f0e8",border:"1.5px solid rgba(245,240,232,.7)",borderRadius:100,padding:"8px 18px",fontSize:13,fontWeight:700,fontFamily:"-apple-system,sans-serif"}}>Email Inbox</button>
+          <button onClick={function(){setTab("flyer");}} style={{background:tab==="flyer"?"#f5f0e8":"transparent",color:tab==="flyer"?"var(--sage)":"#f5f0e8",border:"1.5px solid rgba(245,240,232,.7)",borderRadius:100,padding:"8px 18px",fontSize:13,fontWeight:700,fontFamily:"-apple-system,sans-serif"}}>Flyer Capture</button>
+        </div>
       </div>
 
       {/* Privacy pledge — email tab only */}
@@ -4728,8 +4728,12 @@ function DiscoverScreen({members,onAdd,user}) {
 
   return (
     <div style={{paddingBottom:8}}>
+      {/* Hero header — matches mockup */}
+      <div style={{background:"var(--sage)",margin:"-16px -16px 16px",padding:"20px 16px 18px",borderRadius:"0 0 20px 20px"}}>
+        <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>Explore Nearby</p>
+      </div>
       {/* Location bar */}
-      <div style={{background:"var(--ink2)",borderRadius:16,padding:"14px 16px",marginBottom:14,border:"1px solid var(--border2)"}}>
+      <div style={{background:"#fff",borderRadius:16,padding:"14px 16px",marginBottom:14,border:"1px solid rgba(26,46,26,.08)",boxShadow:"0 1px 4px rgba(26,46,26,.06)"}}>
         {!editLoc&&locSet ? (
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
             <div style={{display:"flex",alignItems:"center",gap:10}}>
@@ -4778,7 +4782,7 @@ function DiscoverScreen({members,onAdd,user}) {
           {categories.map(function(c){
             var active=filter===c;
             return (
-              <button key={c} onClick={function(){setFilter(c);}} style={{flexShrink:0,padding:"6px 14px",borderRadius:99,background:active?"var(--sage)":"var(--ink2)",color:active?"var(--cream)":"var(--cream3)",border:"1px solid "+(active?"var(--sage2)":"var(--border2)"),fontSize:13,fontWeight:600,whiteSpace:"nowrap"}}>
+              <button key={c} onClick={function(){setFilter(c);}} style={{flexShrink:0,padding:"6px 14px",borderRadius:99,background:active?"var(--sage)":"var(--ink2)",color:active?"#f5f0e8":"var(--cream3)",border:"1px solid "+(active?"var(--sage2)":"var(--border2)"),fontSize:13,fontWeight:600,whiteSpace:"nowrap"}}>
                 {c==="All"?"All":catEmoji[c]+" "+c}
               </button>
             );
@@ -4788,38 +4792,31 @@ function DiscoverScreen({members,onAdd,user}) {
 
       {/* Results */}
       {filtered.length>0&&(
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          <p style={{fontSize:12,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em"}}>{filtered.length} result{filtered.length===1?"":"s"} near {lastSearch}</p>
+        <div>
+          <p style={{fontSize:16,fontWeight:800,color:"var(--cream)",fontFamily:"'Playfair Display',Georgia,serif",letterSpacing:"-.3px",marginBottom:12}}>Local Activities</p>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
           {filtered.map(function(item,i){
             var emoji=catEmoji[item.category]||"📅";
             var hasDeadline=item.deadline&&item.deadline.length>0;
             var hasDate=item.date&&item.date.length>0;
             return (
-              <div key={i} style={{background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:16,padding:"14px 16px",display:"flex",flexDirection:"column",gap:8}}>
-                <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
-                  <div style={{width:40,height:40,borderRadius:12,background:"rgba(45,90,61,.08)",border:"1px solid rgba(45,90,61,.12)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{emoji}</div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <p style={{fontWeight:700,fontSize:15,color:"var(--cream)",lineHeight:1.3,marginBottom:3}}>{item.title}</p>
-                    <p style={{fontSize:13,color:"var(--cream3)",lineHeight:1.4}}>{item.description}</p>
-                  </div>
+              <div key={i} style={{background:"#fff",borderRadius:14,overflow:"hidden",border:"1px solid rgba(26,46,26,.07)",boxShadow:"0 1px 4px rgba(26,46,26,.06)"}}>
+                <div style={{height:110,background:"rgba(45,90,61,.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,position:"relative"}}>
+                  <span>{emoji}</span>
+                  {(hasDeadline||hasDate)&&<div style={{position:"absolute",bottom:6,left:8,background:"rgba(0,0,0,.55)",borderRadius:99,padding:"2px 8px",fontSize:10,fontWeight:600,color:"#fff"}}>{hasDeadline?"⏰ "+item.deadline:item.date}</div>}
                 </div>
-                <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                  {hasDeadline&&<span style={{fontSize:12,fontWeight:600,background:"rgba(196,90,90,.1)",color:"var(--rose)",borderRadius:99,padding:"3px 10px"}}>⏰ Deadline: {item.deadline}</span>}
-                  {hasDate&&!hasDeadline&&<span style={{fontSize:12,fontWeight:600,background:"rgba(45,90,61,.08)",color:"var(--sage2)",borderRadius:99,padding:"3px 10px"}}>📅 {item.date}</span>}
-                  {item.location&&<span style={{fontSize:12,color:"var(--cream3)",display:"flex",alignItems:"center",gap:3}}><MapPin size={11} color="var(--cream3)"/>{item.location}</span>}
-                </div>
-                <div style={{display:"flex",gap:8}}>
-                  <button onClick={function(){addToCalendar(item);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"var(--sage)",color:"var(--ink)",borderRadius:10,padding:"10px 0",fontWeight:700,fontSize:14,border:"none",flex:2}}>
-                    <Check size={14}/>Add to Calla
-                  </button>
-                  <button onClick={function(){var url=item.url&&item.url.length>4?item.url:"https://www.google.com/search?q="+encodeURIComponent(item.title+" "+item.location);window.open(url,"_blank");}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"var(--ink3)",color:"var(--cream3)",borderRadius:10,padding:"10px 0",fontWeight:600,fontSize:14,border:"1px solid var(--border2)",flex:1}}>
-                    <Share2 size={13}/>View
+                <div style={{padding:"10px 12px 12px"}}>
+                  <p style={{fontWeight:700,fontSize:13,color:"var(--cream)",lineHeight:1.3,marginBottom:2,fontFamily:"'Playfair Display',Georgia,serif"}}>{item.title}</p>
+                  {item.location&&<p style={{fontSize:11,color:"var(--cream3)",marginBottom:8,display:"flex",alignItems:"center",gap:3}}><MapPin size={10} color="var(--cream3)"/>{item.location}</p>}
+                  <button onClick={function(){addToCalendar(item);}} style={{width:"100%",background:"transparent",color:"var(--cream)",border:"1.5px solid var(--cream2)",borderRadius:99,padding:"7px 0",fontWeight:600,fontSize:12,fontFamily:"-apple-system,sans-serif"}}>
+                    Save to Calendar
                   </button>
                 </div>
               </div>
             );
           })}
-          <button onClick={function(){search(city,hood);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:10,padding:"10px 0",fontWeight:600,fontSize:14,color:"var(--cream3)",width:"100%",marginTop:4}}>
+          </div>
+          <button onClick={function(){search(city,hood);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:10,padding:"10px 0",fontWeight:600,fontSize:14,color:"var(--cream3)",width:"100%",marginTop:12}}>
             <Compass size={14}/>Refresh results
           </button>
         </div>
@@ -4851,7 +4848,7 @@ function Nav({active,setActive,inboxBadge,notifBadge}) {
     {id:"more",  Icon:Settings,     label:"More"},
   ];
   return (
-    <div style={{position:"fixed",bottom:0,left:0,right:0,background:"#f0ebe2",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",borderTop:"1px solid var(--border2)",display:"flex",alignItems:"center",padding:"8px 4px",paddingBottom:"calc(12px + env(safe-area-inset-bottom,0px))",zIndex:200,gap:0,boxShadow:"0 -2px 20px rgba(45,60,45,.08)"}}>
+    <div style={{position:"fixed",bottom:0,left:0,right:0,background:"#f0ebe0",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",borderTop:"1px solid var(--border2)",display:"flex",alignItems:"center",padding:"8px 4px",paddingBottom:"calc(12px + env(safe-area-inset-bottom,0px))",zIndex:200,gap:0,boxShadow:"0 -2px 20px rgba(45,60,45,.08)"}}>
       {items.map(function(item){
         var isActive=active===item.id;
         return (
