@@ -15,7 +15,7 @@ const firebaseConfig = {
 // Initialize Firebase only on web, not on iOS/Capacitor
 let firebaseApp = null;
 let messaging = null;
-const isCapacitor = typeof window !== "undefined" && window.location.protocol === "capacitor:";
+const isCapacitor = typeof window !== "undefined" && (window.location.protocol === "capacitor:" || window.location.hostname === "localhost");
 
 if (!isCapacitor && typeof navigator !== "undefined" && "serviceWorker" in navigator) {
   firebaseApp = initializeApp(firebaseConfig);
@@ -4666,7 +4666,7 @@ export default function App() {
         toast({icon:"⚠️",title:"Notifications blocked",body:"Enable in your browser settings.",color:"var(--rose)"});
         return;
       }
-    const isCapacitorApp = typeof window !== "undefined" && window.location.protocol === "capacitor:";
+    const isCapacitorApp = typeof window !== "undefined" && (window.location.protocol === "capacitor:" || window.location.hostname === "localhost");
     if(isCapacitorApp) { toast({icon:"ℹ️",title:"Using native iOS notifications",color:"var(--sage2)"}); return; }
       if(!("serviceWorker" in navigator)){
         toast({icon:"⚠️",title:"Service worker not supported",color:"var(--rose)"});
