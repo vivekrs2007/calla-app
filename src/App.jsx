@@ -303,21 +303,21 @@ const makeRecurring = ev => {
 
 /* ─── Seed data ─────────────────────────────────────────────────────────── */
 const M0 = [
-  {id:"m1",name:"Mom", color:"#2d7a52",emoji:"👩"},
-  {id:"m2",name:"Dad", color:"#0891B2",emoji:"👨"},
+  {id:"m1",name:"Mom", color:"#2d5a3d",emoji:"👩"},
+  {id:"m2",name:"Dad", color:"#3d7a52",emoji:"👨"},
   {id:"m3",name:"Emma",color:"#7C3AED",emoji:"👧"},
-  {id:"m4",name:"Liam",color:"#D97706",emoji:"👦"},
+  {id:"m4",name:"Liam",color:"#a07820",emoji:"👦"},
 ];
 const E0 = [
   {id:"e1",title:"Soccer Practice",memberId:"m3",date:todayStr,            time:"15:00",location:"Riverside Field",color:"#7C3AED",recurring:false},
-  {id:"e2",title:"Piano Lesson",   memberId:"m4",date:todayStr,            time:"15:20",location:"Music Academy",  color:"#D97706",recurring:false},
-  {id:"e3",title:"Team Meeting",   memberId:"m1",date:addDays(todayStr,1), time:"09:00",location:"Office",         color:"#2d7a52",recurring:false},
-  {id:"e4",title:"Dentist",        memberId:"m2",date:addDays(todayStr,2), time:"11:00",location:"Smile Clinic",   color:"#0891B2",recurring:false},
+  {id:"e2",title:"Piano Lesson",   memberId:"m4",date:todayStr,            time:"15:20",location:"Music Academy",  color:"var(--gold2)",recurring:false},
+  {id:"e3",title:"Team Meeting",   memberId:"m1",date:addDays(todayStr,1), time:"09:00",location:"Office",         color:"var(--sage3)",recurring:false},
+  {id:"e4",title:"Dentist",        memberId:"m2",date:addDays(todayStr,2), time:"11:00",location:"Smile Clinic",   color:"var(--sage2)",recurring:false},
   {id:"e5",title:"Ballet Class",   memberId:"m3",date:addDays(todayStr,3), time:"14:00",location:"Dance Studio",   color:"#7C3AED",recurring:true},
-  {id:"e6",title:"Grocery Run",    memberId:"m1",date:addDays(todayStr,4), time:"10:00",location:"Whole Foods",    color:"#2d7a52",recurring:false},
+  {id:"e6",title:"Grocery Run",    memberId:"m1",date:addDays(todayStr,4), time:"10:00",location:"Whole Foods",    color:"var(--sage3)",recurring:false},
 ];
-const COLORS = ["#2d7a52","#0891B2","#7C3AED","#D97706","#DC2626","#db2777","#059669","#9333ea"];
-const EMOJIS = ["👩","👨","👧","👦","👵","👴","🧑"];
+const COLORS = ["var(--sage2)","var(--sage2)","#7C3AED","#D97706","#DC2626","#0891B2"];
+const EMOJIS = ["👩‍🦰","👨‍💼","👧🏼","🧒🏽","👩🏽","👨🏿","👧🏻","🧒🏾","👩‍🍼","🧔","👩🏾‍💼","👨‍🍳"];
 
 /* ─── Conflict detection ────────────────────────────────────────────────── */
 const conflicts = events => {
@@ -2196,8 +2196,8 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
                 <p style={{fontSize:10,fontWeight:700,color:isT?"rgba(255,255,255,.6)":"var(--cream3)",textTransform:"uppercase",textAlign:"center",marginBottom:2,letterSpacing:".04em"}}>{WDAYS[i]}</p>
                 <p onClick={function(){setDayView(date);}} style={{fontSize:15,fontWeight:800,color:"var(--cream)",textAlign:"center",marginBottom:5,cursor:"pointer"}}>{new Date(date).getDate()}</p>
                 <div style={{display:"flex",flexDirection:"column",gap:2}}>
-                  {dayEvs.slice(0,3).map(function(ev){return(
-                    <div key={ev.id} onClick={function(){if(onSelectEv)onSelectEv(ev);else setSel(ev);}} style={{background:ev.color+"cc",borderRadius:4,padding:"2px 4px",cursor:"pointer",overflow:"hidden",minWidth:0}}>
+                  {dayEvs.slice(0,3).map(function(ev){var evCol=ev.color||(members.find(function(m){return m.id===ev.memberId;})||{color:"#2d7a52"}).color;return(
+                    <div key={ev.id} onClick={function(){if(onSelectEv)onSelectEv(ev);else setSel(ev);}} style={{background:evCol+"cc",borderRadius:4,padding:"2px 4px",cursor:"pointer",overflow:"hidden",minWidth:0}}>
                       <p style={{fontSize:11,fontWeight:700,color:"#fff",lineHeight:1.3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",whiteSpace:"nowrap"}}>{ev.title}</p>
                     </div>
                   );})}
@@ -3226,7 +3226,7 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
         <button onClick={()=>setProfile(null)} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",color:"var(--cream2)",fontWeight:600,fontSize:15,marginBottom:16,padding:0}}><ChevronLeft size={15}/>Family</button>
 
         {/* Profile header */}
-        <div style={{background:"linear-gradient(135deg,"+m.color+"22,"+m.color+"08)",border:"1.5px solid "+m.color+"30",borderRadius:20,padding:"24px 20px",marginBottom:20,textAlign:"center",position:"relative"}}>
+        <div style={{background:"linear-gradient(135deg,"+m.color+"18,"+m.color+"06)",border:"1.5px solid "+m.color+"30",borderRadius:20,padding:"24px 20px",marginBottom:20,textAlign:"center",position:"relative"}}>
           <div style={{position:"relative",display:"inline-block",marginBottom:12}}>
             <div style={{width:88,height:88,borderRadius:"50%",background:m.color+"20",border:"3px solid "+m.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:40,overflow:"hidden",margin:"0 auto"}}>
               {m.photo?<img src={m.photo} style={{width:"100%",height:"100%",objectFit:"cover"}} alt={m.name}/>:m.emoji}
@@ -3236,8 +3236,8 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
             </button>
             <input ref={profilePhotoRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>{if(e.target.files[0])uploadPhoto(m.id,e.target.files[0]);}}/>
           </div>
-          <p style={{fontSize:22,fontWeight:800,letterSpacing:"-.3px",color:"#f5f0e8"}}>{m.name}</p>
-          <div style={{display:"inline-flex",alignItems:"center",gap:4,background:"rgba(245,240,232,.15)",borderRadius:99,padding:"3px 10px",marginTop:6,border:"1px solid rgba(245,240,232,.2)"}}>
+          <p style={{fontSize:22,fontWeight:800,letterSpacing:"-.3px",color:"var(--cream)"}}>{m.name}</p>
+          <div style={{display:"inline-flex",alignItems:"center",gap:4,background:"rgba(0,0,0,.08)",borderRadius:99,padding:"3px 10px",marginTop:6,border:"1px solid rgba(0,0,0,.1)"}}>
             <span style={{fontSize:10}}>✏️</span>
             <span style={{fontSize:11,color:"rgba(245,240,232,.8)",fontWeight:600,letterSpacing:".04em"}}>TAP FIELDS TO EDIT</span>
           </div>
@@ -3328,7 +3328,7 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
     <div>
       {onBack&&<button onClick={onBack} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",color:"var(--cream2)",fontWeight:600,fontSize:15,marginBottom:12,padding:0}}><ChevronLeft size={15}/>Back</button>}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-        <div><h1 style={{fontSize:28,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)"}}>Family</h1><p style={{fontSize:14,color:"var(--cream3)",marginTop:2}}>{members.length} member{members.length===1?"":"s"} · tap to edit profile</p></div>
+        <div><p style={{fontSize:14,color:"var(--cream3)",marginTop:2}}>{members.length} member{members.length===1?"":"s"} · tap to edit profile</p></div>
         <Btn onClick={()=>setShowAdd(true)} style={{display:"flex",alignItems:"center",gap:6,padding:"10px 16px",fontSize:15}}><Plus size={14}/>Add Member</Btn>
       </div>
 
@@ -3419,7 +3419,7 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
               <div>
                 <p style={{fontSize:15,color:"var(--cream3)",fontWeight:600,marginBottom:8}}>AVATAR</p>
                 <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                  {EMOJIS.map(e=><button key={e} onClick={()=>setNewM(p=>({...p,emoji:e}))} style={{fontSize:20,width:38,height:38,borderRadius:12,background:newM.emoji===e?"var(--ink4)":"transparent",border:newM.emoji===e?"2px solid var(--sage2)":"2px solid transparent"}}>{e}</button>)}
+                  {EMOJIS.map(e=><button key={e} onClick={()=>setNewM(p=>({...p,emoji:e}))} style={{fontSize:28,width:48,height:48,borderRadius:12,background:newM.emoji===e?"var(--ink4)":"transparent",border:newM.emoji===e?"2px solid var(--sage2)":"2px solid transparent"}}>{e}</button>)}
                 </div>
               </div>
               <div>
@@ -4318,7 +4318,7 @@ function ListsScreen({members}) {
   const addList=function(){
     if(!newListName.trim())return;
     const ICONS=["📋","⭐","🏠","🎯","📚","🏃","🎵","💊"];
-    const CLRS=["#DC2626","#D97706","#0891B2","#7C3AED","#2d7a52","#db2777"];
+    const CLRS=["#DC2626","#D97706","#0891B2","#7C3AED","var(--sage2)","var(--sage2)"];
     const id=genId();
     setLists(function(ls){return [...ls,{id:id,icon:ICONS[Math.floor(Math.random()*ICONS.length)],name:newListName.trim(),color:CLRS[Math.floor(Math.random()*CLRS.length)],items:[]}];});
     setActive(id);setNewListName("");setAddingList(false);
@@ -4632,6 +4632,7 @@ export default function App() {
   const [setupDone,setSetupDone] = useState(false);
   const [tab,setTab]             = useState("home");
   const [globalSel,setGlobalSel] = useState(null);
+  const [selectedMemberId,setSelectedMemberId] = useState(null);
   const [members,setMembers]     = useState(M0);
   const [events,setEvents]       = useState([]);
   const [notif,setNotif] = useState(function(){
@@ -4778,12 +4779,18 @@ export default function App() {
         // Load ALL events for the family (both parents)
         supabase.from("events").select("*").eq("family_id",fid).then(function(r){
           if(r.data&&r.data.length>0){
-            setEvents(r.data.map(function(e){return{
-              id:e.id,title:e.title,memberId:e.member_id,date:e.date,time:e.time,
-              endTime:e.end_time,location:e.location,color:e.color,recurring:e.recurring,
-              recurFreq:e.recur_freq,recurEnd:e.recur_end,notes:e.notes,
-              cost:e.cost,costType:e.cost_type,packingList:e.packing_list||[],
-            };}));
+            supabase.from("members").select("*").eq("family_id",fid).then(function(mr){
+              var mmap={};
+              if(mr.data) mr.data.forEach(function(m){mmap[m.id]=m.color;});
+              setEvents(r.data.map(function(e){return{
+                id:e.id,title:e.title,memberId:e.member_id,date:e.date,time:e.time,
+                endTime:e.end_time,location:e.location,
+                color:e.color||(mmap[e.member_id]||"#2d7a52"),
+                recurring:e.recurring,
+                recurFreq:e.recur_freq,recurEnd:e.recur_end,notes:e.notes,
+                cost:e.cost,costType:e.cost_type,packingList:e.packing_list||[],
+              };}));
+            });
           }
         });
         supabase.from("members").select("*").eq("family_id",fid).then(function(r){
@@ -4795,12 +4802,18 @@ export default function App() {
         // No family yet — load personal data
         supabase.from("events").select("*").eq("user_id",userId).then(function(r){
           if(r.data){
-            setEvents(r.data.map(function(e){return{
-              id:e.id,title:e.title,memberId:e.member_id,date:e.date,time:e.time,
-              endTime:e.end_time,location:e.location,color:e.color,recurring:e.recurring,
-              recurFreq:e.recur_freq,recurEnd:e.recur_end,notes:e.notes,
-              cost:e.cost,costType:e.cost_type,packingList:e.packing_list||[],
-            };}));
+            supabase.from("members").select("*").eq("family_id",fid).then(function(mr){
+              var mmap={};
+              if(mr.data) mr.data.forEach(function(m){mmap[m.id]=m.color;});
+              setEvents(r.data.map(function(e){return{
+                id:e.id,title:e.title,memberId:e.member_id,date:e.date,time:e.time,
+                endTime:e.end_time,location:e.location,
+                color:e.color||(mmap[e.member_id]||"#2d7a52"),
+                recurring:e.recurring,
+                recurFreq:e.recur_freq,recurEnd:e.recur_end,notes:e.notes,
+                cost:e.cost,costType:e.cost_type,packingList:e.packing_list||[],
+              };}));
+            });
           }
         });
         supabase.from("members").select("*").eq("user_id",userId).then(function(r){
@@ -5004,7 +5017,7 @@ export default function App() {
   const upc=events.filter(e=>e.date>=todayStr&&e.date<=addDays(todayStr,2)).length;
 
   const screen=()=>{
-    if(tab==="home")    return <DashScreen events={events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)} onSelectEv={function(ev){setGlobalSel(ev);setShowGlobalEv(true);}} trialExpired={!paid&&trial&&trial.expired} onUpgrade={function(){setShowPaywall(true);}}/>;
+    if(tab==="home")    return <DashScreen events={selectedMemberId?events.filter(function(e){return e.memberId===selectedMemberId;}):events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)} onSelectEv={function(ev){setGlobalSel(ev);setShowGlobalEv(true);}} trialExpired={!paid&&trial&&trial.expired} onUpgrade={function(){setShowPaywall(true);}} selectedMemberId={selectedMemberId} onClearMember={function(){setSelectedMemberId(null);}}/>;
     if(tab==="inbox")   return <InboxScreen members={members} onAdd={addEvent}/>;
     if(tab==="discover") return !paid&&trial&&trial.expired ? (
       <div style={{textAlign:"center",padding:"60px 24px"}}>
@@ -5042,8 +5055,8 @@ export default function App() {
             {/* Right: avatars + badge + bell */}
             <div style={{display:"flex",alignItems:"center",gap:6}}>
               {members.slice(0,3).map(m=>(
-                <div key={m.id} onClick={function(){go("home");}} title={m.name}
-                  style={{width:28,height:28,borderRadius:"50%",background:m.color+"18",border:"1.5px solid "+m.color+"35",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,cursor:"pointer",overflow:"hidden",flexShrink:0,transition:"transform .15s"}}
+                <div key={m.id} onClick={function(){setSelectedMemberId(function(prev){return prev===m.id?null:m.id;});go("home");}} title={m.name}
+                  style={{width:28,height:28,borderRadius:"50%",background:m.color+"18",border:selectedMemberId===m.id?"2.5px solid "+m.color:"1.5px solid "+m.color+"35",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,cursor:"pointer",overflow:"hidden",flexShrink:0,transition:"transform .15s",boxShadow:selectedMemberId===m.id?"0 0 0 2px var(--ink), 0 0 0 4px "+m.color:"none"}}
                   onMouseEnter={e=>e.currentTarget.style.transform="scale(1.1)"}
                   onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}
                 >
