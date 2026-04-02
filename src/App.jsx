@@ -303,21 +303,21 @@ const makeRecurring = ev => {
 
 /* ─── Seed data ─────────────────────────────────────────────────────────── */
 const M0 = [
-  {id:"m1",name:"Mom", color:"#2d5a3d",emoji:"👩"},
-  {id:"m2",name:"Dad", color:"#3d7a52",emoji:"👨"},
+  {id:"m1",name:"Mom", color:"#2d7a52",emoji:"👩"},
+  {id:"m2",name:"Dad", color:"#0891B2",emoji:"👨"},
   {id:"m3",name:"Emma",color:"#7C3AED",emoji:"👧"},
-  {id:"m4",name:"Liam",color:"#a07820",emoji:"👦"},
+  {id:"m4",name:"Liam",color:"#D97706",emoji:"👦"},
 ];
 const E0 = [
   {id:"e1",title:"Soccer Practice",memberId:"m3",date:todayStr,            time:"15:00",location:"Riverside Field",color:"#7C3AED",recurring:false},
-  {id:"e2",title:"Piano Lesson",   memberId:"m4",date:todayStr,            time:"15:20",location:"Music Academy",  color:"var(--gold2)",recurring:false},
-  {id:"e3",title:"Team Meeting",   memberId:"m1",date:addDays(todayStr,1), time:"09:00",location:"Office",         color:"var(--sage3)",recurring:false},
-  {id:"e4",title:"Dentist",        memberId:"m2",date:addDays(todayStr,2), time:"11:00",location:"Smile Clinic",   color:"var(--sage2)",recurring:false},
+  {id:"e2",title:"Piano Lesson",   memberId:"m4",date:todayStr,            time:"15:20",location:"Music Academy",  color:"#D97706",recurring:false},
+  {id:"e3",title:"Team Meeting",   memberId:"m1",date:addDays(todayStr,1), time:"09:00",location:"Office",         color:"#2d7a52",recurring:false},
+  {id:"e4",title:"Dentist",        memberId:"m2",date:addDays(todayStr,2), time:"11:00",location:"Smile Clinic",   color:"#0891B2",recurring:false},
   {id:"e5",title:"Ballet Class",   memberId:"m3",date:addDays(todayStr,3), time:"14:00",location:"Dance Studio",   color:"#7C3AED",recurring:true},
-  {id:"e6",title:"Grocery Run",    memberId:"m1",date:addDays(todayStr,4), time:"10:00",location:"Whole Foods",    color:"var(--sage3)",recurring:false},
+  {id:"e6",title:"Grocery Run",    memberId:"m1",date:addDays(todayStr,4), time:"10:00",location:"Whole Foods",    color:"#2d7a52",recurring:false},
 ];
-const COLORS = ["var(--sage2)","var(--sage2)","#7C3AED","#D97706","#DC2626","#0891B2"];
-const EMOJIS = ["👩‍🦰","👨‍💼","👧🏼","🧒🏽","👩🏽","👨🏿","👧🏻","🧒🏾","👩‍🍼","🧔","👩🏾‍💼","👨‍🍳"];
+const COLORS = ["#2d7a52","#0891B2","#7C3AED","#D97706","#DC2626","#db2777","#059669","#9333ea"];
+const EMOJIS = ["👩","👨","👧","👦","👵","👴","🧑"];
 
 /* ─── Conflict detection ────────────────────────────────────────────────── */
 const conflicts = events => {
@@ -3328,7 +3328,7 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
     <div>
       {onBack&&<button onClick={onBack} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",color:"var(--cream2)",fontWeight:600,fontSize:15,marginBottom:12,padding:0}}><ChevronLeft size={15}/>Back</button>}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-        <div><p style={{fontSize:14,color:"var(--cream3)",marginTop:2}}>{members.length} member{members.length===1?"":"s"} · tap to edit profile</p></div>
+        <div><h1 style={{fontSize:28,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)"}}>Family</h1><p style={{fontSize:14,color:"var(--cream3)",marginTop:2}}>{members.length} member{members.length===1?"":"s"} · tap to edit profile</p></div>
         <Btn onClick={()=>setShowAdd(true)} style={{display:"flex",alignItems:"center",gap:6,padding:"10px 16px",fontSize:15}}><Plus size={14}/>Add Member</Btn>
       </div>
 
@@ -3419,7 +3419,7 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
               <div>
                 <p style={{fontSize:15,color:"var(--cream3)",fontWeight:600,marginBottom:8}}>AVATAR</p>
                 <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                  {EMOJIS.map(e=><button key={e} onClick={()=>setNewM(p=>({...p,emoji:e}))} style={{fontSize:28,width:48,height:48,borderRadius:12,background:newM.emoji===e?"var(--ink4)":"transparent",border:newM.emoji===e?"2px solid var(--sage2)":"2px solid transparent"}}>{e}</button>)}
+                  {EMOJIS.map(e=><button key={e} onClick={()=>setNewM(p=>({...p,emoji:e}))} style={{fontSize:20,width:38,height:38,borderRadius:12,background:newM.emoji===e?"var(--ink4)":"transparent",border:newM.emoji===e?"2px solid var(--sage2)":"2px solid transparent"}}>{e}</button>)}
                 </div>
               </div>
               <div>
@@ -4318,7 +4318,7 @@ function ListsScreen({members}) {
   const addList=function(){
     if(!newListName.trim())return;
     const ICONS=["📋","⭐","🏠","🎯","📚","🏃","🎵","💊"];
-    const CLRS=["#DC2626","#D97706","#0891B2","#7C3AED","var(--sage2)","var(--sage2)"];
+    const CLRS=["#DC2626","#D97706","#0891B2","#7C3AED","#2d7a52","#db2777"];
     const id=genId();
     setLists(function(ls){return [...ls,{id:id,icon:ICONS[Math.floor(Math.random()*ICONS.length)],name:newListName.trim(),color:CLRS[Math.floor(Math.random()*CLRS.length)],items:[]}];});
     setActive(id);setNewListName("");setAddingList(false);
@@ -4632,7 +4632,6 @@ export default function App() {
   const [setupDone,setSetupDone] = useState(false);
   const [tab,setTab]             = useState("home");
   const [globalSel,setGlobalSel] = useState(null);
-  const [selectedMemberId,setSelectedMemberId] = useState(null);
   const [members,setMembers]     = useState(M0);
   const [events,setEvents]       = useState([]);
   const [notif,setNotif] = useState(function(){
@@ -5005,7 +5004,7 @@ export default function App() {
   const upc=events.filter(e=>e.date>=todayStr&&e.date<=addDays(todayStr,2)).length;
 
   const screen=()=>{
-    if(tab==="home")    return <DashScreen events={selectedMemberId?events.filter(function(e){return e.memberId===selectedMemberId;}):events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)} onSelectEv={function(ev){setGlobalSel(ev);setShowGlobalEv(true);}} trialExpired={!paid&&trial&&trial.expired} onUpgrade={function(){setShowPaywall(true);}} selectedMemberId={selectedMemberId} onClearMember={function(){setSelectedMemberId(null);}}/>;
+    if(tab==="home")    return <DashScreen events={events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)} onSelectEv={function(ev){setGlobalSel(ev);setShowGlobalEv(true);}} trialExpired={!paid&&trial&&trial.expired} onUpgrade={function(){setShowPaywall(true);}}/>;
     if(tab==="inbox")   return <InboxScreen members={members} onAdd={addEvent}/>;
     if(tab==="discover") return !paid&&trial&&trial.expired ? (
       <div style={{textAlign:"center",padding:"60px 24px"}}>
@@ -5043,8 +5042,8 @@ export default function App() {
             {/* Right: avatars + badge + bell */}
             <div style={{display:"flex",alignItems:"center",gap:6}}>
               {members.slice(0,3).map(m=>(
-                <div key={m.id} onClick={function(){setSelectedMemberId(function(prev){return prev===m.id?null:m.id;});go("home");}} title={m.name}
-                  style={{width:28,height:28,borderRadius:"50%",background:m.color+"18",border:selectedMemberId===m.id?"2.5px solid "+m.color:"1.5px solid "+m.color+"35",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,cursor:"pointer",overflow:"hidden",flexShrink:0,transition:"transform .15s",boxShadow:selectedMemberId===m.id?"0 0 0 2px var(--ink), 0 0 0 4px "+m.color:"none"}}
+                <div key={m.id} onClick={function(){go("home");}} title={m.name}
+                  style={{width:28,height:28,borderRadius:"50%",background:m.color+"18",border:"1.5px solid "+m.color+"35",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,cursor:"pointer",overflow:"hidden",flexShrink:0,transition:"transform .15s"}}
                   onMouseEnter={e=>e.currentTarget.style.transform="scale(1.1)"}
                   onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}
                 >
