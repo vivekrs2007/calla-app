@@ -2228,11 +2228,10 @@ function DaySheet({date,events,members,onClose,onSelect}) {
 }
 
 /* ─── Dashboard ─────────────────────────────────────────────────────────── */
-function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,initialSel,onClearSel,onShowAdd,onShowVoice,onSelectEv,trialExpired,onUpgrade,topBar,selectedMemberId}) {
+function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,initialSel,onClearSel,onShowAdd,onShowVoice,onSelectEv,trialExpired,onUpgrade,topBar,selectedMemberId,showSearch,searchQuery,setSearchQuery,setShowSearch}) {
   const [anchor,setAnchor]=useState(todayStr);
   const [showAdd,setShowAdd]=useState(false);
   const [showVoice,setShowVoice]=useState(false);
-  const [searchQuery,setSearchQuery]=useState("");
   const [sel,setSel]=useState(null);
   const [map,setMap]=useState(false);
   const [dayView,setDayView]=useState(null);
@@ -2272,22 +2271,71 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
   return (
     <div className="screen-enter">
       {/* ── Hero header ── */}
-      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 20px",borderRadius:"0 0 24px 24px"}}>
+      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
         {topBar}
         <p style={{fontSize:11,fontWeight:600,color:"rgba(245,240,232,.45)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:4,fontFamily:"-apple-system,sans-serif"}}>{dashDay}</p>
         <p style={{fontSize:22,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px",marginBottom:12}}>{dashGreet},<br/><em style={{fontStyle:"italic",color:"#c9a84c"}}>Belkuni Family.</em></p>
-        <div style={{display:"flex",gap:8}}>
+        <div style={{display:"flex",gap:10,justifyContent:"center"}}>
           <button onClick={function(){if(trialExpired){onUpgrade&&onUpgrade();return;}onShowAdd();}}
-            style={{background:"#f5f0e8",color:"var(--sage)",border:"none",borderRadius:100,padding:"8px 16px",fontSize:13,fontWeight:700,display:"flex",alignItems:"center",gap:6,fontFamily:"-apple-system,sans-serif"}}>
-            <Plus size={14}/>Quick Add
+            style={{background:"#f5f0e8",color:"var(--sage)",border:"none",borderRadius:100,padding:"11px 24px",fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:7,fontFamily:"-apple-system,sans-serif"}}>
+            <Plus size={16}/>Add Event
           </button>
           <button onClick={function(){if(trialExpired){onUpgrade&&onUpgrade();return;}onShowVoice();}}
-            style={{background:"rgba(245,240,232,.15)",color:"#f5f0e8",border:"1.5px solid rgba(245,240,232,.35)",borderRadius:100,padding:"8px 16px",fontSize:13,fontWeight:700,display:"flex",alignItems:"center",gap:6,fontFamily:"-apple-system,sans-serif"}}>
-            <Mic size={14} color="#f5f0e8"/>Voice
+            style={{background:"rgba(245,240,232,.15)",color:"#f5f0e8",border:"1.5px solid rgba(245,240,232,.35)",borderRadius:100,padding:"11px 24px",fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:7,fontFamily:"-apple-system,sans-serif"}}>
+            <Mic size={16} color="#f5f0e8"/>Voice
           </button>
         </div>
+        {showSearch&&(
+          <div style={{marginTop:12}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,background:"rgba(245,240,232,.18)",borderRadius:12,padding:"10px 14px",border:"1px solid rgba(245,240,232,.3)"}}>
+              <Search size={15} color="#f5f0e8"/>
+              <input
+                autoFocus
+                placeholder="Search events, kids, locations…"
+                value={searchQuery}
+                onChange={function(e){setSearchQuery(e.target.value);}}
+                style={{background:"transparent",border:"none",padding:0,fontSize:15,flex:1,color:"#f5f0e8",outline:"none",fontFamily:"-apple-system,sans-serif",boxShadow:"none",WebkitAppearance:"none",appearance:"none"}}
+              />
+              {searchQuery&&<button onClick={function(){setSearchQuery("");}} style={{background:"none",border:"none",color:"rgba(245,240,232,.6)",display:"flex",padding:2,flexShrink:0}}><X size={13}/></button>}
+            </div>
+          </div>
+        )}
       </div>
 
+      {showSearch&&searchQuery.trim()&&(function(){
+        var q=searchQuery.toLowerCase().trim();
+        var res=events.filter(function(ev){
+          return ev.title.toLowerCase().includes(q)||
+            (ev.location&&ev.location.toLowerCase().includes(q))||
+            (ev.notes&&ev.notes.toLowerCase().includes(q))||
+            (function(){var m=members.find(function(m){return m.id===ev.memberId;});return m&&m.name.toLowerCase().includes(q);})();
+        }).sort(function(a,b){return a.date.localeCompare(b.date);});
+        if(res.length===0) return <div style={{textAlign:"center",padding:"24px 0",color:"var(--cream3)",fontSize:15}}>No results for "{searchQuery}"</div>;
+        return (
+          <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:16}}>
+            <p style={{fontSize:12,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em",paddingLeft:2}}>{res.length} result{res.length===1?"":"s"}</p>
+            {res.map(function(ev){
+              var m=members.find(function(m){return m.id===ev.memberId;})||{emoji:"👤",color:"var(--cream3)",name:"?"};
+              var isToday=ev.date===todayStr;
+              return (
+                <div key={ev.id} onClick={function(){setShowSearch(false);setSearchQuery("");if(onSelectEv)onSelectEv(ev);else setSel(ev);}}
+                  style={{background:"#fff",border:"1px solid var(--border2)",borderLeft:"4px solid "+ev.color,borderRadius:14,padding:"12px 14px",cursor:"pointer"}}
+                >
+                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+                    <div style={{width:30,height:30,borderRadius:10,background:ev.color+"15",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{m.emoji}</div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <p style={{fontWeight:700,fontSize:15,color:"var(--cream)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ev.title}</p>
+                      <p style={{fontSize:13,color:m.color,fontWeight:600}}>{m.name}</p>
+                    </div>
+                    <p style={{fontSize:12,fontWeight:600,color:isToday?"var(--sage2)":"var(--cream3)",background:isToday?"rgba(45,90,61,.08)":"var(--ink4)",borderRadius:99,padding:"2px 8px",flexShrink:0}}>{isToday?"Today":ev.date}</p>
+                  </div>
+                  {ev.location&&<p style={{fontSize:13,color:"var(--cream3)",display:"flex",alignItems:"center",gap:4}}><MapPin size={11} color="var(--sage3)"/>{ev.location}</p>}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
       {showBanner&&<ValueBanner onDismiss={onBannerDismiss}/>}
           {selMember&&(
             <div style={{display:"flex",alignItems:"center",gap:8,background:"#fff",borderRadius:10,padding:"8px 12px",marginBottom:12,border:"1px solid var(--border2)"}}>
@@ -3230,7 +3278,7 @@ function InboxScreen({members,onAdd,user,topBar}) {
   return (
     <div className="screen-enter">
       {/* Hero header — matches mockup */}
-      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 20px",borderRadius:"0 0 24px 24px"}}>
+      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
         {topBar}
         <p style={{fontSize:24,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.2,letterSpacing:"-.4px",marginBottom:14,textAlign:"center"}}>Calla Remembers<br/>Everything.</p>
         <div style={{display:"flex",gap:8,justifyContent:"center"}}>
@@ -3722,9 +3770,9 @@ function NotifScreen({events,members,onSelectEvent,topBar}) {
   });
   return (
     <div className="screen-enter">
-      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 20px",borderRadius:"0 0 24px 24px"}}>
+      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
         {topBar}
-        <div style={{marginTop:10}}>
+        <div style={{marginTop:8}}>
           <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>Alerts</p>
           <p style={{fontSize:13,color:"rgba(245,240,232,.55)",marginTop:3,fontFamily:"-apple-system,sans-serif"}}>Upcoming events · {up.length} total</p>
         </div>
@@ -4136,7 +4184,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
   if(!sec) return (
     <div style={{paddingBottom:8}}>
       {/* Hero header */}
-      <div style={{background:"var(--sage)",margin:"-20px -18px 20px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 20px",borderRadius:"0 0 24px 24px"}}>
+      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
 {topBar}
         <p style={{fontSize:11,fontWeight:600,color:"rgba(245,240,232,.45)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:4,fontFamily:"-apple-system,sans-serif"}}>Your account</p>
         <p style={{fontSize:22,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>{user&&user.family||"My Family"}</p>
@@ -4539,7 +4587,7 @@ function TrialBanner({ daysLeft, onUpgrade }) {
 }
 
 /* ─── Morning Text / Digest Screen ─────────────────────────────────────── */
-function ListsScreen({members}) {
+function ListsScreen({members,topBar}) {
   const PRESET=[
     {id:"grocery",icon:"🛒",name:"Grocery",color:"var(--sage2)",items:[]},
     {id:"todo",icon:"✅",name:"To Do",color:"var(--sage3)",items:[]},
@@ -4584,9 +4632,12 @@ function ListsScreen({members}) {
 
   return (
     <div>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-        <div><h1 style={{fontSize:28,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",lineHeight:1}}>Lists</h1><p style={{fontSize:15,color:"var(--cream3)",marginTop:2}}>Shared with your whole family</p></div>
-        <button onClick={function(){setAddingList(true);}} style={{width:36,height:36,borderRadius:12,background:"var(--sage)",display:"flex",alignItems:"center",justifyContent:"center",border:"none",minHeight:"auto",minWidth:"auto"}}><Plus size={18} color="#fff"/></button>
+      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
+        {topBar}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:8}}>
+          <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>Lists</p>
+          <button onClick={function(){setAddingList(true);}} style={{width:32,height:32,borderRadius:9,background:"rgba(245,240,232,.18)",border:"1px solid rgba(245,240,232,.3)",display:"flex",alignItems:"center",justifyContent:"center",minHeight:"auto",minWidth:"auto"}}><Plus size={15} color="#f5f0e8"/></button>
+        </div>
       </div>
       <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:12,marginBottom:16,scrollbarWidth:"none"}}>
         {lists.map(function(l){
@@ -4735,7 +4786,7 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
   return (
     <div style={{paddingBottom:8}}>
       {/* Hero header — matches mockup */}
-      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 20px",borderRadius:"0 0 24px 24px"}}>
+      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
         {topBar}
         <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>Explore Nearby</p>
       </div>
@@ -5277,7 +5328,7 @@ export default function App() {
   );
 
   const screen=()=>{
-    if(tab==="home")    return <DashScreen events={selectedMemberId?events.filter(function(e){return e.memberId===selectedMemberId;}):events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)} onSelectEv={function(ev){setGlobalSel(ev);setShowGlobalEv(true);}} trialExpired={!paid&&trial&&trial.expired} onUpgrade={function(){setShowPaywall(true);}} selectedMemberId={selectedMemberId} onClearMember={function(){setSelectedMemberId(null);}} topBar={topBarEl}/>;
+    if(tab==="home")    return <DashScreen events={selectedMemberId?events.filter(function(e){return e.memberId===selectedMemberId;}):events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)} onSelectEv={function(ev){setGlobalSel(ev);setShowGlobalEv(true);}} trialExpired={!paid&&trial&&trial.expired} onUpgrade={function(){setShowPaywall(true);}} selectedMemberId={selectedMemberId} onClearMember={function(){setSelectedMemberId(null);}} topBar={topBarEl} showSearch={showSearch} searchQuery={searchQuery} setSearchQuery={setSearchQuery} setShowSearch={setShowSearch}/>;
     if(tab==="inbox")   return <InboxScreen members={members} onAdd={addEvent} user={user} topBar={topBarEl}/>;
     if(tab==="discover") return !paid&&trial&&trial.expired ? (
       <div style={{textAlign:"center",padding:"60px 24px"}}>
@@ -5287,7 +5338,7 @@ export default function App() {
         <Btn onClick={function(){setShowPaywall(true);}}>View Plans</Btn>
       </div>
     ) : <DiscoverScreen members={members} onAdd={addEvent} user={user} topBar={topBarEl}/>;
-    if(tab==="lists")   return <ListsScreen members={members}/>;
+    if(tab==="lists")   return <ListsScreen members={members} topBar={topBarEl}/>;
     if(tab==="members") return <MembersScreen members={members} setMembers={setMembers} events={events}/>;
     if(tab==="notif")   return <NotifScreen events={events} members={members} onSelectEvent={ev=>{setGlobalSel(ev);setTab("home");}} topBar={topBarEl}/>;
     if(tab==="more")    return <MoreScreen members={members} setMembers={setMembers} events={events} user={user} paid={paid} trialLeft={trial?trial.left:null} onUpgrade={()=>setShowPaywall(true)} notifSettings={notif} setNotifSettings={setNotif} saveMember={saveMember} deleteMember={deleteMember} toast={toast} familyId={familyId} sendInvite={sendInvite} requestPermission={requestNotificationPermission} onSignOut={()=>{supabase.auth.signOut();setUser(null);setSetupDone(false);setTab("home");setEvents([]);setMembers(M0);setPaid(false);setShowPaywall(false);setFamilyId(null);toast({icon:"👋",title:"Signed out",color:"var(--cream3)"});}} topBar={topBarEl}/>;
@@ -5305,63 +5356,8 @@ export default function App() {
             <TrialBanner daysLeft={trial.left} onUpgrade={()=>setShowPaywall(true)}/>
           )}
 
-          {showSearch&&(
-            <div style={{position:"fixed",top:"calc(env(safe-area-inset-top,44px) + 108px)",left:0,right:0,zIndex:300,padding:"0 18px 8px",background:"linear-gradient(to bottom,#f0ebe0 80%,transparent)"}}>
-              <div style={{display:"flex",alignItems:"center",gap:10,background:"#fff",borderRadius:12,padding:"10px 14px",border:"1.5px solid var(--sage2)",boxShadow:"0 4px 20px rgba(45,90,61,.15)"}}>
-                <Search size={15} color="var(--sage)"/>
-                <input
-                  autoFocus
-                  placeholder="Search events, kids, locations…"
-                  value={searchQuery}
-                  onChange={function(e){setSearchQuery(e.target.value);}}
-                  style={{background:"transparent",border:"none",padding:0,fontSize:16,flex:1,color:"var(--cream)",outline:"none",fontFamily:"inherit",boxShadow:"none",WebkitAppearance:"none",appearance:"none"}}
-                />
-                {searchQuery&&<button onClick={function(){setSearchQuery("");}} style={{background:"none",border:"none",color:"var(--cream3)",display:"flex",padding:2,flexShrink:0}}><X size={13}/></button>}
-              </div>
-              {searchQuery.trim()&&(function(){
-                var q=searchQuery.toLowerCase().trim();
-                var results=events.filter(function(ev){
-                  return ev.title.toLowerCase().includes(q)||
-                    (ev.location&&ev.location.toLowerCase().includes(q))||
-                    (ev.notes&&ev.notes.toLowerCase().includes(q))||
-                    (function(){var m=members.find(function(m){return m.id===ev.memberId;});return m&&m.name.toLowerCase().includes(q);})();
-                }).sort(function(a,b){return a.date.localeCompare(b.date);});
-                if(results.length===0) return (
-                  <div style={{textAlign:"center",padding:"24px 0",color:"var(--cream3)",fontSize:15}}>No events found for "{searchQuery}"</div>
-                );
-                return (
-                  <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
-                    <p style={{fontSize:12,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em",paddingLeft:2}}>{results.length} result{results.length===1?"":"s"}</p>
-                    {results.map(function(ev){
-                      var m=members.find(function(m){return m.id===ev.memberId;})||{emoji:"👤",color:"var(--cream3)",name:"?"};
-                      var isToday=ev.date===todayStr;
-                      var isPast=ev.date<todayStr;
-                      return (
-                        <div key={ev.id} onClick={function(){setGlobalSel(ev);setShowGlobalEv(true);setShowSearch(false);setSearchQuery("");go("home");}}
-                          style={{background:"#fff",border:"1px solid var(--border2)",borderLeft:"4px solid "+ev.color,borderRadius:14,padding:"12px 14px",cursor:"pointer",opacity:isPast?0.65:1}}
-                        >
-                          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
-                            <div style={{width:30,height:30,borderRadius:10,background:ev.color+"15",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{m.emoji}</div>
-                            <div style={{flex:1,minWidth:0}}>
-                              <p style={{fontWeight:700,fontSize:15,color:"var(--cream)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ev.title}</p>
-                              <p style={{fontSize:13,color:m.color,fontWeight:600}}>{m.name}</p>
-                            </div>
-                            <div style={{textAlign:"right",flexShrink:0}}>
-                              <p style={{fontSize:12,fontWeight:600,color:isToday?"var(--sage2)":"var(--cream3)",background:isToday?"rgba(45,90,61,.08)":"var(--ink4)",borderRadius:99,padding:"2px 8px"}}>{isToday?"Today":ev.date}</p>
-                              {ev.time&&<p style={{fontSize:12,color:"var(--cream3)",marginTop:2}}>{ev.time}</p>}
-                            </div>
-                          </div>
-                          {ev.location&&<p style={{fontSize:13,color:"var(--cream3)",display:"flex",alignItems:"center",gap:4,marginTop:2}}><MapPin size={11} color="var(--sage3)"/>{ev.location}</p>}
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-            </div>
-          )}
           {!showSearch&&screen()}
-          {showSearch&&!searchQuery.trim()&&screen()}
+          {showSearch&&screen()}
 
         </div>
       </div>
