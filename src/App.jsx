@@ -2875,7 +2875,7 @@ function FlyerScanner({members, onAdd}) {
   );
 }
 
-function InboxScreen({members,onAdd}) {
+function InboxScreen({members,onAdd,user,topBar}) {
   const [tab,setTab]=useState("email");
   const [text,setText]=useState("");
   const [stage,setStage]=useState("idle");
@@ -3251,27 +3251,7 @@ function InboxScreen({members,onAdd}) {
     <div className="screen-enter">
       {/* Hero header — matches mockup */}
       <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"20px 18px 20px",borderRadius:"0 0 24px 24px"}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:32,height:32,background:"rgba(245,240,232,.15)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,border:"1px solid rgba(245,240,232,.2)"}}>
-              <span style={{fontSize:15}}>🌸</span>
-            </div>
-            <p style={{fontWeight:700,fontSize:16,letterSpacing:"-.02em",fontFamily:"'Playfair Display',Georgia,serif",color:"#f5f0e8",lineHeight:1}}>{user.family}</p>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:5}}>
-            {members.slice(0,3).map(function(m){return(
-              <div key={m.id} onClick={function(){setSelectedMemberId(function(prev){return prev===m.id?null:m.id;});go("home");}} title={m.name}
-                style={{width:26,height:26,borderRadius:"50%",background:"rgba(245,240,232,.2)",border:selectedMemberId===m.id?"2px solid #f5f0e8":"1.5px solid rgba(245,240,232,.35)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,cursor:"pointer",overflow:"hidden",flexShrink:0}}>
-                {m.photo?<img src={m.photo} style={{width:"100%",height:"100%",objectFit:"cover"}} alt={m.name}/>:m.emoji}
-              </div>
-            );})}
-            <button onClick={function(){setShowSearch(function(v){if(v){setSearchQuery("");}return !v;});}} style={{width:28,height:28,background:"rgba(245,240,232,.15)",border:"1px solid rgba(245,240,232,.25)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Search size={13} color="#f5f0e8"/></button>
-            <button onClick={function(){go("notif");}} style={{width:28,height:28,background:"rgba(245,240,232,.15)",border:"1px solid rgba(245,240,232,.25)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",position:"relative",flexShrink:0}}>
-              <Bell size={13} color="#f5f0e8"/>
-              {upc>0&&<div style={{position:"absolute",top:-3,right:-3,background:"var(--red)",color:"#f5f0e8",borderRadius:"50%",width:13,height:13,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:800,border:"1.5px solid var(--sage)"}}>{upc}</div>}
-            </button>
-          </div>
-        </div>
+        {topBar}
         <p style={{fontSize:24,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.2,letterSpacing:"-.4px",marginBottom:14,textAlign:"center"}}>Calla Remembers<br/>Everything.</p>
         <div style={{display:"flex",gap:8,justifyContent:"center"}}>
           <button onClick={function(){setTab("email");}} style={{background:tab==="email"?"#f5f0e8":"transparent",color:tab==="email"?"var(--sage)":"#f5f0e8",border:"1.5px solid rgba(245,240,232,.7)",borderRadius:100,padding:"8px 18px",fontSize:13,fontWeight:700,fontFamily:"-apple-system,sans-serif"}}>Email Inbox</button>
@@ -4710,7 +4690,7 @@ function ListsScreen({members}) {
 
 
 /* ─── Nav ───────────────────────────────────────────────────────────────── */
-function DiscoverScreen({members,onAdd,user}) {
+function DiscoverScreen({members,onAdd,user,topBar}) {
   var [city,setCity]=useState(function(){return localStorage.getItem("calla_city")||"";});
   var [hood,setHood]=useState(function(){return localStorage.getItem("calla_hood")||"";});
   var [results,setResults]=useState([]);
@@ -4793,27 +4773,7 @@ function DiscoverScreen({members,onAdd,user}) {
     <div style={{paddingBottom:8}}>
       {/* Hero header — matches mockup */}
       <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"20px 18px 20px",borderRadius:"0 0 24px 24px"}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:32,height:32,background:"rgba(245,240,232,.15)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,border:"1px solid rgba(245,240,232,.2)"}}>
-              <span style={{fontSize:15}}>🌸</span>
-            </div>
-            <p style={{fontWeight:700,fontSize:16,letterSpacing:"-.02em",fontFamily:"'Playfair Display',Georgia,serif",color:"#f5f0e8",lineHeight:1}}>{user.family}</p>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:5}}>
-            {members.slice(0,3).map(function(m){return(
-              <div key={m.id} onClick={function(){setSelectedMemberId(function(prev){return prev===m.id?null:m.id;});go("home");}} title={m.name}
-                style={{width:26,height:26,borderRadius:"50%",background:"rgba(245,240,232,.2)",border:selectedMemberId===m.id?"2px solid #f5f0e8":"1.5px solid rgba(245,240,232,.35)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,cursor:"pointer",overflow:"hidden",flexShrink:0}}>
-                {m.photo?<img src={m.photo} style={{width:"100%",height:"100%",objectFit:"cover"}} alt={m.name}/>:m.emoji}
-              </div>
-            );})}
-            <button onClick={function(){setShowSearch(function(v){if(v){setSearchQuery("");}return !v;});}} style={{width:28,height:28,background:"rgba(245,240,232,.15)",border:"1px solid rgba(245,240,232,.25)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Search size={13} color="#f5f0e8"/></button>
-            <button onClick={function(){go("notif");}} style={{width:28,height:28,background:"rgba(245,240,232,.15)",border:"1px solid rgba(245,240,232,.25)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",position:"relative",flexShrink:0}}>
-              <Bell size={13} color="#f5f0e8"/>
-              {upc>0&&<div style={{position:"absolute",top:-3,right:-3,background:"var(--red)",color:"#f5f0e8",borderRadius:"50%",width:13,height:13,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:800,border:"1.5px solid var(--sage)"}}>{upc}</div>}
-            </button>
-          </div>
-        </div>
+        {topBar}
         <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>Explore Nearby</p>
       </div>
       {/* Location bar */}
@@ -5330,9 +5290,33 @@ export default function App() {
   const go=t=>{setTab(t);if(t==="inbox")setInboxBadge(0);setShowSearch(false);setSearchQuery("");};
   const upc=events.filter(e=>e.date>=todayStr&&e.date<=addDays(todayStr,2)).length;
 
+  const topBarEl=(
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+      <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <div style={{width:30,height:30,background:"rgba(245,240,232,.15)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,border:"1px solid rgba(245,240,232,.2)"}}>
+          <span style={{fontSize:14}}>🌸</span>
+        </div>
+        <p style={{fontWeight:700,fontSize:15,letterSpacing:"-.02em",fontFamily:"'Playfair Display',Georgia,serif",color:"#f5f0e8",lineHeight:1}}>{user.family}</p>
+      </div>
+      <div style={{display:"flex",alignItems:"center",gap:5}}>
+        {members.slice(0,3).map(function(m){return(
+          <div key={m.id} onClick={function(){setSelectedMemberId(function(prev){return prev===m.id?null:m.id;});go("home");}} title={m.name}
+            style={{width:26,height:26,borderRadius:"50%",background:"rgba(245,240,232,.2)",border:selectedMemberId===m.id?"2px solid #f5f0e8":"1.5px solid rgba(245,240,232,.35)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,cursor:"pointer",overflow:"hidden",flexShrink:0}}>
+            {m.photo?<img src={m.photo} style={{width:"100%",height:"100%",objectFit:"cover"}} alt={m.name}/>:m.emoji}
+          </div>
+        );})}
+        <button onClick={function(){setShowSearch(function(v){if(v){setSearchQuery("");}return !v;});}} style={{width:28,height:28,background:"rgba(245,240,232,.15)",border:"1px solid rgba(245,240,232,.25)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Search size={13} color="#f5f0e8"/></button>
+        <button onClick={function(){go("notif");}} style={{width:28,height:28,background:"rgba(245,240,232,.15)",border:"1px solid rgba(245,240,232,.25)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",position:"relative",flexShrink:0}}>
+          <Bell size={13} color="#f5f0e8"/>
+          {upc>0&&<div style={{position:"absolute",top:-3,right:-3,background:"var(--red)",color:"#f5f0e8",borderRadius:"50%",width:13,height:13,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:800,border:"1.5px solid var(--sage)"}}>{upc}</div>}
+        </button>
+      </div>
+    </div>
+  );
+
   const screen=()=>{
-    if(tab==="home")    return <DashScreen events={selectedMemberId?events.filter(function(e){return e.memberId===selectedMemberId;}):events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)} onSelectEv={function(ev){setGlobalSel(ev);setShowGlobalEv(true);}} trialExpired={!paid&&trial&&trial.expired} onUpgrade={function(){setShowPaywall(true);}} selectedMemberId={selectedMemberId} onClearMember={function(){setSelectedMemberId(null);}}/>;
-    if(tab==="inbox")   return <InboxScreen members={members} onAdd={addEvent}/>;
+    if(tab==="home")    return <DashScreen events={selectedMemberId?events.filter(function(e){return e.memberId===selectedMemberId;}):events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)} onSelectEv={function(ev){setGlobalSel(ev);setShowGlobalEv(true);}} trialExpired={!paid&&trial&&trial.expired} onUpgrade={function(){setShowPaywall(true);}} selectedMemberId={selectedMemberId} onClearMember={function(){setSelectedMemberId(null);}} topBar={topBarEl}/>;
+    if(tab==="inbox")   return <InboxScreen members={members} onAdd={addEvent} user={user} topBar={topBarEl}/>;
     if(tab==="discover") return !paid&&trial&&trial.expired ? (
       <div style={{textAlign:"center",padding:"60px 24px"}}>
         <div style={{fontSize:48,marginBottom:16}}>🔒</div>
@@ -5340,7 +5324,7 @@ export default function App() {
         <p style={{fontSize:15,color:"var(--cream3)",marginBottom:24}}>Subscribe to keep using Discover.</p>
         <Btn onClick={function(){setShowPaywall(true);}}>View Plans</Btn>
       </div>
-    ) : <DiscoverScreen members={members} onAdd={addEvent} user={user}/>;
+    ) : <DiscoverScreen members={members} onAdd={addEvent} user={user} topBar={topBarEl}/>;
     if(tab==="lists")   return <ListsScreen members={members}/>;
     if(tab==="members") return <MembersScreen members={members} setMembers={setMembers} events={events}/>;
     if(tab==="notif")   return <NotifScreen events={events} members={members} onSelectEvent={ev=>{setGlobalSel(ev);setTab("home");}}/>;
