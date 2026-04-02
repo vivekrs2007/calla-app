@@ -2272,7 +2272,7 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
   return (
     <div className="screen-enter">
       {/* ── Hero header ── */}
-      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,0px) + 12px) 18px 20px",borderRadius:"0 0 24px 24px"}}>
+      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 20px",borderRadius:"0 0 24px 24px"}}>
         {topBar}
         <p style={{fontSize:11,fontWeight:600,color:"rgba(245,240,232,.45)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:4,fontFamily:"-apple-system,sans-serif"}}>{dashDay}</p>
         <p style={{fontSize:22,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px",marginBottom:12}}>{dashGreet},<br/><em style={{fontStyle:"italic",color:"#c9a84c"}}>Belkuni Family.</em></p>
@@ -3230,9 +3230,9 @@ function InboxScreen({members,onAdd,user,topBar}) {
   return (
     <div className="screen-enter">
       {/* Hero header — matches mockup */}
-      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"20px 18px 20px",borderRadius:"0 0 24px 24px"}}>
+      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 20px",borderRadius:"0 0 24px 24px"}}>
         {topBar}
-        <p style={{fontSize:24,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.2,letterSpacing:"-.4px",marginBottom:14,textAlign:"center"}}>Calla Remembers<br/>Everything.</p>
+        <p style={{fontSize:24,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.2,letterSpacing:"-.4px",marginBottom:14,marginTop:10,textAlign:"center"}}>Calla Remembers<br/>Everything.</p>
         <div style={{display:"flex",gap:8,justifyContent:"center"}}>
           <button onClick={function(){setTab("email");}} style={{background:tab==="email"?"#f5f0e8":"transparent",color:tab==="email"?"var(--sage)":"#f5f0e8",border:"1.5px solid rgba(245,240,232,.7)",borderRadius:100,padding:"8px 18px",fontSize:13,fontWeight:700,fontFamily:"-apple-system,sans-serif"}}>Email Inbox</button>
           <button onClick={function(){setTab("flyer");}} style={{background:tab==="flyer"?"#f5f0e8":"transparent",color:tab==="flyer"?"var(--sage)":"#f5f0e8",border:"1.5px solid rgba(245,240,232,.7)",borderRadius:100,padding:"8px 18px",fontSize:13,fontWeight:700,fontFamily:"-apple-system,sans-serif"}}>Flyer Capture</button>
@@ -4133,7 +4133,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
   if(!sec) return (
     <div style={{paddingBottom:8}}>
       {/* Hero header */}
-      <div style={{background:"var(--sage)",margin:"-20px -18px 20px",padding:"calc(env(safe-area-inset-top,0px) + 12px) 18px 16px",borderRadius:"0 0 24px 24px"}}>
+      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 20px",borderRadius:"0 0 24px 24px"}}>
 {topBar}
         <p style={{fontSize:11,fontWeight:600,color:"rgba(245,240,232,.45)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:4,fontFamily:"-apple-system,sans-serif"}}>Your account</p>
         <p style={{fontSize:22,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>{user&&user.family||"My Family"}</p>
@@ -4536,7 +4536,7 @@ function TrialBanner({ daysLeft, onUpgrade }) {
 }
 
 /* ─── Morning Text / Digest Screen ─────────────────────────────────────── */
-function ListsScreen({members}) {
+function ListsScreen({members,topBar}) {
   const PRESET=[
     {id:"grocery",icon:"🛒",name:"Grocery",color:"var(--sage2)",items:[]},
     {id:"todo",icon:"✅",name:"To Do",color:"var(--sage3)",items:[]},
@@ -4581,9 +4581,12 @@ function ListsScreen({members}) {
 
   return (
     <div>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-        <div><h1 style={{fontSize:28,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",lineHeight:1}}>Lists</h1><p style={{fontSize:15,color:"var(--cream3)",marginTop:2}}>Shared with your whole family</p></div>
-        <button onClick={function(){setAddingList(true);}} style={{width:36,height:36,borderRadius:12,background:"var(--sage)",display:"flex",alignItems:"center",justifyContent:"center",border:"none",minHeight:"auto",minWidth:"auto"}}><Plus size={18} color="#fff"/></button>
+      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 20px",borderRadius:"0 0 24px 24px"}}>
+        {topBar}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:10}}>
+          <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>Lists</p>
+          <button onClick={function(){setAddingList(true);}} style={{width:34,height:34,borderRadius:10,background:"rgba(245,240,232,.18)",border:"1px solid rgba(245,240,232,.3)",display:"flex",alignItems:"center",justifyContent:"center",minHeight:"auto",minWidth:"auto"}}><Plus size={16} color="#f5f0e8"/></button>
+        </div>
       </div>
       <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:12,marginBottom:16,scrollbarWidth:"none"}}>
         {lists.map(function(l){
@@ -4732,7 +4735,7 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
   return (
     <div style={{paddingBottom:8}}>
       {/* Hero header — matches mockup */}
-      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"20px 18px 20px",borderRadius:"0 0 24px 24px"}}>
+      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 20px",borderRadius:"0 0 24px 24px"}}>
         {topBar}
         <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>Explore Nearby</p>
       </div>
@@ -4846,9 +4849,8 @@ function Nav({active,setActive,inboxBadge,notifBadge}) {
   var items=[
     {id:"home",  Icon:Home,         label:"Home"},
     {id:"inbox", Icon:Zap,          label:"Catch", badge:inboxBadge},
-    {id:"discover",Icon:Compass,      label:"Discover"},
+    {id:"discover",Icon:Compass,    label:"Discover"},
     {id:"lists", Icon:ShoppingCart, label:"Lists"},
-    {id:"notif", Icon:Bell,         label:"Alerts",badge:notifBadge},
     {id:"more",  Icon:Settings,     label:"More"},
   ];
   return (
@@ -5285,9 +5287,9 @@ export default function App() {
         <Btn onClick={function(){setShowPaywall(true);}}>View Plans</Btn>
       </div>
     ) : <DiscoverScreen members={members} onAdd={addEvent} user={user} topBar={topBarEl}/>;
-    if(tab==="lists")   return <ListsScreen members={members}/>;
+    if(tab==="lists")   return <ListsScreen members={members} topBar={topBarEl}/>;
     if(tab==="members") return <MembersScreen members={members} setMembers={setMembers} events={events}/>;
-    if(tab==="notif")   return <NotifScreen events={events} members={members} onSelectEvent={ev=>{setGlobalSel(ev);setTab("home");}}/>;
+
     if(tab==="more")    return <MoreScreen members={members} setMembers={setMembers} events={events} user={user} paid={paid} trialLeft={trial?trial.left:null} onUpgrade={()=>setShowPaywall(true)} notifSettings={notif} setNotifSettings={setNotif} saveMember={saveMember} deleteMember={deleteMember} toast={toast} familyId={familyId} sendInvite={sendInvite} requestPermission={requestNotificationPermission} onSignOut={()=>{supabase.auth.signOut();setUser(null);setSetupDone(false);setTab("home");setEvents([]);setMembers(M0);setPaid(false);setShowPaywall(false);setFamilyId(null);toast({icon:"👋",title:"Signed out",color:"var(--cream3)"});}} topBar={topBarEl}/>;
   };
 
