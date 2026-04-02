@@ -358,6 +358,37 @@ const Btn = ({children,v="primary",style={},...p}) => {
 };
 
 /* ─── Toast ─────────────────────────────────────────────────────────────── */
+/* ─── PasswordChangeFields ───────────────────────────────────────────────── */
+function PasswordChangeFields({toast}) {
+  var [newPass,setNewPass]=useState("");
+  var [confirmPass,setConfirmPass]=useState("");
+  var [saving,setSaving]=useState(false);
+  var [err,setErr]=useState("");
+  function save(){
+    setErr("");
+    if(newPass.length<8){setErr("Password must be at least 8 characters.");return;}
+    if(newPass!==confirmPass){setErr("Passwords don't match.");return;}
+    setSaving(true);
+    supabase.auth.updateUser({password:newPass}).then(function(res){
+      setSaving(false);
+      if(res.error){setErr("Could not update password. Try again.");}
+      else{toast({icon:"✓",title:"Password updated",color:"var(--sage2)"});setNewPass("");setConfirmPass("");}
+    });
+  }
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:10}}>
+      <div style={{background:"#fff",borderRadius:12,border:"1px solid var(--border2)",padding:"12px 14px",boxShadow:"0 1px 3px rgba(45,60,45,.05)"}}>
+        <input type="password" value={newPass} placeholder="New password (8+ characters)" onChange={function(e){setNewPass(e.target.value);setErr("");}} style={{width:"100%",background:"transparent",border:"none",padding:0,fontSize:15,color:"var(--cream)",fontWeight:500,boxShadow:"none"}}/>
+      </div>
+      <div style={{background:"#fff",borderRadius:12,border:"1px solid var(--border2)",padding:"12px 14px",boxShadow:"0 1px 3px rgba(45,60,45,.05)"}}>
+        <input type="password" value={confirmPass} placeholder="Confirm new password" onChange={function(e){setConfirmPass(e.target.value);setErr("");}} style={{width:"100%",background:"transparent",border:"none",padding:0,fontSize:15,color:"var(--cream)",fontWeight:500,boxShadow:"none"}}/>
+      </div>
+      {err&&<p style={{fontSize:13,color:"var(--rose)",fontWeight:600,paddingLeft:2}}>{err}</p>}
+      {(newPass||confirmPass)&&<button onClick={save} style={{background:"var(--sage)",color:"#fff",border:"none",borderRadius:10,padding:"12px 20px",fontSize:14,fontWeight:700,width:"100%"}}>{saving?"Saving...":"Update Password"}</button>}
+    </div>
+  );
+}
+
 /* ─── AccountField ──────────────────────────────────────────────────────── */
 function AccountField({value,placeholder,type="text",onSave}) {
   const [val,setVal]=useState(value);
@@ -3243,9 +3274,9 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
           </div>
           {m.age&&<p style={{fontSize:15,color:"rgba(245,240,232,.7)",marginTop:2}}>{m.age} years old</p>}
           <div style={{display:"flex",justifyContent:"center",gap:20,marginTop:12}}>
-            <div style={{textAlign:"center"}}><p style={{fontSize:20,fontWeight:800,color:"#f5f0e8"}}>{upcoming.length}</p><p style={{fontSize:13,color:"rgba(245,240,232,.65)"}}>Upcoming</p></div>
-            <div style={{width:1,background:"rgba(245,240,232,.2)"}}/>
-            <div style={{textAlign:"center"}}><p style={{fontSize:20,fontWeight:800,color:"rgba(245,240,232,.7)"}}>{past.length}</p><p style={{fontSize:13,color:"rgba(245,240,232,.5)"}}>Past</p></div>
+            <div style={{textAlign:"center"}}><p style={{fontSize:20,fontWeight:800,color:"var(--cream)"}}>{upcoming.length}</p><p style={{fontSize:13,color:"var(--cream2)"}}>Upcoming</p></div>
+            <div style={{width:1,background:"var(--border2)"}}/>
+            <div style={{textAlign:"center"}}><p style={{fontSize:20,fontWeight:800,color:"var(--cream)"}}>{past.length}</p><p style={{fontSize:13,color:"var(--cream2)"}}>Past</p></div>
           </div>
         </div>
 
@@ -3936,35 +3967,16 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
         }}
       />
 
-      {/* Email */}
+      {/* Email — read only */}
       <p style={{fontSize:12,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em",marginBottom:8,marginTop:20}}>Email Address</p>
-      <AccountField
-        value={user&&user.email||""}
-        placeholder="you@example.com"
-        type="email"
-        onSave={function(val){
-          if(!val.includes("@")) return;
-          supabase.auth.updateUser({email:val.trim()}).then(function(res){
-            if(res.error){toast({icon:"⚠️",title:"Could not update email",color:"var(--rose)"});}
-            else{toast({icon:"✓",title:"Check your new email to confirm",color:"var(--sage2)"});}
-          });
-        }}
-      />
+      <div style={{background:"#fff",borderRadius:12,border:"1px solid var(--border2)",padding:"12px 14px",display:"flex",alignItems:"center",gap:10,boxShadow:"0 1px 3px rgba(45,60,45,.05)",opacity:.75}}>
+        <span style={{flex:1,fontSize:15,color:"var(--cream2)",fontWeight:500}}>{user&&user.email||""}</span>
+        <span style={{fontSize:12,color:"var(--cream3)"}}>Cannot change</span>
+      </div>
 
       {/* Password */}
       <p style={{fontSize:12,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em",marginBottom:8,marginTop:20}}>Change Password</p>
-      <AccountField
-        value=""
-        placeholder="New password (6+ characters)"
-        type="password"
-        onSave={function(val){
-          if(val.length<6){toast({icon:"⚠️",title:"Password must be 6+ characters",color:"var(--rose)"});return;}
-          supabase.auth.updateUser({password:val}).then(function(res){
-            if(res.error){toast({icon:"⚠️",title:"Could not update password",color:"var(--rose)"});}
-            else{toast({icon:"✓",title:"Password updated",color:"var(--sage2)"});}
-          });
-        }}
-      />
+      <PasswordChangeFields toast={toast}/>
 
       <div style={{marginTop:32,padding:"14px 16px",background:"rgba(45,90,61,.05)",borderRadius:12,border:"1px solid rgba(45,90,61,.12)"}}>
         <p style={{fontSize:13,color:"var(--cream3)",lineHeight:1.6}}>Your account is managed securely by Supabase. Changes to email require confirmation from your new address.</p>
