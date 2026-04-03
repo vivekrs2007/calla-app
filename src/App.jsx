@@ -3610,7 +3610,7 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
   // ── Members list ──────────────────────────────────────────────────────────
   return (
     <div>
-      {onBack&&<button onClick={onBack} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",color:"var(--cream2)",fontWeight:600,fontSize:15,marginBottom:12,padding:0}}><ChevronLeft size={15}/>Back</button>}
+      {onBack&&<div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 14px)",marginBottom:4}}><button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--sage)",border:"none",borderRadius:10,color:"#f5f0e8",fontWeight:700,fontSize:14,padding:"9px 16px",boxShadow:"0 2px 8px rgba(26,58,42,.25)"}}><ChevronLeft size={16}/>Back</button></div>}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
         <div><p style={{fontSize:14,color:"var(--cream3)",marginTop:2}}>{members.length} member{members.length===1?"":"s"} · tap to edit profile</p></div>
         <Btn onClick={()=>setShowAdd(true)} style={{display:"flex",alignItems:"center",gap:6,padding:"10px 16px",fontSize:15}}><Plus size={14}/>Add Member</Btn>
@@ -3739,7 +3739,7 @@ function NotifScreen({events,members,onSelectEvent,topBar}) {
     <div className="screen-enter">
       <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
         {topBar}
-        <div style={{marginTop:8}}>
+        <div style={{marginTop:10}}>
           <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>Alerts</p>
           <p style={{fontSize:13,color:"rgba(245,240,232,.55)",marginTop:3,fontFamily:"-apple-system,sans-serif"}}>{up.length} upcoming event{up.length===1?"":"s"}</p>
         </div>
@@ -3799,7 +3799,7 @@ function NotifSettingsScreen({settings,setSettings,members,onBack,requestPermiss
   );
   return (
     <div>
-      <button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,marginBottom:20,padding:"7px 14px"}}><ChevronLeft size={16}/>Back</button>
+      <div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 14px)",marginBottom:4}}><button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--sage)",border:"none",borderRadius:10,color:"#f5f0e8",fontWeight:700,fontSize:14,padding:"9px 16px",boxShadow:"0 2px 8px rgba(26,58,42,.25)"}}><ChevronLeft size={16}/>Back</button></div>
       <div style={{marginBottom:22}}>
         <h2 style={{fontSize:26,fontWeight:700,letterSpacing:"-.3px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)"}}>Notifications</h2>
         <p style={{fontSize:15,color:"var(--cream3)",marginTop:4,fontWeight:300}}>Reminders & quiet hours</p>
@@ -3984,9 +3984,7 @@ function DigestScreen({members, user, onBack, toast}) {
 
   return (
     <div>
-      <button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,marginBottom:20,padding:"7px 14px"}}>
-        <ChevronLeft size={16}/>Back
-      </button>
+      <div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 14px)",marginBottom:4}}><button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--sage)",border:"none",borderRadius:10,color:"#f5f0e8",fontWeight:700,fontSize:14,padding:"9px 16px",boxShadow:"0 2px 8px rgba(26,58,42,.25)"}}><ChevronLeft size={16}/>Back</button></div>
 
       <div style={{marginBottom:22}}>
         <h2 style={{fontSize:26,fontWeight:700,letterSpacing:"-.3px",fontFamily:"\'Playfair Display\',Georgia,serif",color:"var(--cream)"}}>Morning Text</h2>
@@ -4125,7 +4123,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
   const gm=id=>id?members.find(m=>m.id===id)||{name:"Family",color:"var(--cream3)",emoji:"👨‍👩‍👧‍👦"}:{name:"Family",color:"var(--cream3)",emoji:"👨‍👩‍👧‍👦"};
   const ce=events.filter(e=>e.cost&&parseFloat(e.cost)>0);
   const tot=ce.reduce((s,e)=>{const c=parseFloat(e.cost)||0;return s+(e.costType==="monthly"?c:e.costType==="session"?c*4:e.costType==="season"?c/3:c);},0);
-  const Back=()=>(<div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 10px)"}}><button onClick={()=>setSec(null)} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,marginBottom:20,padding:"7px 14px"}}><ChevronLeft size={16}/>Back</button></div>);
+  const Back=()=>(<div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 14px)",marginBottom:4}}><button onClick={()=>setSec(null)} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--sage)",border:"none",borderRadius:10,color:"#f5f0e8",fontWeight:700,fontSize:14,padding:"9px 16px",boxShadow:"0 2px 8px rgba(26,58,42,.25)"}}><ChevronLeft size={16}/>Back</button></div>);
   const SECS=[
     {id:"family",Icon:Users,label:"Family Members",desc:members.length+" members"},
     {id:"digest",Icon:Sun,label:"Morning Text",desc:"Daily SMS with your schedule"},
@@ -4601,7 +4599,7 @@ function ListsScreen({members,topBar}) {
     <div>
       <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
         {topBar}
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:8}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:10}}>
           <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>Lists</p>
           <button onClick={function(){setAddingList(true);}} style={{width:32,height:32,borderRadius:9,background:"rgba(245,240,232,.18)",border:"1px solid rgba(245,240,232,.3)",display:"flex",alignItems:"center",justifyContent:"center",minHeight:"auto",minWidth:"auto"}}><Plus size={15} color="#f5f0e8"/></button>
         </div>
@@ -4759,7 +4757,7 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
       {/* Hero header — matches mockup */}
       <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
         {topBar}
-        <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>Explore Nearby</p>
+        <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px",marginTop:10}}>Explore Nearby</p>
       </div>
       {/* Location bar */}
       <div style={{background:"#fff",borderRadius:16,padding:"14px 16px",marginBottom:14,border:"1px solid rgba(26,46,26,.08)",boxShadow:"0 1px 4px rgba(26,46,26,.06)"}}>
@@ -5383,7 +5381,8 @@ export default function App() {
               </div>
             );
           })()}
-          {screen()}
+          {!showSearch&&screen()}
+          {showSearch&&!searchQuery.trim()&&screen()}
 
         </div>
       </div>
