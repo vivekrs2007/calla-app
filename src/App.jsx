@@ -5301,6 +5301,7 @@ export default function App() {
       <Toasts toasts={toasts}/>
       <div style={{minHeight:"100dvh",paddingBottom:"calc(90px + env(safe-area-inset-bottom,0px))",background:"#f0ebe0"}}>
         <div style={{maxWidth:480,margin:"0 auto",padding:"0 18px 20px"}}>
+          {showSearch&&<div style={{height:56}}/>}
 
           {/* Trial countdown banner */}
           {!paid && trial && trial.left <= 30 && (
@@ -5308,8 +5309,8 @@ export default function App() {
           )}
 
           {showSearch&&(
-            <div style={{marginBottom:12}}>
-              <div style={{display:"flex",alignItems:"center",gap:10,background:"var(--sage)",borderRadius:12,padding:"11px 14px",border:"1px solid rgba(245,240,232,.2)"}}>
+            <div style={{position:"fixed",top:"calc(env(safe-area-inset-top,44px) + 54px)",left:0,right:0,zIndex:400,padding:"0 18px 8px"}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,background:"var(--sage)",borderRadius:12,padding:"11px 14px",border:"1px solid rgba(245,240,232,.25)",boxShadow:"0 4px 24px rgba(0,0,0,.25)"}}>
                 <Search size={15} color="rgba(245,240,232,.7)"/>
                 <input
                   autoFocus
@@ -5332,7 +5333,7 @@ export default function App() {
                   <div style={{textAlign:"center",padding:"24px 0",color:"var(--cream3)",fontSize:15}}>No events found for "{searchQuery}"</div>
                 );
                 return (
-                  <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
+                  <div style={{marginTop:"calc(env(safe-area-inset-top,44px) + 110px)",display:"flex",flexDirection:"column",gap:6,position:"relative",zIndex:401}}>
                     <p style={{fontSize:12,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em",paddingLeft:2}}>{results.length} result{results.length===1?"":"s"}</p>
                     {results.map(function(ev){
                       var m=members.find(function(m){return m.id===ev.memberId;})||{emoji:"👤",color:"var(--cream3)",name:"?"};
@@ -5362,8 +5363,7 @@ export default function App() {
               })()}
             </div>
           )}
-          {!showSearch&&screen()}
-          {showSearch&&screen()}
+          {screen()}
 
         </div>
       </div>
