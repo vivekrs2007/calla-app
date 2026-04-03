@@ -3502,7 +3502,7 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
     const past=me.filter(e=>e.date<todayStr);
     return (
       <div>
-        <button onClick={()=>setProfile(null)} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",color:"var(--cream2)",fontWeight:600,fontSize:15,marginBottom:16,padding:0}}><ChevronLeft size={15}/>Family</button>
+        <div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 14px)",marginBottom:4}}><button onClick={()=>setProfile(null)} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--sage)",border:"none",borderRadius:10,color:"#f5f0e8",fontWeight:700,fontSize:14,padding:"9px 16px",boxShadow:"0 2px 8px rgba(26,58,42,.2)"}}><ChevronLeft size={16}/>Back</button></div>
 
         {/* Profile header */}
         <div style={{background:"linear-gradient(135deg,"+m.color+"18,"+m.color+"06)",border:"1.5px solid "+m.color+"30",borderRadius:20,padding:"24px 20px",marginBottom:20,textAlign:"center",position:"relative"}}>
@@ -3605,7 +3605,7 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
   // ── Members list ──────────────────────────────────────────────────────────
   return (
     <div>
-      {onBack&&<button onClick={onBack} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",color:"var(--cream2)",fontWeight:600,fontSize:15,marginBottom:12,padding:0}}><ChevronLeft size={15}/>Back</button>}
+      {onBack&&<div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 14px)",marginBottom:4}}><button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--sage)",border:"none",borderRadius:10,color:"#f5f0e8",fontWeight:700,fontSize:14,padding:"9px 16px",boxShadow:"0 2px 8px rgba(26,58,42,.2)"}}><ChevronLeft size={16}/>Back</button></div>}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
         <div><p style={{fontSize:14,color:"var(--cream3)",marginTop:2}}>{members.length} member{members.length===1?"":"s"} · tap to edit profile</p></div>
         <Btn onClick={()=>setShowAdd(true)} style={{display:"flex",alignItems:"center",gap:6,padding:"10px 16px",fontSize:15}}><Plus size={14}/>Add Member</Btn>
@@ -3794,7 +3794,7 @@ function NotifSettingsScreen({settings,setSettings,members,onBack,requestPermiss
   );
   return (
     <div>
-      <button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,marginBottom:20,padding:"7px 14px"}}><ChevronLeft size={16}/>Back</button>
+      <div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 14px)",marginBottom:4}}><button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--sage)",border:"none",borderRadius:10,color:"#f5f0e8",fontWeight:700,fontSize:14,padding:"9px 16px",boxShadow:"0 2px 8px rgba(26,58,42,.2)"}}><ChevronLeft size={16}/>Back</button></div>
       <div style={{marginBottom:22}}>
         <h2 style={{fontSize:26,fontWeight:700,letterSpacing:"-.3px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)"}}>Notifications</h2>
         <p style={{fontSize:15,color:"var(--cream3)",marginTop:4,fontWeight:300}}>Reminders & quiet hours</p>
@@ -3979,9 +3979,7 @@ function DigestScreen({members, user, onBack, toast}) {
 
   return (
     <div>
-      <button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,marginBottom:20,padding:"7px 14px"}}>
-        <ChevronLeft size={16}/>Back
-      </button>
+      <div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 14px)",marginBottom:4}}><button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--sage)",border:"none",borderRadius:10,color:"#f5f0e8",fontWeight:700,fontSize:14,padding:"9px 16px",boxShadow:"0 2px 8px rgba(26,58,42,.2)"}}><ChevronLeft size={16}/>Back</button></div>
 
       <div style={{marginBottom:22}}>
         <h2 style={{fontSize:26,fontWeight:700,letterSpacing:"-.3px",fontFamily:"\'Playfair Display\',Georgia,serif",color:"var(--cream)"}}>Morning Text</h2>
@@ -4120,7 +4118,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
   const gm=id=>id?members.find(m=>m.id===id)||{name:"Family",color:"var(--cream3)",emoji:"👨‍👩‍👧‍👦"}:{name:"Family",color:"var(--cream3)",emoji:"👨‍👩‍👧‍👦"};
   const ce=events.filter(e=>e.cost&&parseFloat(e.cost)>0);
   const tot=ce.reduce((s,e)=>{const c=parseFloat(e.cost)||0;return s+(e.costType==="monthly"?c:e.costType==="session"?c*4:e.costType==="season"?c/3:c);},0);
-  const Back=()=>(<div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 10px)"}}><button onClick={()=>setSec(null)} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,marginBottom:20,padding:"7px 14px"}}><ChevronLeft size={16}/>Back</button></div>);
+  const Back=()=>(<div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 14px)",marginBottom:4}}><button onClick={()=>setSec(null)} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--sage)",border:"none",borderRadius:10,color:"#f5f0e8",fontWeight:700,fontSize:14,padding:"9px 16px",boxShadow:"0 2px 8px rgba(26,58,42,.2)"}}><ChevronLeft size={16}/>Back</button></div>);
   const SECS=[
     {id:"family",Icon:Users,label:"Family Members",desc:members.length+" members"},
     {id:"digest",Icon:Sun,label:"Morning Text",desc:"Daily SMS with your schedule"},
@@ -4202,7 +4200,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
   );
   if(sec==="account") return (
     <div>
-      <div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 10px)"}}><button onClick={()=>setSec(null)} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,marginBottom:20,padding:"7px 14px"}}><ChevronLeft size={16}/>Back</button></div>
+      <Back/>
       <h1 style={{fontSize:28,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",marginBottom:6}}>Account</h1>
       <p style={{fontSize:14,color:"var(--cream3)",marginBottom:24}}>Manage your family name, email and password.</p>
 
