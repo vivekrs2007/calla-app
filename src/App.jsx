@@ -4691,7 +4691,7 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
     setError("");
     setResults([]);
     setLastSearch(loc);
-    var prompt = "Search the web for upcoming kids activities, sports registrations, music classes, recreational programs, and community events near "+loc+". Include registration deadlines. Today is "+new Date().toISOString().slice(0,10)+". Return ONLY a JSON array (no markdown) of up to 12 items. Each item must have: title (string), category (one of: Soccer, Basketball, Hockey, Swimming, Music, Art, Dance, Community, Other), date (YYYY-MM-DD or empty string if unknown), deadline (YYYY-MM-DD or empty string), location (string), description (string, max 100 chars), url (string or empty). Only include real, specific, verifiable events.";
+    var prompt = "Find real upcoming kids activities and community events near "+loc+". Today is "+new Date().toISOString().slice(0,10)+". Return ONLY a JSON array (no markdown, no code blocks) of up to 10 items. Each item MUST have: title, category (Soccer/Basketball/Hockey/Swimming/Music/Art/Dance/Community/Other), date (YYYY-MM-DD or empty), deadline (YYYY-MM-DD registration deadline or empty), location (venue name and city), description (max 90 chars, specific details), url (REAL website URL — this is critical, find the actual registration or info page, not a search link). For url: use the actual organization website or registration page. If you cannot find a real URL, use empty string — do NOT guess or make one up.";
     fetch("https://pqvxzsrpifiuovhtxldp.supabase.co/functions/v1/scan-flyer", {
       method:"POST",
       headers:{"Content-Type":"application/json","Authorization":"Bearer "+window.__supabaseAnonKey},
@@ -4855,7 +4855,22 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
       ctx.strokeStyle="rgba(253,224,71,.15)";ctx.lineWidth=1;
       ctx.beginPath();ctx.arc(w/2,h/2,35,0,Math.PI*2);ctx.stroke();
     }
-    var drawFns={"Soccer":drawSoccer,"Basketball":drawBball,"Hockey":drawHockey,"Swimming":drawSwim,"Music":drawMusic,"Art":drawArt,"Dance":drawDance,"Community":drawCommunity};
+    function drawOther(ctx,w,h,t){
+      ctx.fillStyle="#2a1a3a";ctx.fillRect(0,0,w,h);
+      var sg=ctx.createRadialGradient(w/2,h/2,5,w/2,h/2,w*.7);
+      sg.addColorStop(0,"rgba(124,58,237,.4)");sg.addColorStop(1,"rgba(0,0,0,.3)");
+      ctx.fillStyle=sg;ctx.fillRect(0,0,w,h);
+      for(var s=0;s<7;s++){
+        var angle=t*.5+s*(Math.PI*2/7),r=28+Math.sin(t*1.5+s)*8;
+        ctx.beginPath();
+        ctx.arc(w/2+Math.cos(angle)*r,h/2+Math.sin(angle)*r,2.5+Math.sin(t*2+s),0,Math.PI*2);
+        ctx.fillStyle="rgba(196,181,253,"+(Math.sin(t*2+s)*.4+.4)+")";ctx.fill();
+      }
+      var rg=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,20+Math.sin(t*2)*5);
+      rg.addColorStop(0,"rgba(167,139,250,.3)");rg.addColorStop(1,"rgba(0,0,0,0)");
+      ctx.fillStyle=rg;ctx.fillRect(0,0,w,h);
+    }
+    var drawFns={"Soccer":drawSoccer,"Basketball":drawBball,"Hockey":drawHockey,"Swimming":drawSwim,"Music":drawMusic,"Art":drawArt,"Dance":drawDance,"Community":drawCommunity,"Other":drawOther};
     function getOrInit(id,w,h){
       if(!canvases[id]){var el=document.getElementById(id);if(!el)return null;canvases[id]=initCanvas(el,w,h);}return canvases[id];
     }
@@ -4944,11 +4959,12 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
       {filtered.length>0&&(
         <div>
           <p style={{fontSize:16,fontWeight:800,color:"var(--cream)",fontFamily:"'Playfair Display',Georgia,serif",letterSpacing:"-.3px",marginBottom:12}}>Local Activities</p>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          <div style={{display:"flex",flexDirection:"column",gap:14}}>
           {filtered.map(function(item,i){
             var emoji=catEmoji[item.category]||"📅";
-            var hasDeadline=item.deadline&&item.deadline.length>0;
-            var hasDate=item.date&&item.date.length>0;
+            var hasDeadline=item.deadline&&item.deadline.length>4;
+            var hasDate=item.date&&item.date.length>4;
+            var hasUrl=item.url&&item.url.length>6&&item.url.startsWith("http");
             var canId="cvd-"+i;
             var catColors={
               "Soccer":["#0d4a1a","#16a34a"],
@@ -4959,40 +4975,59 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
               "Art":["#065f46","#10b981"],
               "Dance":["#831843","#ec4899"],
               "Community":["#78350f","#f59e0b"],
-              "Other":["#1a2e1a","#4ade80"]
+              "Other":["#2a1a3a","#7c3aed"]
             };
             var colors=catColors[item.category]||catColors["Other"];
+            function fmtDate(d){
+              if(!d||d.length<8) return "";
+              try{
+                var parts=d.split("-");
+                var dt=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+                var months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                return months[dt.getMonth()]+" "+dt.getDate();
+              }catch(e){return d;}
+            }
             return (
-              <div key={i} style={{background:"#fff",borderRadius:16,overflow:"hidden",border:"1px solid rgba(26,46,26,.07)",boxShadow:"0 3px 14px rgba(26,46,26,.1)"}}>
-                <div style={{height:120,background:colors[0],display:"flex",alignItems:"center",justifyContent:"center",fontSize:56,position:"relative",overflow:"hidden"}}>
+              <div key={i} style={{background:"#fff",borderRadius:18,overflow:"hidden",border:"1px solid rgba(26,46,26,.07)",boxShadow:"0 4px 18px rgba(26,46,26,.09)"}}>
+                <div style={{height:160,background:colors[0],display:"flex",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden"}}>
                   <canvas id={canId} style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}}/>
-                  <span style={{position:"relative",zIndex:2,filter:"drop-shadow(0 3px 10px rgba(0,0,0,.4))",fontSize:56}}>{emoji}</span>
-                  {(hasDeadline||hasDate)&&(
-                    <div style={{position:"absolute",bottom:7,left:8,background:"rgba(0,0,0,.45)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",borderRadius:99,padding:"2px 8px",fontSize:10,fontWeight:700,color:"#fff",zIndex:3}}>
-                      {hasDeadline?"⏰ "+item.deadline:item.date}
-                    </div>
-                  )}
-                  <div style={{position:"absolute",top:7,right:7,background:"rgba(255,255,255,.15)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",border:"1px solid rgba(255,255,255,.25)",borderRadius:99,padding:"2px 8px",fontSize:9,fontWeight:800,color:"#fff",letterSpacing:".05em",textTransform:"uppercase",zIndex:3}}>
+                  <span style={{position:"relative",zIndex:2,filter:"drop-shadow(0 4px 14px rgba(0,0,0,.5))",fontSize:72,lineHeight:1}}>{emoji}</span>
+                  <div style={{position:"absolute",top:10,left:10,background:"rgba(255,255,255,.18)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.3)",borderRadius:99,padding:"3px 10px",fontSize:10,fontWeight:800,color:"#fff",letterSpacing:".07em",textTransform:"uppercase",zIndex:3}}>
                     {item.category||"Activity"}
                   </div>
-                </div>
-                <div style={{padding:"10px 12px 12px",background:"#fff"}}>
-                  <p style={{fontWeight:800,fontSize:13,color:"#1a2e1a",lineHeight:1.3,marginBottom:3,fontFamily:"'Playfair Display',Georgia,serif",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.title}</p>
-                  {item.location&&<p style={{fontSize:11,color:"#8a9a8a",marginBottom:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:3}}><MapPin size={10} color="#8a9a8a"/>{item.location}</p>}
-                  <div style={{display:"flex",gap:7,alignItems:"center"}}>
-                    <button onClick={function(){addToCalendar(item);}} style={{flex:1,background:"#1a3a2a",color:"#f5f0e8",border:"none",borderRadius:10,padding:"9px 0",fontWeight:700,fontSize:12,fontFamily:"-apple-system,sans-serif",cursor:"pointer"}}>
-                      + Save to Calendar
-                    </button>
-                    {item.url&&item.url.length>2&&(
-                      <button onClick={function(){if(window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Browser){window.Capacitor.Plugins.Browser.open({url:item.url});}else{window.open(item.url,"_blank");}}} style={{width:36,height:36,background:"#f0ebe0",border:"2px solid #1a3a2a",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,cursor:"pointer"}}>
-                        <ExternalLink size={14} color="#1a3a2a"/>
-                      </button>
+                  <div style={{position:"absolute",bottom:10,left:10,right:10,display:"flex",gap:6,flexWrap:"wrap",zIndex:3}}>
+                    {hasDate&&(
+                      <div style={{background:"rgba(0,0,0,.5)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",borderRadius:99,padding:"3px 10px",fontSize:11,fontWeight:700,color:"#fff",display:"flex",alignItems:"center",gap:4}}>
+                        <span>📅</span>{fmtDate(item.date)}
+                      </div>
+                    )}
+                    {hasDeadline&&(
+                      <div style={{background:"rgba(200,50,20,.7)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",borderRadius:99,padding:"3px 10px",fontSize:11,fontWeight:700,color:"#fff",display:"flex",alignItems:"center",gap:4}}>
+                        <span>⏰</span>Deadline {fmtDate(item.deadline)}
+                      </div>
                     )}
                   </div>
+                </div>
+                <div style={{padding:"13px 14px 14px",background:"#fff"}}>
+                  <p style={{fontWeight:800,fontSize:15,color:"#1a2e1a",lineHeight:1.3,marginBottom:4,fontFamily:"'Playfair Display',Georgia,serif"}}>{item.title}</p>
+                  {item.location&&<p style={{fontSize:12,color:"#8a9a8a",marginBottom:4,display:"flex",alignItems:"center",gap:4}}><MapPin size={11} color="#8a9a8a"/>{item.location}</p>}
+                  {item.description&&<p style={{fontSize:12,color:"#6a7a6a",marginBottom:12,lineHeight:1.45}}>{item.description}</p>}
+                  <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                    <button onClick={function(){addToCalendar(item);}} style={{flex:1,background:"#1a3a2a",color:"#f5f0e8",border:"none",borderRadius:11,padding:"11px 0",fontWeight:700,fontSize:13,fontFamily:"-apple-system,sans-serif",cursor:"pointer",letterSpacing:".01em"}}>
+                      + Save to Calendar
+                    </button>
+                    <button
+                      onClick={function(){if(!hasUrl)return;if(window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Browser){window.Capacitor.Plugins.Browser.open({url:item.url});}else{window.open(item.url,"_blank");}}}
+                      style={{width:42,height:42,background:hasUrl?"#f0ebe0":"rgba(180,180,180,.15)",border:"2px solid "+(hasUrl?"#1a3a2a":"rgba(180,180,180,.3)"),borderRadius:11,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,cursor:hasUrl?"pointer":"default",opacity:hasUrl?1:0.4}}>
+                      <ExternalLink size={15} color={hasUrl?"#1a3a2a":"#aaa"}/>
+                    </button>
+                  </div>
+                  {!hasUrl&&<p style={{fontSize:10,color:"#aaa",marginTop:5,textAlign:"center"}}>No website available for this activity</p>}
                 </div>
               </div>
             );
           })}
+
           </div>
           <button onClick={function(){search(city,hood);}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,background:"var(--ink2)",border:"1px solid var(--border2)",borderRadius:10,padding:"10px 0",fontWeight:600,fontSize:14,color:"var(--cream3)",width:"100%",marginTop:12}}>
             <Compass size={14}/>Refresh results
