@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, Fragment } from "react";
-import { supabase } from "./supabase.js";
+import { supabase, SUPABASE_KEY } from "./supabase.js";
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken } from "firebase/messaging";
 
@@ -177,12 +177,12 @@ const GS = () => (
     /* Smooth tap highlight removal on mobile */
     *{-webkit-tap-highlight-color:transparent}
     /* ── Animations ── */
-    @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
-    @keyframes slideDown{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+    @keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:none;opacity:1}}
+    @keyframes slideDown{from{transform:translateY(-100%);opacity:0}to{transform:none;opacity:1}}
     .sheet-top{animation:slideDown .38s cubic-bezier(.32,1,.4,1) forwards}
     @keyframes backdropIn{from{opacity:0}to{opacity:1}}
-    @keyframes screenEnter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes screenEnter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
     @keyframes toastIn{from{opacity:0;transform:translateY(-10px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
     @keyframes cellPulse{0%{transform:scale(1)}40%{transform:scale(.88)}100%{transform:scale(1)}}
     @keyframes checkOff{from{opacity:1}50%{opacity:.5;transform:translateX(3px)}to{opacity:.45}}
@@ -248,11 +248,12 @@ const GS = () => (
 );
 
 /* ─── Helpers ───────────────────────────────────────────────────────────── */
-const todayStr = new Date().toISOString().split("T")[0];
+const toDateStr = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const todayStr = toDateStr(new Date());
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const WDAYS  = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-const fd = s => { const d = new Date(s); return MONTHS[d.getMonth()] + " " + d.getDate(); };
-const addDays = (s,n) => { const d = new Date(s); d.setDate(d.getDate()+n); return d.toISOString().split("T")[0]; };
+const fd = s => { const d = new Date(s+"T12:00:00"); return MONTHS[d.getMonth()]+" "+d.getDate(); };
+const addDays = (s,n) => { const d = new Date(s+"T12:00:00"); d.setDate(d.getDate()+n); return toDateStr(d); };
 const genId = () => Math.random().toString(36).slice(2,9);
 
 /* ─── Smart time default ───────────────────────────────────────────────── */
@@ -307,14 +308,6 @@ const M0 = [
   {id:"m2",name:"Dad", color:"#3d7a52",emoji:"👨"},
   {id:"m3",name:"Emma",color:"#7C3AED",emoji:"👧"},
   {id:"m4",name:"Liam",color:"#a07820",emoji:"👦"},
-];
-const E0 = [
-  {id:"e1",title:"Soccer Practice",memberId:"m3",date:todayStr,            time:"15:00",location:"Riverside Field",color:"#7C3AED",recurring:false},
-  {id:"e2",title:"Piano Lesson",   memberId:"m4",date:todayStr,            time:"15:20",location:"Music Academy",  color:"var(--gold2)",recurring:false},
-  {id:"e3",title:"Team Meeting",   memberId:"m1",date:addDays(todayStr,1), time:"09:00",location:"Office",         color:"var(--sage3)",recurring:false},
-  {id:"e4",title:"Dentist",        memberId:"m2",date:addDays(todayStr,2), time:"11:00",location:"Smile Clinic",   color:"var(--sage2)",recurring:false},
-  {id:"e5",title:"Ballet Class",   memberId:"m3",date:addDays(todayStr,3), time:"14:00",location:"Dance Studio",   color:"#7C3AED",recurring:true},
-  {id:"e6",title:"Grocery Run",    memberId:"m1",date:addDays(todayStr,4), time:"10:00",location:"Whole Foods",    color:"var(--sage3)",recurring:false},
 ];
 const COLORS = ["var(--sage2)","var(--sage2)","#7C3AED","#D97706","#DC2626","#0891B2"];
 const EMOJIS = ["👩‍🦰","👨‍💼","👧🏼","🧒🏽","👩🏽","👨🏿","👧🏻","🧒🏾","👩‍🍼","🧔","👩🏾‍💼","👨‍🍳"];
@@ -601,7 +594,7 @@ function PasswordChangeFields({toast}) {
       setSaving(false);
       if(res.error){setErr("Could not update password. Try again.");}
       else{toast({icon:"✓",title:"Password updated",color:"var(--sage2)"});setNewPass("");setConfirmPass("");}
-    });
+    }).catch(function(){setSaving(false);setErr("Network error. Please try again.");});
   }
   return (
     <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -738,7 +731,7 @@ function Auth({onLogin}) {
         supabase.from("profiles").upsert({id:u.id,name:name.trim(),family_name:family.trim(),setup_done:false,trial_start:new Date().toISOString(),paid:false}).then(function(){
           onLogin({id:u.id,name:name.trim()||"Parent",family:family.trim()||"My Family",email:email.trim()});
         });
-      });
+      }).catch(function(){setLoading(false);setAuthError("Network error. Please check your connection and try again.");});
     } else {
       supabase.auth.signInWithPassword({email:email.trim().toLowerCase(),password:pass}).then(function(res){
         setLoading(false);
@@ -747,7 +740,7 @@ function Auth({onLogin}) {
         var meta=u.user_metadata||{};
         localStorage.setItem("calla_setup_"+u.id,"true");
         onLogin({id:u.id,name:meta.name||"Parent",family:meta.family_name||"My Family",email:u.email});
-      });
+      }).catch(function(){setLoading(false);setAuthError("Network error. Please check your connection and try again.");});
     }
   };
   const cur=ONBOARD_SLIDES[slide];
@@ -1061,7 +1054,7 @@ function Auth({onLogin}) {
                 : <>{mode==="signup"?"Let's get started →":"Sign In →"}</>
               }
             </Btn>
-            {authError&&<div style={{background:"rgba(168,56,56,.08)",border:"1px solid rgba(168,56,56,.2)",borderRadius:10,padding:"10px 14px",marginTop:8,fontSize:14,color:"var(--rose)",textAlign:"center"}}>{authError}</div>}
+            {authError&&<div style={{background:authError.startsWith("✓")?"rgba(45,90,61,.08)":"rgba(168,56,56,.08)",border:"1px solid "+(authError.startsWith("✓")?"rgba(45,90,61,.25)":"rgba(168,56,56,.2)"),borderRadius:10,padding:"10px 14px",marginTop:8,fontSize:14,color:authError.startsWith("✓")?"var(--sage2)":"var(--rose)",textAlign:"center"}}>{authError}</div>}
           </div>
 
           {/* Privacy micro-copy — signup only. Forgot password — login only */}
@@ -1074,7 +1067,7 @@ function Auth({onLogin}) {
                 <p style={{fontSize:13,color:"var(--cream3)",textAlign:"center"}}>No credit card required · No ads · Your data is private</p>
               </div>
             )}
-            {mode==="login"&&<button type="button" onClick={function(){if(!email.trim()){setAuthError("Enter your email above first.");return;}setLoading(true);supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(),{redirectTo:window.location.origin}).then(function(res){setLoading(false);if(res.error){setAuthError("Could not send reset email. Please try again.");}else{setAuthError("");alert("Password reset email sent! Check your inbox.");}});}} style={{background:"none",border:"none",color:"var(--sage3)",fontSize:14,fontWeight:600,cursor:"pointer"}}>Forgot password?</button>}
+            {mode==="login"&&<button type="button" onClick={function(){if(!email.trim()){setAuthError("Enter your email above first.");return;}setLoading(true);supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(),{redirectTo:window.location.origin}).then(function(res){setLoading(false);if(res.error){setAuthError("Could not send reset email. Please try again.");}else{setAuthError("✓ Password reset email sent! Check your inbox.");}});}} style={{background:"none",border:"none",color:"var(--sage3)",fontSize:14,fontWeight:600,cursor:"pointer"}}>Forgot password?</button>}
           </div>
         </Card>
 
@@ -1508,13 +1501,11 @@ const ShareSheet = ({ev,onClose}) => {
 };
 
 /* ─── Event Sheet ───────────────────────────────────────────────────────── */
-const EVENT_COMMENTS = {};
-
 function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
   useScrollLock(true);
   const [confirmDelete,setConfirmDelete]=useState(false);
   const [packed,setPacked]     = useState({});
-  const [comments,setComments] = useState(EVENT_COMMENTS[ev.id]||[]);
+  const [comments,setComments] = useState([]);
   const [commentText,setCommentText] = useState("");
   const [showComments,setShowComments] = useState(true);
   const [showMentionPicker,setShowMentionPicker] = useState(false);
@@ -1525,6 +1516,20 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
   const dragStartY = useRef(null);
   const dragCurrentY = useRef(null);
   const m=members.find(x=>x.id===ev.memberId)||{emoji:"👤",color:"var(--cream3)",name:"?"};
+
+  // ── Load comments from Supabase ──────────────────────────────────────────
+  useEffect(function(){
+    supabase.from("event_comments").select("*").eq("event_id",ev.id).order("created_at",{ascending:true}).then(function(res){
+      if(res.data&&res.data.length>0){
+        setComments(res.data.map(function(c){return{
+          id:c.id,text:c.text,author:c.author_name,authorEmoji:"👤",
+          time:new Date(c.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}),
+          date:new Date(c.created_at).toLocaleDateString([],{month:"short",day:"numeric"}),
+          taggedIds:c.tagged_ids||[],
+        };}));
+      }
+    }).catch(function(){});
+  },[ev.id]);
 
   // ── Swipe-down-to-dismiss ────────────────────────────────────────────────
   var handleTouchStart = function(e) {
@@ -1595,11 +1600,17 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
       date:new Date().toLocaleDateString([],{month:"short",day:"numeric"}),
       taggedIds:tagged.map(t=>t.id),
     };
-    const updated=[...comments,newComment];
-    EVENT_COMMENTS[ev.id]=updated;
-    setComments(updated);
+    setComments(function(p){return[...p,newComment];});
     setCommentText("");
     setShowMentionPicker(false);
+    supabase.from("event_comments").insert({
+      id:newComment.id,event_id:ev.id,user_id:(user&&user.id)||null,
+      author_name:newComment.author,text:newComment.text,tagged_ids:newComment.taggedIds,
+    }).then(function(res){
+      if(res.error) setComments(function(p){return p.filter(function(c){return c.id!==newComment.id;});});
+    }).catch(function(){
+      setComments(function(p){return p.filter(function(c){return c.id!==newComment.id;});});
+    });
     if(tagged.length>0&&onTagNotify) tagged.forEach(tm=>onTagNotify({member:tm,event:ev,comment:newComment,author:(user&&user.name)||"You"}));
   };
 
@@ -1654,7 +1665,7 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
         </div>
 
         {/* ── Scrollable content ── */}
-        <div style={{flex:1,minHeight:0,overflowY:"scroll",WebkitOverflowScrolling:"touch",overscrollBehavior:"contain",padding:"16px 20px"}}>
+        <div style={{flex:1,minHeight:0,overflowY:"scroll",WebkitOverflowScrolling:"touch",overscrollBehavior:"contain",padding:"16px 20px calc(env(safe-area-inset-bottom,0px) + 100px) 20px"}}>
 
           {/* Details */}
           <div style={{display:"flex",flexDirection:"column",gap:2,marginBottom:16}}>
@@ -2068,7 +2079,7 @@ function VoiceSheet({members,onAdd,onClose}) {
     const r=new SR();r.continuous=false;r.interimResults=true;r.lang="en-US";rec.current=r;
     r.onresult=e=>{const t=Array.from(e.results).map(x=>x[0].transcript).join("");setTranscript(t);r._last=t;};
     r.addEventListener("end",()=>{const f=r._last||"";if(!f.trim()){setStage("error");return;}setStage("processing");setTimeout(()=>{setParsed(parse(f));setStage("preview");},600);});
-    r.onerror=()=>setStage("error");r.start();
+    r.onerror=e=>{if(e.error==="not-allowed"||e.error==="permission-denied"){setStage("micdenied");}else{setStage("error");}};r.start();
   };
 
   const confirm=()=>{
@@ -2160,12 +2171,20 @@ function VoiceSheet({members,onAdd,onClose}) {
             <p style={{fontWeight:800,fontSize:18,color:"var(--sage2)"}}>Added!</p>
           </div>
         )}
-        {(stage==="error"||stage==="nosupport")&&(
+        {(stage==="error"||stage==="nosupport"||stage==="micdenied")&&(
           <div style={{textAlign:"center",padding:"20px 0"}}>
             <MicOff size={38} color="#DC2626" style={{margin:"0 auto 14px"}}/>
-            <p style={{fontWeight:700,fontSize:16,marginBottom:8}}>{stage==="nosupport"?"Voice not supported":"Didn't catch that"}</p>
-            <p style={{color:"var(--cream3)",fontSize:15,marginBottom:22}}>{stage==="nosupport"?"Voice works on Safari (iPhone) or Chrome (Android). On desktop, use Add Event instead.":"Speak clearly with event name, time and date."}</p>
-            <Btn onClick={()=>setStage("ready")} style={{margin:"0 auto",display:"flex",alignItems:"center",gap:8}}>Try Again</Btn>
+            <p style={{fontWeight:700,fontSize:16,marginBottom:8}}>
+              {stage==="nosupport"?"Voice not supported":stage==="micdenied"?"Microphone blocked":"Didn't catch that"}
+            </p>
+            <p style={{color:"var(--cream3)",fontSize:15,marginBottom:22}}>
+              {stage==="nosupport"
+                ?"Voice works on Safari (iPhone) or Chrome (Android). Use Add Event to add manually."
+                :stage==="micdenied"
+                ?"Calla needs microphone access. Go to your browser or phone Settings → Calla → Microphone and allow access, then try again."
+                :"Speak clearly and include the event name, time, and date."}
+            </p>
+            {stage!=="micdenied"&&<Btn onClick={()=>setStage("ready")} style={{margin:"0 auto",display:"flex",alignItems:"center",gap:8}}>Try Again</Btn>}
           </div>
         )}
       </div>
@@ -2228,7 +2247,7 @@ function DaySheet({date,events,members,onClose,onSelect}) {
 }
 
 /* ─── Dashboard ─────────────────────────────────────────────────────────── */
-function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,initialSel,onClearSel,onShowAdd,onShowVoice,onSelectEv,trialExpired,onUpgrade,topBar,selectedMemberId}) {
+function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,initialSel,onClearSel,onShowAdd,onShowVoice,onSelectEv,trialExpired,onUpgrade,topBar,selectedMemberId,familyName}) {
   const [anchor,setAnchor]=useState(todayStr);
   const [showAdd,setShowAdd]=useState(false);
   const [showVoice,setShowVoice]=useState(false);
@@ -2237,7 +2256,10 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
   const [dayView,setDayView]=useState(null);
   const [calView,setCalView]=useState("month");
   const [selMember,setSelMember]=useState(null);
-  useEffect(()=>{if(initialSel){setSel(initialSel);if(onClearSel)onClearSel();}},[]); 
+  // Route all event opens through App-level onSelectEv so EventSheet renders
+  // outside animated containers and stays truly viewport-anchored.
+  const openEv=function(ev){if(onSelectEv)onSelectEv(ev);else setSel(ev);};
+  useEffect(()=>{if(initialSel){openEv(initialSel);if(onClearSel)onClearSel();}},[]);
   const filteredEvents=selMember?events.filter(function(e){return e.memberId===selMember;}):events;
   const week=getWeek(anchor),cfls=conflicts(filteredEvents);
   const gm=id=>members.find(m=>m.id===id)||{emoji:"👤",color:"var(--cream3)"};
@@ -2274,7 +2296,7 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
       <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
         {topBar}
         <p style={{fontSize:11,fontWeight:600,color:"rgba(245,240,232,.45)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:4,fontFamily:"-apple-system,sans-serif"}}>{dashDay}</p>
-        <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px",marginBottom:12}}>{dashGreet},<br/><em style={{fontStyle:"italic",color:"#c9a84c"}}>Belkuni Family.</em></p>
+        <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px",marginBottom:12}}>{dashGreet},<br/><em style={{fontStyle:"italic",color:"#c9a84c"}}>{familyName||"My Family"}.</em></p>
         <div style={{display:"flex",gap:10,justifyContent:"center"}}>
           <button onClick={function(){if(trialExpired){onUpgrade&&onUpgrade();return;}onShowAdd();}}
             style={{background:"#f5f0e8",color:"var(--sage)",border:"none",borderRadius:100,padding:"11px 24px",fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:7,fontFamily:"-apple-system,sans-serif"}}>
@@ -2295,8 +2317,8 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
               <button onClick={function(){setSelMember(null);}} style={{background:"none",border:"none",color:"var(--cream3)",fontSize:12,cursor:"pointer",padding:0}}>Show all</button>
             </div>
           )}
-      <Briefing events={filteredEvents} members={members} onSelect={function(ev){setSel(ev);}} selMember={selMember}/>
-      <ConflictBanner items={cfls} members={members} onSelect={function(ev){if(onSelectEv)onSelectEv(ev);else setSel(ev);}}/>
+      <Briefing events={filteredEvents} members={members} onSelect={openEv} selMember={selMember}/>
+      <ConflictBanner items={cfls} members={members} onSelect={openEv}/>
 
       {/* ── Calendar header ── */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
@@ -2423,7 +2445,7 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
                       <p style={{fontSize:11,fontWeight:isT?700:400,color:isT?"#fff":isWeekend?"var(--cream3)":"var(--cream2)",textAlign:"center",lineHeight:1.2,marginBottom:2}}>{d.getDate()}</p>
                       <div style={{display:"flex",flexDirection:"column",gap:1}}>
                         {dayEvs.slice(0,1).map(function(ev){return(
-                          <div key={ev.id} onClick={function(e){e.stopPropagation();setSel(ev);}}
+                          <div key={ev.id} onClick={function(e){e.stopPropagation();openEv(ev);}}
                             style={{background:ev.color,borderRadius:2,padding:"1px 3px",overflow:"hidden"}}>
                             <p style={{fontSize:10,fontWeight:700,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",lineHeight:1.4}}>{ev.title}</p>
                           </div>
@@ -2479,7 +2501,7 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
       {showAdd&&<AddSheet members={members} events={events} onAdd={function(ev){onAdd(ev);setShowAdd(false);}} onClose={function(){setShowAdd(false);}}/>}
       {showVoice&&<VoiceSheet members={members} onAdd={function(ev){onAdd(ev);}} onClose={function(){setShowVoice(false);}}/>}
       {sel&&<EventSheet ev={sel} members={members} onClose={function(){setSel(null);}} onDelete={function(id){onDelete(id);setSel(null);}}/>}
-      {dayView&&<DaySheet date={dayView} events={events} members={members} onClose={function(){setDayView(null);}} onSelect={function(ev){setSel(ev);}}/>}
+      {dayView&&<DaySheet date={dayView} events={events} members={members} onClose={function(){setDayView(null);}} onSelect={function(ev){setDayView(null);openEv(ev);}}/>}
     </div>
   );
 }
@@ -2489,7 +2511,7 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
 
 /* ─── Flyer Scanner ─────────────────────────────────────────────────────── */
 function FlyerScanner({members, onAdd}) {
-  var [scanStage, setScanStage]         = useState("idle");      // idle | loading | review | done | error
+  var [scanStage, setScanStage]         = useState("idle");      // idle | loading | review | done | error | pdfhint
   var [previewSrc, setPreviewSrc]       = useState(null);
   var [fileName, setFileName]           = useState("");
   var [extractedEvs, setExtractedEvs]   = useState([]);
@@ -2512,6 +2534,8 @@ function FlyerScanner({members, onAdd}) {
   function stopStepAnim() {
     if (stepTimerRef.current) clearInterval(stepTimerRef.current);
   }
+
+  useEffect(function(){return function(){stopStepAnim();};},[]);
 
   // ── File pick ─────────────────────────────────────────────────────────────
   function handleFilePick(e) {
@@ -2540,8 +2564,8 @@ function FlyerScanner({members, onAdd}) {
     if (!file) return;
 
     if (file.type === "application/pdf") {
-      setErrorMsg("PDF upload: take a screenshot of the PDF and upload that image instead — works perfectly!");
-      setScanStage("error");
+      setErrorMsg("PDFs can't be scanned directly. Take a screenshot of the flyer page and upload that image — it works great!");
+      setScanStage("pdfhint");
       return;
     }
 
@@ -2576,7 +2600,7 @@ function FlyerScanner({members, onAdd}) {
   function callClaude(base64, mediaType) {
     fetch("https://pqvxzsrpifiuovhtxldp.supabase.co/functions/v1/scan-flyer", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer "+window.__supabaseAnonKey },
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer "+SUPABASE_KEY },
       body: JSON.stringify({ image: base64, mediaType: mediaType })
     }).then(function(res) {
       return res.json();
@@ -2733,6 +2757,23 @@ function FlyerScanner({members, onAdd}) {
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* ── PDF HINT ── */}
+      {(scanStage === "pdfhint") && (
+        <div>
+          <div style={{background:"rgba(212,129,58,.08)",border:"1px solid rgba(212,129,58,.25)",borderRadius:14,padding:"16px",marginBottom:14,display:"flex",gap:12,alignItems:"flex-start"}}>
+            <span style={{fontSize:20,flexShrink:0}}>📸</span>
+            <div>
+              <p style={{fontWeight:700,fontSize:14,color:"var(--gold2)",marginBottom:3}}>Screenshot the PDF instead</p>
+              <p style={{fontSize:13,color:"var(--gold2)",lineHeight:1.6}}>{errorMsg}</p>
+            </div>
+          </div>
+          <button onClick={resetScanner}
+            style={{width:"100%",background:"var(--sage)",border:"none",borderRadius:14,padding:"14px",fontFamily:"'DM Sans','Helvetica Neue',sans-serif",fontSize:15,fontWeight:700,color:"#fff",cursor:"pointer"}}>
+            Upload a screenshot
+          </button>
         </div>
       )}
 
@@ -3242,6 +3283,7 @@ function InboxScreen({members,onAdd,user,topBar}) {
       {/* Hero header — matches mockup */}
       <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
         {topBar}
+        <p style={{fontSize:11,fontWeight:600,color:"rgba(245,240,232,.45)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:4,fontFamily:"-apple-system,sans-serif"}}>Smart Inbox</p>
         <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.2,letterSpacing:"-.4px",marginBottom:14,textAlign:"center"}}>Calla Remembers<br/>Everything.</p>
         <div style={{display:"flex",gap:8,justifyContent:"center"}}>
           <button onClick={function(){setTab("email");}} style={{background:tab==="email"?"#f5f0e8":"transparent",color:tab==="email"?"var(--sage)":"#f5f0e8",border:"1.5px solid rgba(245,240,232,.7)",borderRadius:100,padding:"8px 18px",fontSize:13,fontWeight:700,fontFamily:"-apple-system,sans-serif"}}>Email Inbox</button>
@@ -3270,11 +3312,16 @@ function InboxScreen({members,onAdd,user,topBar}) {
         <>
           <Card style={{marginBottom:14,background:"rgba(59,130,246,.08)",borderColor:"#BFDBFE"}}>
             <p style={{fontSize:15,fontWeight:700,color:"var(--sage3)",marginBottom:6}}>Your private catch address</p>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-              <code style={{flex:1,fontSize:15,fontWeight:700,color:"var(--sage2)",background:"var(--ink2)",border:"1px solid rgba(59,130,246,.25)",borderRadius:8,padding:"9px 12px"}}>family@getcalla.ca</code>
-              <button onClick={()=>navigator.clipboard&&navigator.clipboard.writeText("family@getcalla.ca")} style={{background:"var(--sage2)",color:"var(--cream)",border:"none",borderRadius:8,padding:"9px 14px",display:"flex",alignItems:"center",gap:5,fontSize:15,fontWeight:700,flexShrink:0}}><Copy size={13}/>Copy</button>
-            </div>
-            <p style={{fontSize:15,color:"var(--sage3)"}}>Forward any email here, or ask your coach/instructor to CC this address when they email parents.</p>
+            {(function(){
+              var addr=(user&&user.id?(user.id.replace(/-/g,"").slice(0,10)):"family")+"@getcalla.ca";
+              return (
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                  <code style={{flex:1,fontSize:14,fontWeight:700,color:"var(--sage2)",background:"var(--ink2)",border:"1px solid rgba(59,130,246,.25)",borderRadius:8,padding:"9px 12px",wordBreak:"break-all"}}>{addr}</code>
+                  <button onClick={()=>navigator.clipboard&&navigator.clipboard.writeText(addr)} style={{background:"var(--sage2)",color:"var(--cream)",border:"none",borderRadius:8,padding:"9px 14px",display:"flex",alignItems:"center",gap:5,fontSize:15,fontWeight:700,flexShrink:0}}><Copy size={13}/>Copy</button>
+                </div>
+              );
+            })()}
+            <p style={{fontSize:15,color:"var(--sage3)"}}>Forward any school or coach email to this address, or CC it when signing up for activities.</p>
           </Card>
 
           <div style={{position:"relative",marginBottom:10}}>
@@ -3468,6 +3515,7 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
   const [inviting,setInviting]=useState(false);
   const [inviteError,setInviteError]=useState("");
   const [showPartner,setShowPartner]=useState(true);
+  const [photoError,setPhotoError]=useState("");
   const photoRef=useRef();
   const profilePhotoRef=useRef();
 
@@ -3486,7 +3534,7 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
   };
 
   const uploadPhoto=(id,file)=>{
-    if(file.size>5*1024*1024){alert("Photo must be under 5MB. Please choose a smaller image.");return;}
+    if(file.size>5*1024*1024){setPhotoError("Photo must be under 5MB. Please choose a smaller image.");setTimeout(function(){setPhotoError("");},3500);return;}
     const reader=new FileReader();
     reader.onload=function(){
       updateMember(id,{photo:reader.result});
@@ -3510,11 +3558,12 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
             <div style={{width:88,height:88,borderRadius:"50%",background:m.color+"20",border:"3px solid "+m.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:40,overflow:"hidden",margin:"0 auto"}}>
               {m.photo?<img src={m.photo} style={{width:"100%",height:"100%",objectFit:"cover"}} alt={m.name}/>:m.emoji}
             </div>
-            <button onClick={function(){alert("Photo upload will be available in the next update.");}} style={{position:"absolute",bottom:0,right:0,width:28,height:28,borderRadius:"50%",background:m.color,border:"2px solid #fff",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>
+            <button onClick={function(){profilePhotoRef.current&&profilePhotoRef.current.click();}} style={{position:"absolute",bottom:0,right:0,width:28,height:28,borderRadius:"50%",background:m.color,border:"2px solid #fff",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>
               <span style={{fontSize:15,color:"var(--cream)"}}>📷</span>
             </button>
             <input ref={profilePhotoRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>{if(e.target.files[0])uploadPhoto(m.id,e.target.files[0]);}}/>
           </div>
+          {photoError&&<p style={{fontSize:13,color:"var(--rose)",textAlign:"center",marginBottom:4,fontWeight:500}}>{photoError}</p>}
           <p style={{fontSize:22,fontWeight:800,letterSpacing:"-.3px",color:"var(--cream)"}}>{m.name}</p>
           <div style={{display:"inline-flex",alignItems:"center",gap:4,background:"rgba(0,0,0,.08)",borderRadius:99,padding:"3px 10px",marginTop:6,border:"1px solid rgba(0,0,0,.1)"}}>
             <span style={{fontSize:10}}>✏️</span>
@@ -3589,15 +3638,18 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
         )}
 
         {/* Remove member */}
-        <button onClick={function(){
-          if(members.length<=1){alert("You need at least one family member.");return;}
-          if(window.confirm("Remove "+m.name+" from your family?\n\nWarning: This will remove them from your calendar. Their existing events will remain but will show no family member.\n\nThis cannot be undone.")){
-            if(deleteMember){deleteMember(m.id);}else{setMembers(function(p){return p.filter(function(x){return x.id!==m.id;});});}
-            setProfile(null);
-          }
-        }} style={{width:"100%",background:"rgba(168,56,56,.06)",border:"1.5px solid "+(members.length<=1?"var(--border)":"rgba(168,56,56,.25)"),borderRadius:12,padding:12,color:members.length<=1?"var(--cream3)":"var(--rose)",fontWeight:600,fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+        <button
+          disabled={members.length<=1}
+          onClick={function(){
+            if(window.confirm("Remove "+m.name+" from your family?\n\nWarning: This will remove them from your calendar. Their existing events will remain but will show no family member.\n\nThis cannot be undone.")){
+              if(deleteMember){deleteMember(m.id);}else{setMembers(function(p){return p.filter(function(x){return x.id!==m.id;});});}
+              setProfile(null);
+            }
+          }}
+          style={{width:"100%",background:"rgba(168,56,56,.06)",border:"1.5px solid "+(members.length<=1?"var(--border)":"rgba(168,56,56,.25)"),borderRadius:12,padding:12,color:members.length<=1?"var(--cream3)":"var(--rose)",fontWeight:600,fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",gap:8,opacity:members.length<=1?0.45:1,cursor:members.length<=1?"not-allowed":"pointer"}}>
           <X size={14}/>Remove {m.name} from family
         </button>
+        {members.length<=1&&<p style={{fontSize:13,color:"var(--cream3)",textAlign:"center",marginTop:6}}>You need at least one family member.</p>}
       </div>
     );
   }
@@ -3806,14 +3858,8 @@ function NotifSettingsScreen({settings,setSettings,members,onBack,requestPermiss
         <Row label="Push Notifications" desc="Enable alerts on this device" right={<Toggle on={settings.enabled} onChange={function(){
           if(!settings.enabled){
             // Turning ON — check current permission state first
-            if(!("Notification" in window)){
-              alert("Push notifications are not supported on this browser.");
-              return;
-            }
-            if(Notification.permission==="denied"){
-              alert("Notifications are blocked. To enable:\n\n1. Click the lock icon in your browser address bar\n2. Set Notifications to Allow\n3. Refresh the page");
-              return;
-            }
+            if(!("Notification" in window)) return;
+            if(Notification.permission==="denied") return;
             if(requestPermission) requestPermission();
           }
           setSettings(function(p){
@@ -4110,7 +4156,7 @@ function DigestScreen({members, user, onBack, toast}) {
   );
 }
 
-function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onSignOut,notifSettings,setNotifSettings,saveMember,deleteMember,toast,familyId,sendInvite,requestPermission,topBar}) {
+function MoreScreen({members,setMembers,events,user,setUser,paid,trialLeft,onUpgrade,onSignOut,notifSettings,setNotifSettings,saveMember,deleteMember,toast,familyId,sendInvite,requestPermission,topBar}) {
   const fr=useRef();
   const [confirmSignOut,setConfirmSignOut]=useState(false);
   const [sec,setSec]=useState(null),[docs,setDocs]=useState([{id:"d1",name:"Emma's Vaccination Record",memberId:"m3",emoji:"💉",date:addDays(todayStr,-30)},{id:"d2",name:"Soccer Permission Slip",memberId:"m3",emoji:"⚽",date:addDays(todayStr,-5)},{id:"d3",name:"Insurance Card",memberId:null,emoji:"🏥",date:addDays(todayStr,-60)}]);
@@ -4142,7 +4188,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
   );
 
   if(!sec) return (
-    <div style={{paddingBottom:8}}>
+    <div className="screen-enter" style={{paddingBottom:8}}>
       {/* Hero header */}
       <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
 {topBar}
@@ -4361,6 +4407,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
   const [plan, setPlan]       = useState("year30");
   const [loading, setLoading] = useState(false);
   const [done, setDone]       = useState(false);
+  const [payNotice, setPayNotice] = useState("");
 
   const PLANS = [
     {
@@ -4384,7 +4431,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
   ];
 
   const pay = () => {
-    alert("Payments coming soon! We will notify you by email when Calla subscriptions are available.");
+    setPayNotice("Subscriptions are coming soon! We'll notify you by email when Calla Family is available.");
   };
 
   if (done) return (
@@ -4509,6 +4556,9 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
           }
         </button>
 
+        {/* Coming soon notice */}
+        {payNotice&&<div style={{background:"rgba(45,90,61,.12)",border:"1px solid rgba(45,90,61,.25)",borderRadius:12,padding:"12px 14px",marginBottom:10,textAlign:"center"}}><p style={{fontSize:14,color:"var(--sage2)",fontWeight:600}}>{payNotice}</p></div>}
+
         {/* Privacy micro-copy */}
         <div style={{ textAlign:"center", display:"flex", flexDirection:"column", gap:5 }}>
           <p style={{ fontSize:15, color:"var(--cream3)" }}>Secure payment · Cancel anytime · No auto-renewal surprises</p>
@@ -4591,13 +4641,15 @@ function ListsScreen({members,topBar}) {
   const gm=function(id){return id?members.find(function(m){return m.id===id;}):null;};
 
   return (
-    <div>
+    <div className="screen-enter">
       <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
         {topBar}
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:8}}>
+        <p style={{fontSize:11,fontWeight:600,color:"rgba(245,240,232,.45)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:4,fontFamily:"-apple-system,sans-serif"}}>Family Lists</p>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
           <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>Lists</p>
-          <button onClick={function(){setAddingList(true);}} style={{width:32,height:32,borderRadius:9,background:"rgba(245,240,232,.18)",border:"1px solid rgba(245,240,232,.3)",display:"flex",alignItems:"center",justifyContent:"center",minHeight:"auto",minWidth:"auto"}}><Plus size={15} color="#f5f0e8"/></button>
+          <button onClick={function(){setAddingList(true);}} style={{width:36,height:36,borderRadius:10,background:"rgba(245,240,232,.18)",border:"1px solid rgba(245,240,232,.3)",display:"flex",alignItems:"center",justifyContent:"center",minHeight:"auto",minWidth:"auto"}}><Plus size={16} color="#f5f0e8"/></button>
         </div>
+        <p style={{fontSize:13,color:"rgba(245,240,232,.55)",fontFamily:"-apple-system,sans-serif",fontWeight:400}}>{lists.reduce(function(s,l){return s+l.items.filter(function(i){return !i.done;}).length;},0)} items pending across {lists.length} list{lists.length===1?"":"s"}</p>
       </div>
       <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:12,marginBottom:16,scrollbarWidth:"none"}}>
         {lists.map(function(l){
@@ -4674,6 +4726,9 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
   var [lastSearch,setLastSearch]=useState("");
   var [savedCity,setSavedCity]=useState(function(){return localStorage.getItem("calla_city")||"";});
   var [savedHood,setSavedHood]=useState(function(){return localStorage.getItem("calla_hood")||"";});
+  var [dataSource,setDataSource]=useState("");   // "cache" | "fresh"
+  var [fetchedAt,setFetchedAt]=useState("");     // ISO string from server
+  var [pickerItem,setPickerItem]=useState(null); // item awaiting member selection;
 
   function saveLocation() {
     localStorage.setItem("calla_city", city);
@@ -4690,27 +4745,57 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
     setLoading(true);
     setError("");
     setResults([]);
+    setDataSource("");
+    setFetchedAt("");
     setLastSearch(loc);
-    var prompt = "Find real upcoming kids activities and community events near "+loc+". Today is "+new Date().toISOString().slice(0,10)+". Return ONLY a JSON array (no markdown, no code blocks) of up to 10 items. Each item MUST have: title, category (Soccer/Basketball/Hockey/Swimming/Music/Art/Dance/Community/Other), date (YYYY-MM-DD or empty), deadline (YYYY-MM-DD registration deadline or empty), location (venue name and city), description (max 90 chars, specific details), url (REAL website URL — this is critical, find the actual registration or info page, not a search link). For url: use the actual organization website or registration page. If you cannot find a real URL, use empty string — do NOT guess or make one up.";
     fetch("https://pqvxzsrpifiuovhtxldp.supabase.co/functions/v1/scan-flyer", {
       method:"POST",
-      headers:{"Content-Type":"application/json","Authorization":"Bearer "+window.__supabaseAnonKey},
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+SUPABASE_KEY},
       body:JSON.stringify({type:"discover",location:loc})
     }).then(function(r){return r.json();}).then(function(d){
+      // Surface server-side errors immediately
+      if(d.error) {
+        setError("Server error: "+d.error+(d.raw?" | "+d.raw:""));
+        setLoading(false);
+        return;
+      }
+      setDataSource(d.source||"");
+      setFetchedAt(d.fetched_at||"");
       var text = d.result||d.text||"";
+      if(!text) {
+        // Show raw response so we can diagnose
+        var keys = Object.keys(d);
+        setError("Empty response. Keys: ["+(keys.join(",")||"none")+"] Raw: "+JSON.stringify(d).slice(0,120));
+        setLoading(false);
+        return;
+      }
       try {
         var clean = text.replace(/```json|```/g,"").trim();
         var parsed = JSON.parse(clean);
-        if(Array.isArray(parsed)) setResults(parsed);
-        else setError("No results found. Try a different area.");
+        if(Array.isArray(parsed) && parsed.length>0) setResults(parsed);
+        else setError("No activities found near "+loc+". Try a larger city name.");
       } catch(e) {
-        setError("Could not load results. Try again.");
+        setError("Parse error: "+e.message+". Raw: "+text.slice(0,80));
       }
       setLoading(false);
-    }).catch(function(){
-      setError("Network error. Check your connection.");
+    }).catch(function(err){
+      setError("Network error: "+err.message);
       setLoading(false);
     });
+  }
+
+  function fmtFetchedAt(iso) {
+    if(!iso) return "";
+    try {
+      var d = new Date(iso);
+      var now = new Date();
+      var diffMs = now - d;
+      var diffH = Math.floor(diffMs / 3600000);
+      if(diffH < 1) return "just now";
+      if(diffH < 24) return diffH+"h ago";
+      var months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      return months[d.getMonth()]+" "+d.getDate()+" at "+d.getHours().toString().padStart(2,"0")+":"+d.getMinutes().toString().padStart(2,"0");
+    } catch(e) { return ""; }
   }
 
   var categories=["All","Soccer","Basketball","Hockey","Swimming","Music","Art","Dance","Community","Other"];
@@ -4718,8 +4803,9 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
 
   var catEmoji={"Soccer":"⚽","Basketball":"🏀","Hockey":"🏒","Swimming":"🏊","Music":"🎵","Art":"🎨","Dance":"💃","Community":"🏘️","Other":"📅"};
 
-  function addToCalendar(item) {
-    var mem = members[0]||{id:"",color:"#2d5a3d"};
+  function addToCalendar(item, memberId, memberColor) {
+    var mid = memberId||(members[0]&&members[0].id)||"";
+    var col = memberColor||(members[0]&&members[0].color)||"#2d5a3d";
     onAdd({
       id:Date.now().toString(),
       title:item.title,
@@ -4727,12 +4813,21 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
       time:"",endTime:"",
       location:item.location||"",
       notes:item.description+(item.url?" | "+item.url:""),
-      memberId:mem.id,
-      color:mem.color,
+      memberId:mid,
+      color:col,
       recurring:false,recurFreq:"weekly",recurEnd:"",
       cost:"",costType:"one-time",packingList:[],
     });
     toast_({icon:"✅",title:"Added to calendar!",body:item.title,color:"var(--sage2)"});
+  }
+
+  function handleSaveToCalendar(item) {
+    if(members.length > 1) {
+      setPickerItem(item);
+    } else {
+      var mem = members[0]||{id:"",color:"#2d5a3d"};
+      addToCalendar(item, mem.id, mem.color);
+    }
   }
 
   function toast_(t){
@@ -4891,11 +4986,13 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
 
 
   return (
-    <div style={{paddingBottom:8}}>
-      {/* Hero header — matches mockup */}
+    <div className="screen-enter" style={{paddingBottom:8}}>
+      {/* Hero header */}
       <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
         {topBar}
-        <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>Explore Nearby</p>
+        <p style={{fontSize:11,fontWeight:600,color:"rgba(245,240,232,.45)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:4,fontFamily:"-apple-system,sans-serif"}}>Local Activities</p>
+        <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px",marginBottom:6}}>Explore Nearby</p>
+        <p style={{fontSize:13,color:"rgba(245,240,232,.55)",fontFamily:"-apple-system,sans-serif",fontWeight:400}}>Kids sports, music, classes &amp; community events</p>
       </div>
       {/* Location bar */}
       <div style={{background:"#fff",borderRadius:16,padding:"14px 16px",marginBottom:14,border:"1px solid rgba(26,46,26,.08)",boxShadow:"0 1px 4px rgba(26,46,26,.06)"}}>
@@ -4952,6 +5049,18 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
               </button>
             );
           })}
+        </div>
+      )}
+
+      {/* AI disclaimer + cache freshness banner */}
+      {results.length>0&&(
+        <div style={{background:"rgba(160,140,60,.1)",border:"1px solid rgba(160,140,60,.2)",borderRadius:10,padding:"8px 12px",marginBottom:12,display:"flex",alignItems:"flex-start",gap:8}}>
+          <span style={{fontSize:14,flexShrink:0,marginTop:1}}>🤖</span>
+          <p style={{fontSize:12,color:"var(--cream3)",lineHeight:1.5,margin:0}}>
+            <strong style={{color:"var(--cream2)"}}>AI-generated suggestions</strong> — always verify dates and details with the organizer before registering.
+            {dataSource==="cache"&&fetchedAt&&<span style={{color:"var(--cream3)"}}> · Refreshed {fmtFetchedAt(fetchedAt)}</span>}
+            {dataSource==="fresh"&&<span style={{color:"var(--cream3)"}}> · Just fetched fresh results</span>}
+          </p>
         </div>
       )}
 
@@ -5013,7 +5122,7 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
                   {item.location&&<p style={{fontSize:12,color:"#8a9a8a",marginBottom:4,display:"flex",alignItems:"center",gap:4}}><MapPin size={11} color="#8a9a8a"/>{item.location}</p>}
                   {item.description&&<p style={{fontSize:12,color:"#6a7a6a",marginBottom:12,lineHeight:1.45}}>{item.description}</p>}
                   <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                    <button onClick={function(){addToCalendar(item);}} style={{flex:1,background:"#1a3a2a",color:"#f5f0e8",border:"none",borderRadius:11,padding:"11px 0",fontWeight:700,fontSize:13,fontFamily:"-apple-system,sans-serif",cursor:"pointer",letterSpacing:".01em"}}>
+                    <button onClick={function(){handleSaveToCalendar(item);}} style={{flex:1,background:"#1a3a2a",color:"#f5f0e8",border:"none",borderRadius:11,padding:"11px 0",fontWeight:700,fontSize:13,fontFamily:"-apple-system,sans-serif",cursor:"pointer",letterSpacing:".01em"}}>
                       + Save to Calendar
                     </button>
                     <button
@@ -5044,6 +5153,30 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
           <Btn onClick={function(){setEditLoc(true);}} style={{display:"inline-flex",alignItems:"center",gap:8}}>
             <Locate size={14}/>Set My Location
           </Btn>
+        </div>
+      )}
+
+      {/* Member picker sheet */}
+      {pickerItem&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.55)",zIndex:600,display:"flex",alignItems:"flex-end"}} onClick={function(){setPickerItem(null);}}>
+          <div style={{background:"var(--ink2)",borderRadius:"20px 20px 0 0",padding:"20px 18px calc(24px + env(safe-area-inset-bottom,0px))",width:"100%",boxSizing:"border-box"}} onClick={function(e){e.stopPropagation();}}>
+            <div style={{width:36,height:4,background:"var(--border2)",borderRadius:99,margin:"0 auto 18px"}}/>
+            <p style={{fontWeight:700,fontSize:16,color:"var(--cream)",marginBottom:4}}>Add to whose calendar?</p>
+            <p style={{fontSize:13,color:"var(--cream3)",marginBottom:16,lineHeight:1.4}}>{pickerItem.title}</p>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {members.map(function(mem){
+                return (
+                  <button key={mem.id} onClick={function(){addToCalendar(pickerItem,mem.id,mem.color);setPickerItem(null);}}
+                    style={{display:"flex",alignItems:"center",gap:12,background:"#fff",border:"1px solid var(--border2)",borderRadius:14,padding:"12px 14px",textAlign:"left",cursor:"pointer"}}>
+                    <div style={{width:38,height:38,borderRadius:"50%",background:mem.color||"#2d5a3d",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>
+                      {mem.avatar||mem.name?.[0]||"👤"}
+                    </div>
+                    <p style={{fontWeight:600,fontSize:15,color:"var(--cream)",margin:0}}>{mem.name}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -5091,14 +5224,14 @@ export default function App() {
   const [tab,setTab]             = useState("home");
   const [globalSel,setGlobalSel] = useState(null);
   const [selectedMemberId,setSelectedMemberId] = useState(null);
-  const [members,setMembers]     = useState(M0);
+  const [members,setMembers]     = useState([]);
   const [events,setEvents]       = useState([]);
   const [notif,setNotif] = useState(function(){
     try{var s=localStorage.getItem("calla_notif");return s?JSON.parse(s):DN;}
     catch(e){return DN;}
   });
   const [toasts,setToasts]       = useState([]);
-  const [inboxBadge,setInboxBadge] = useState(2);
+  const [inboxBadge,setInboxBadge] = useState(0);
   const [showBanner,setShowBanner] = useState(true);
   const [paid,setPaid]           = useState(false);
   const [showPaywall,setShowPaywall] = useState(false);
@@ -5182,7 +5315,13 @@ export default function App() {
             var done=profile.setup_done===true||localStorage.getItem("calla_setup_"+u.id)==="true";
             setSetupDone(done);
             if(profile.name) setUser({id:u.id,name:profile.name,family:profile.family_name||"My Family",email:u.email});
-            if(profile.trial_start) setTrialStart(profile.trial_start);
+            if(profile.trial_start){
+              setTrialStart(profile.trial_start);
+            } else {
+              var now=new Date().toISOString();
+              setTrialStart(now);
+              supabase.from("profiles").update({trial_start:now}).eq("id",u.id).then(function(){});
+            }
             if(profile.paid===true) setPaid(true);
             if(!profile.onboarding_seen) setShowOnboarding(true);
           } else {
@@ -5201,7 +5340,7 @@ export default function App() {
     });
     var sub=supabase.auth.onAuthStateChange(function(event,session){
       if(event==="SIGNED_OUT"){
-        setUser(null);setSetupDone(false);setEvents([]);setMembers(M0);setFamilyId(null);setTrialStart(null);
+        setUser(null);setSetupDone(false);setEvents([]);setMembers([]);setFamilyId(null);setTrialStart(null);
       } else if((event==="SIGNED_IN"||event==="TOKEN_REFRESHED")&&session&&session.user){
         var u=session.user;
         var meta=u.user_metadata||{};
@@ -5211,68 +5350,69 @@ export default function App() {
         });
       }
     });
-    return function(){sub.data.subscription.unsubscribe();};
+    return function(){if(sub&&sub.data&&sub.data.subscription)sub.data.subscription.unsubscribe();};
   },[]);
 
   // ── Load events + members from Supabase ───────────────────────────────────
   function loadUserData(userId){
     // Check if user belongs to a family
     supabase.from("family_members").select("family_id").eq("user_id",userId).then(function(res){
-      if(res.data&&res.data.length>0){
+      if(res.error||!res.data) return;
+      if(res.data.length>0){
         var fid=res.data[0].family_id;
         setFamilyId(fid);
         // Load ALL events for the family (both parents)
         supabase.from("events").select("*").eq("family_id",fid).then(function(r){
-          if(r.data&&r.data.length>0){
-            supabase.from("members").select("*").eq("family_id",fid).then(function(mr){
-              var mmap={};
-              if(mr.data) mr.data.forEach(function(m){mmap[m.id]=m.color;});
-              setEvents(r.data.map(function(e){return{
-                id:e.id,title:e.title,memberId:e.member_id,date:e.date,time:e.time,
-                endTime:e.end_time,location:e.location,
-                color:e.color||(mmap[e.member_id]||"#2d7a52"),
-                recurring:e.recurring,
-                recurFreq:e.recur_freq,recurEnd:e.recur_end,notes:e.notes,
-                cost:e.cost,costType:e.cost_type,packingList:e.packing_list||[],
-              };}));
-            });
-          }
-        });
+          if(r.error||!r.data||r.data.length===0) return;
+          supabase.from("members").select("*").eq("family_id",fid).then(function(mr){
+            var mmap={};
+            if(mr.data) mr.data.forEach(function(m){mmap[m.id]=m.color;});
+            setEvents(r.data.map(function(e){return{
+              id:e.id,title:e.title,memberId:e.member_id,date:e.date,time:e.time,
+              endTime:e.end_time,location:e.location,
+              color:e.color||(mmap[e.member_id]||"#2d7a52"),
+              recurring:e.recurring,
+              recurFreq:e.recur_freq,recurEnd:e.recur_end,notes:e.notes,
+              cost:e.cost,costType:e.cost_type,packingList:e.packing_list||[],
+            };}));
+          }).catch(function(){});
+        }).catch(function(){});
         supabase.from("members").select("*").eq("family_id",fid).then(function(r){
-          if(r.data&&r.data.length>0){
-            setMembers(r.data.map(function(m){return{id:m.id,name:m.name,color:m.color,emoji:m.emoji};}));
-          }
-        });
+          if(r.error||!r.data||r.data.length===0) return;
+          setMembers(r.data.map(function(m){return{id:m.id,name:m.name,color:m.color,emoji:m.emoji};}));
+        }).catch(function(){});
       } else {
         // No family yet — load personal data
         supabase.from("events").select("*").eq("user_id",userId).then(function(r){
-          if(r.data){
-            supabase.from("members").select("*").eq("family_id",fid).then(function(mr){
-              var mmap={};
-              if(mr.data) mr.data.forEach(function(m){mmap[m.id]=m.color;});
-              setEvents(r.data.map(function(e){return{
-                id:e.id,title:e.title,memberId:e.member_id,date:e.date,time:e.time,
-                endTime:e.end_time,location:e.location,
-                color:e.color||(mmap[e.member_id]||"#2d7a52"),
-                recurring:e.recurring,
-                recurFreq:e.recur_freq,recurEnd:e.recur_end,notes:e.notes,
-                cost:e.cost,costType:e.cost_type,packingList:e.packing_list||[],
-              };}));
-            });
-          }
-        });
+          if(r.error||!r.data) return;
+          supabase.from("members").select("*").eq("user_id",userId).then(function(mr){
+            var mmap={};
+            if(mr.data) mr.data.forEach(function(m){mmap[m.id]=m.color;});
+            setEvents(r.data.map(function(e){return{
+              id:e.id,title:e.title,memberId:e.member_id,date:e.date,time:e.time,
+              endTime:e.end_time,location:e.location,
+              color:e.color||(mmap[e.member_id]||"#2d7a52"),
+              recurring:e.recurring,
+              recurFreq:e.recur_freq,recurEnd:e.recur_end,notes:e.notes,
+              cost:e.cost,costType:e.cost_type,packingList:e.packing_list||[],
+            };}));
+          }).catch(function(){});
+        }).catch(function(){});
         supabase.from("members").select("*").eq("user_id",userId).then(function(r){
-          if(r.data&&r.data.length>0){
+          if(!r.error&&r.data&&r.data.length>0){
             setMembers(r.data.map(function(m){return{id:m.id,name:m.name,color:m.color,emoji:m.emoji};}));
           }
-        });
+        }).catch(function(){});
       }
-    });
+    }).catch(function(){});
   }
 
   // ── Create family + send invite ───────────────────────────────────────────
+  var sendingInviteRef=useRef(false);
   function sendInvite(partnerEmail,onSuccess,onError){
     if(!user||!user.id) return;
+    if(sendingInviteRef.current) return;
+    sendingInviteRef.current=true;
     var doInvite=function(fid){
       supabase.from("invites").insert({
         family_id:fid,
@@ -5282,17 +5422,18 @@ export default function App() {
       }).select().then(function(res){
         if(res.error){
           console.error("Invite insert error:",res.error);
+          sendingInviteRef.current=false;
           onError&&onError(res.error.message);
           return;
         }
         if(!res.data||res.data.length===0){
           console.error("No data returned from invite insert");
+          sendingInviteRef.current=false;
           onError&&onError("No invite data returned");
           return;
         }
         var invite=res.data[0];
         var link=window.location.origin+"?invite="+invite.token;
-        console.log("Invite created:",link);
         // Send email via Edge Function
         supabase.functions.invoke("send-invite",{
           body:{
@@ -5301,10 +5442,8 @@ export default function App() {
             inviteLink:link,
             familyName:user.family||"My Family",
           }
-        }).then(function(r){
-          if(r.error) console.error("Email send error:",r.error);
-          else console.log("Email sent successfully");
-        });
+        }).then(function(){});
+        sendingInviteRef.current=false;
         onSuccess&&onSuccess(link,invite.token);
       });
     };
@@ -5318,6 +5457,7 @@ export default function App() {
       }).select().then(function(res){
         if(res.error){
           console.error("Family insert error:",res.error);
+          sendingInviteRef.current=false;
           onError&&onError(res.error.message);
           return;
         }
@@ -5372,14 +5512,33 @@ export default function App() {
         color:ev.color,recurring:ev.recurring,recur_freq:ev.recurFreq,
         recur_end:ev.recurEnd,notes:ev.notes,cost:ev.cost,
         cost_type:ev.costType,packing_list:ev.packingList||[],
-      }).then(function(){});
+      }).then(function(res){
+        if(res.error){
+          setEvents(function(p){return p.filter(function(e){return e.id!==ev.id;});});
+          toast({icon:"✗",title:"Failed to save event",body:"Please try again.",color:"#c0392b"});
+        }
+      }).catch(function(){
+        setEvents(function(p){return p.filter(function(e){return e.id!==ev.id;});});
+        toast({icon:"✗",title:"Failed to save event",body:"Please try again.",color:"#c0392b"});
+      });
     }
   };
 
   // ── Delete event from Supabase ─────────────────────────────────────────────
   const delEvent=function(id){
-    setEvents(function(p){return p.filter(function(e){return e.id!==id;});});
-    if(user&&user.id){supabase.from("events").delete().eq("id",id).then(function(){});}
+    var removed=null;
+    setEvents(function(p){removed=p.find(function(e){return e.id===id;})||null;return p.filter(function(e){return e.id!==id;});});
+    if(user&&user.id){
+      supabase.from("events").delete().eq("id",id).then(function(res){
+        if(res.error){
+          if(removed) setEvents(function(p){return[...p,removed];});
+          toast({icon:"✗",title:"Failed to delete event",body:"Please try again.",color:"#c0392b"});
+        }
+      }).catch(function(){
+        if(removed) setEvents(function(p){return[...p,removed];});
+        toast({icon:"✗",title:"Failed to delete event",body:"Please try again.",color:"#c0392b"});
+      });
+    }
   };
 
   // ── Save member to Supabase ───────────────────────────────────────────────
@@ -5387,7 +5546,11 @@ export default function App() {
     if(user&&user.id){
       supabase.from("members").upsert({
         id:m.id,user_id:user.id,family_id:familyId||null,name:m.name,color:m.color,emoji:m.emoji,
-      }).then(function(){});
+      }).then(function(res){
+        if(res.error) toast({icon:"✗",title:"Failed to save member",body:"Please try again.",color:"#c0392b"});
+      }).catch(function(){
+        toast({icon:"✗",title:"Failed to save member",body:"Please try again.",color:"#c0392b"});
+      });
     }
   };
 
@@ -5490,7 +5653,7 @@ export default function App() {
 
 
   const screen=()=>{
-    if(tab==="home")    return <DashScreen events={selectedMemberId?events.filter(function(e){return e.memberId===selectedMemberId;}):events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)} onSelectEv={function(ev){setGlobalSel(ev);setShowGlobalEv(true);}} trialExpired={!paid&&trial&&trial.expired} onUpgrade={function(){setShowPaywall(true);}} selectedMemberId={selectedMemberId} onClearMember={function(){setSelectedMemberId(null);}} topBar={topBarEl}/>;
+    if(tab==="home")    return <DashScreen events={selectedMemberId?events.filter(function(e){return e.memberId===selectedMemberId;}):events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)} onSelectEv={function(ev){setGlobalSel(ev);setShowGlobalEv(true);}} trialExpired={!paid&&trial&&trial.expired} onUpgrade={function(){setShowPaywall(true);}} selectedMemberId={selectedMemberId} onClearMember={function(){setSelectedMemberId(null);}} topBar={topBarEl} familyName={user&&user.family}/>;
     if(tab==="inbox")   return <InboxScreen members={members} onAdd={addEvent} user={user} topBar={topBarEl}/>;
     if(tab==="discover") return !paid&&trial&&trial.expired ? (
       <div style={{textAlign:"center",padding:"60px 24px"}}>
@@ -5503,7 +5666,7 @@ export default function App() {
     if(tab==="lists")   return <ListsScreen members={members} topBar={topBarEl}/>;
     if(tab==="members") return <MembersScreen members={members} setMembers={setMembers} events={events}/>;
     if(tab==="notif")   return <NotifScreen events={events} members={members} onSelectEvent={ev=>{setGlobalSel(ev);setTab("home");}} topBar={topBarEl}/>;
-    if(tab==="more")    return <MoreScreen members={members} setMembers={setMembers} events={events} user={user} paid={paid} trialLeft={trial?trial.left:null} onUpgrade={()=>setShowPaywall(true)} notifSettings={notif} setNotifSettings={setNotif} saveMember={saveMember} deleteMember={deleteMember} toast={toast} familyId={familyId} sendInvite={sendInvite} requestPermission={requestNotificationPermission} onSignOut={()=>{supabase.auth.signOut();setUser(null);setSetupDone(false);setTab("home");setEvents([]);setMembers(M0);setPaid(false);setShowPaywall(false);setFamilyId(null);toast({icon:"👋",title:"Signed out",color:"var(--cream3)"});}} topBar={topBarEl}/>;
+    if(tab==="more")    return <MoreScreen members={members} setMembers={setMembers} events={events} user={user} setUser={setUser} paid={paid} trialLeft={trial?trial.left:null} onUpgrade={()=>setShowPaywall(true)} notifSettings={notif} setNotifSettings={setNotif} saveMember={saveMember} deleteMember={deleteMember} toast={toast} familyId={familyId} sendInvite={sendInvite} requestPermission={requestNotificationPermission} onSignOut={()=>{supabase.auth.signOut();setUser(null);setSetupDone(false);setTab("home");setEvents([]);setMembers([]);setPaid(false);setShowPaywall(false);setFamilyId(null);toast({icon:"👋",title:"Signed out",color:"var(--cream3)"});}} topBar={topBarEl}/>;
   };
 
   return (

@@ -77,7 +77,7 @@ JSON array format (40 items):
   "url": "website or empty"
 }]
 
-All 25 results must be in ${city}. Mix paid and free events. Include evening and weekend events.`,
+All 40 results must be in ${city}. Mix paid and free events. Include evening and weekend events.`,
         }],
       }),
     });
@@ -101,7 +101,9 @@ All 25 results must be in ${city}. Mix paid and free events. Include evening and
       .eq("city_normalized", city.toLowerCase())
       .eq("is_major", true);
 
-    const expiresAt = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString();
+    // 26 hours: long enough to bridge the 2 AM cron even if it runs slightly late,
+    // but short enough that stale data never lingers more than a day.
+    const expiresAt = new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString();
 
     await supabase.from("discover_cache").insert({
       city,
@@ -122,6 +124,21 @@ All 25 results must be in ${city}. Mix paid and free events. Include evening and
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  // ── Authorization guard ───────────────────────────────────────────────────
+  // Only allow calls that carry the correct CRON_SECRET header.
+  // Set CRON_SECRET as a Supabase Edge Function secret (same place as ANTHROPIC_KEY).
+  const CRON_SECRET = Deno.env.get("CRON_SECRET");
+  if (CRON_SECRET) {
+    const authHeader = req.headers.get("x-cron-secret") || req.headers.get("authorization");
+    const provided = authHeader?.replace(/^Bearer\s+/i, "");
+    if (provided !== CRON_SECRET) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
   }
 
   const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_KEY");

@@ -38,8 +38,11 @@ serve(async (req) => {
     if (body.type === "discover") {
       const location = (body.location || "").trim();
       const rad = body.radius || 10;
-      const cityNorm = location.split(",")[0].trim().toLowerCase();
-      const city = location.split(",")[0].trim();
+      // Use the LAST comma-separated part as the city name.
+      // e.g. "Riverside South, Ottawa" → city = "Ottawa", not "Riverside South"
+      const parts = location.split(",");
+      const cityNorm = parts[parts.length - 1].trim().toLowerCase();
+      const city = parts[parts.length - 1].trim();
       const today = new Date().toISOString().slice(0, 10);
 
       if (!location) {
@@ -67,7 +70,7 @@ serve(async (req) => {
             // Filter out expired events
             const active = (cached.events || []).filter(isActive);
             console.log(`Cache hit for ${city}: ${active.length} active events`);
-            return new Response(JSON.stringify({ result: JSON.stringify(active), source: "cache" }), {
+            return new Response(JSON.stringify({ result: JSON.stringify(active), source: "cache", fetched_at: cached.fetched_at }), {
               headers: { ...corsHeaders, "Content-Type": "application/json" },
             });
           }
