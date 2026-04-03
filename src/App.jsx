@@ -2582,27 +2582,13 @@ function FlyerScanner({members, onAdd}) {
       return res.json();
     }).then(function(data) {
       stopStepAnim();
-      if (data.error) {
-        setErrorMsg(data.error || "Couldn\'t scan this flyer. Try a clearer photo.");
-        setScanStage("error");
-        return;
-      }
-      var resultText = data.result || "";
-      var parsed = null;
-      try {
-        var clean = resultText.replace(/```json|```/g,"").trim();
-        parsed = JSON.parse(clean);
-      } catch(e) {
-        setErrorMsg("Couldn\'t read the flyer. Try a clearer photo.");
-        setScanStage("error");
-        return;
-      }
-      var events = Array.isArray(parsed)?parsed:(parsed&&parsed.title?[parsed]:[]);
-      if (!events||events.length===0) {
-        setErrorMsg("No events found in this image. Try a clearer photo.");
-        setScanStage("error");
-        return;
-      }
+      if(data.error){setErrorMsg(data.error||"Couldn\'t scan this flyer.");setScanStage("error");return;}
+      var resultText=data.result||"";
+      var parsed=null;
+      try{var clean=resultText.replace(/```json|```/g,"").trim();parsed=JSON.parse(clean);}
+      catch(e){setErrorMsg("Couldn\'t read the flyer. Try a clearer photo.");setScanStage("error");return;}
+      var events=Array.isArray(parsed)?parsed:(parsed&&parsed.title?[parsed]:[]);
+      if(!events||events.length===0){setErrorMsg("No events found. Try a clearer photo.");setScanStage("error");return;}
       // Attach ids and default memberId
       var withIds = events.map(function(ev) {
         return {
@@ -5290,40 +5276,50 @@ export default function App() {
 
   const topBarEl=(
     <div style={{marginBottom:12}}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,opacity:showSearch?0:1,maxHeight:showSearch?0:40,overflow:"hidden",transition:"all .2s"}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",minHeight:34}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,flex:1,minWidth:0,transition:"opacity .18s",opacity:showSearch?0:1,pointerEvents:showSearch?"none":"auto"}}>
           <div style={{width:34,height:34,background:"rgba(245,240,232,.18)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,border:"1px solid rgba(245,240,232,.25)"}}>
             <span style={{fontSize:16}}>🌸</span>
           </div>
-          <p style={{fontWeight:700,fontSize:16,letterSpacing:"-.02em",fontFamily:"'Playfair Display',Georgia,serif",color:"#f5f0e8",lineHeight:1}}>{user.family}</p>
+          <p style={{fontWeight:700,fontSize:16,fontFamily:"'Playfair Display',Georgia,serif",color:"#f5f0e8",lineHeight:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{user.family}</p>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:6}}>
+        <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
           {members.slice(0,3).map(function(m){return(
-            <div key={m.id} onClick={function(){setSelectedMemberId(function(prev){return prev===m.id?null:m.id;});go("home");}} title={m.name}
-              style={{width:30,height:30,borderRadius:"50%",background:"rgba(245,240,232,.2)",border:selectedMemberId===m.id?"2px solid #f5f0e8":"1.5px solid rgba(245,240,232,.35)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,cursor:"pointer",overflow:"hidden",flexShrink:0,opacity:showSearch?0:1,transition:"opacity .2s"}}>
+            <div key={m.id} onClick={function(){setSelectedMemberId(function(prev){return prev===m.id?null:m.id;});go("home");}}
+              style={{width:30,height:30,borderRadius:"50%",background:"rgba(245,240,232,.2)",border:selectedMemberId===m.id?"2.5px solid #f5f0e8":"1.5px solid rgba(245,240,232,.35)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,cursor:"pointer",overflow:"hidden",flexShrink:0,transition:"opacity .18s",opacity:showSearch?0:1,pointerEvents:showSearch?"none":"auto"}}>
               {m.photo?<img src={m.photo} style={{width:"100%",height:"100%",objectFit:"cover"}} alt={m.name}/>:m.emoji}
             </div>
           );})}
-          <button onClick={function(){setShowSearch(true);setSearchQuery("");}} style={{width:32,height:32,background:showSearch?"rgba(245,240,232,.3)":"rgba(245,240,232,.15)",border:"1px solid rgba(245,240,232,.25)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,opacity:showSearch?0:1,pointerEvents:showSearch?"none":"auto",transition:"opacity .2s"}}><Search size={15} color="#f5f0e8"/></button>
-          <button onClick={function(){go("notif");}} style={{width:32,height:32,background:"rgba(245,240,232,.15)",border:"1px solid rgba(245,240,232,.25)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",position:"relative",flexShrink:0,opacity:showSearch?0:1,pointerEvents:showSearch?"none":"auto",transition:"opacity .2s"}}>
+          <button
+            onClick={function(){setShowSearch(true);setSearchQuery("");var el=document.getElementById("calla-search");if(el){el.focus();}}}
+            style={{width:32,height:32,background:"rgba(245,240,232,.15)",border:"1px solid rgba(245,240,232,.25)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"opacity .18s",opacity:showSearch?0:1,pointerEvents:showSearch?"none":"auto"}}>
+            <Search size={15} color="#f5f0e8"/>
+          </button>
+          <button onClick={function(){go("notif");}} style={{width:32,height:32,background:"rgba(245,240,232,.15)",border:"1px solid rgba(245,240,232,.25)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",position:"relative",flexShrink:0}}>
             <Bell size={15} color="#f5f0e8"/>
             {upc>0&&<div style={{position:"absolute",top:-3,right:-3,background:"var(--red)",color:"#f5f0e8",borderRadius:"50%",width:15,height:15,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:800,border:"1.5px solid var(--sage)"}}>{upc}</div>}
           </button>
         </div>
       </div>
-      {/* Search input — ALWAYS mounted, shown/hidden via style only */}
-      <div style={{display:"flex",alignItems:"center",gap:8,background:"rgba(245,240,232,.15)",borderRadius:12,padding:"9px 12px",border:"1px solid rgba(245,240,232,.3)",marginTop:10,opacity:showSearch?1:0,maxHeight:showSearch?44:0,overflow:"hidden",transition:"all .2s",pointerEvents:showSearch?"auto":"none"}}>
-        <button onClick={function(){setShowSearch(false);setSearchQuery("");}} style={{background:"none",border:"none",padding:0,display:"flex",alignItems:"center",flexShrink:0,cursor:"pointer"}}><ChevronLeft size={20} color="#f5f0e8"/></button>
-        <Search size={14} color="rgba(245,240,232,.6)" style={{flexShrink:0}}/>
+      <div style={{display:"flex",alignItems:"center",gap:8,background:"rgba(245,240,232,.15)",borderRadius:12,padding:"10px 12px",border:"1px solid rgba(245,240,232,.28)",marginTop:10,maxHeight:showSearch?52:0,opacity:showSearch?1:0,overflow:"hidden",transition:"max-height .2s ease, opacity .18s ease",pointerEvents:showSearch?"auto":"none"}}>
+        <button onClick={function(){setShowSearch(false);setSearchQuery("");}} style={{background:"none",border:"none",padding:0,display:"flex",alignItems:"center",flexShrink:0,cursor:"pointer",WebkitTapHighlightColor:"transparent"}}>
+          <ChevronLeft size={20} color="#f5f0e8"/>
+        </button>
+        <Search size={14} color="rgba(245,240,232,.55)" style={{flexShrink:0}}/>
         <input
-          id="calla-search-input"
+          id="calla-search"
+          type="text"
           placeholder="Search events, people, locations…"
           value={searchQuery}
           onChange={function(e){setSearchQuery(e.target.value);}}
           style={{flex:1,background:"transparent",border:"none",padding:0,fontSize:15,color:"#f5f0e8",outline:"none",fontFamily:"-apple-system,sans-serif",WebkitAppearance:"none",appearance:"none",minWidth:0}}
         />
-        {searchQuery.length>0&&<button onClick={function(){setSearchQuery("");}} style={{background:"none",border:"none",padding:0,display:"flex",alignItems:"center",flexShrink:0}}><X size={15} color="rgba(245,240,232,.6)"/></button>}
-        <button onClick={function(){setShowSearch(false);setSearchQuery("");}} style={{background:"none",border:"none",padding:"0 2px",color:"rgba(245,240,232,.8)",fontSize:13,fontWeight:600,fontFamily:"-apple-system,sans-serif",flexShrink:0}}>Cancel</button>
+        {searchQuery.length>0&&(
+          <button onClick={function(){setSearchQuery("");var el=document.getElementById("calla-search");if(el){el.focus();}}} style={{background:"none",border:"none",padding:0,display:"flex",alignItems:"center",flexShrink:0,cursor:"pointer",WebkitTapHighlightColor:"transparent"}}>
+            <X size={15} color="rgba(245,240,232,.6)"/>
+          </button>
+        )}
+        <button onClick={function(){setShowSearch(false);setSearchQuery("");}} style={{background:"none",border:"none",padding:"0 2px",color:"rgba(245,240,232,.8)",fontSize:13,fontWeight:600,fontFamily:"-apple-system,sans-serif",flexShrink:0,WebkitTapHighlightColor:"transparent"}}>Cancel</button>
       </div>
     </div>
   );
@@ -5358,7 +5354,7 @@ export default function App() {
             <TrialBanner daysLeft={trial.left} onUpgrade={()=>setShowPaywall(true)}/>
           )}
 
-          {showSearch&&searchQuery.trim()&&(function(){
+          {showSearch&&searchQuery.trim().length>=3&&(function(){
             var q=searchQuery.toLowerCase().trim();
             var res=events.filter(function(ev){
               return ev.title.toLowerCase().includes(q)||
@@ -5366,42 +5362,46 @@ export default function App() {
                 (ev.notes&&ev.notes.toLowerCase().includes(q))||
                 (function(){var mm=members.find(function(m){return m.id===ev.memberId;});return mm&&mm.name.toLowerCase().includes(q);})();
             }).sort(function(a,b){return a.date.localeCompare(b.date);});
-            if(res.length===0) return (
-              <div style={{textAlign:"center",padding:"32px 0 16px"}}>
-                <p style={{fontSize:15,color:"var(--cream3)",fontWeight:500}}>No results for "{searchQuery}"</p>
-                <p style={{fontSize:13,color:"var(--cream3)",marginTop:4,opacity:.65}}>Try a different name or location</p>
-              </div>
-            );
             return (
-              <div style={{marginBottom:8}}>
-                <p style={{fontSize:11,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:10}}>{res.length} result{res.length===1?"":"s"}</p>
-                <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                {res.map(function(ev){
-                  var m=members.find(function(mm){return mm.id===ev.memberId;})||{emoji:"👤",color:"var(--cream3)",name:"?"};
-                  var isToday=ev.date===todayStr;
-                  return (
-                    <div key={ev.id} onClick={function(){setGlobalSel(ev);setShowGlobalEv(true);setShowSearch(false);setSearchQuery("");}}
-                      style={{background:"#fff",border:"1px solid rgba(26,46,26,.08)",borderLeft:"4px solid "+ev.color,borderRadius:12,padding:"11px 13px",cursor:"pointer",boxShadow:"0 1px 3px rgba(26,46,26,.05)"}}
-                    >
-                      <div style={{display:"flex",alignItems:"center",gap:10}}>
-                        <div style={{width:32,height:32,borderRadius:9,background:ev.color+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,flexShrink:0}}>{m.emoji}</div>
-                        <div style={{flex:1,minWidth:0}}>
-                          <p style={{fontWeight:700,fontSize:14,color:"var(--cream)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontFamily:"'Playfair Display',Georgia,serif",marginBottom:2}}>{ev.title}</p>
-                          <p style={{fontSize:12,color:m.color,fontWeight:600}}>{m.name}{ev.location?" · "+ev.location:""}</p>
-                        </div>
-                        <div style={{textAlign:"right",flexShrink:0,marginLeft:6}}>
-                          <p style={{fontSize:11,fontWeight:600,color:isToday?"var(--sage2)":"var(--cream3)",background:isToday?"rgba(45,90,61,.08)":"var(--ink4)",borderRadius:99,padding:"2px 8px",whiteSpace:"nowrap"}}>{isToday?"Today":ev.date}</p>
-                          {ev.time&&<p style={{fontSize:11,color:"var(--cream3)",marginTop:2}}>{ev.time}</p>}
+              <div style={{background:"#fff",borderRadius:16,border:"1px solid rgba(26,46,26,.08)",boxShadow:"0 4px 20px rgba(26,46,26,.1)",marginBottom:16,overflow:"hidden"}}>
+                <div style={{padding:"12px 14px 6px",borderBottom:"1px solid rgba(26,46,26,.06)"}}>
+                  <p style={{fontSize:11,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".08em"}}>{res.length} result{res.length===1?"":"s"} for "{searchQuery}"</p>
+                </div>
+                {res.length===0 ? (
+                  <div style={{textAlign:"center",padding:"28px 0"}}>
+                    <p style={{fontSize:15,color:"var(--cream3)",fontWeight:500}}>No results found</p>
+                    <p style={{fontSize:13,color:"var(--cream3)",marginTop:4,opacity:.65}}>Try a different name or location</p>
+                  </div>
+                ) : (
+                  <div style={{maxHeight:420,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"8px 12px 12px",display:"flex",flexDirection:"column",gap:8}}>
+                  {res.map(function(ev){
+                    var m=members.find(function(mm){return mm.id===ev.memberId;})||{emoji:"👤",color:"var(--cream3)",name:"?"};
+                    var isToday=ev.date===todayStr;
+                    var isPast=ev.date<todayStr;
+                    return (
+                      <div key={ev.id} onClick={function(){setGlobalSel(ev);setShowGlobalEv(true);setShowSearch(false);setSearchQuery("");}}
+                        style={{background:"#fff",border:"1px solid rgba(26,46,26,.07)",borderLeft:"4px solid "+ev.color,borderRadius:12,padding:"11px 13px",cursor:"pointer",opacity:isPast?.7:1}}
+                      >
+                        <div style={{display:"flex",alignItems:"center",gap:10}}>
+                          <div style={{width:32,height:32,borderRadius:9,background:ev.color+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,flexShrink:0}}>{m.emoji}</div>
+                          <div style={{flex:1,minWidth:0}}>
+                            <p style={{fontWeight:700,fontSize:14,color:"var(--cream)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontFamily:"'Playfair Display',Georgia,serif",marginBottom:2}}>{ev.title}</p>
+                            <p style={{fontSize:12,color:m.color,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{m.name}{ev.location?" · "+ev.location:""}</p>
+                          </div>
+                          <div style={{textAlign:"right",flexShrink:0,marginLeft:4}}>
+                            <p style={{fontSize:11,fontWeight:600,color:isToday?"var(--sage2)":"var(--cream3)",background:isToday?"rgba(45,90,61,.1)":"var(--ink4)",borderRadius:99,padding:"2px 8px",whiteSpace:"nowrap"}}>{isToday?"Today":ev.date}</p>
+                            {ev.time&&<p style={{fontSize:11,color:"var(--cream3)",marginTop:2}}>{ev.time}</p>}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-                </div>
+                    );
+                  })}
+                  </div>
+                )}
               </div>
             );
           })()}
-          {(!showSearch||!searchQuery.trim())&&screen()}
+          {screen()}
 
         </div>
       </div>
