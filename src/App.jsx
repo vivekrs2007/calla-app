@@ -4125,7 +4125,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
   const gm=id=>id?members.find(m=>m.id===id)||{name:"Family",color:"var(--cream3)",emoji:"👨‍👩‍👧‍👦"}:{name:"Family",color:"var(--cream3)",emoji:"👨‍👩‍👧‍👦"};
   const ce=events.filter(e=>e.cost&&parseFloat(e.cost)>0);
   const tot=ce.reduce((s,e)=>{const c=parseFloat(e.cost)||0;return s+(e.costType==="monthly"?c:e.costType==="session"?c*4:e.costType==="season"?c/3:c);},0);
-  const Back=()=><button onClick={()=>setSec(null)} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,marginBottom:20,padding:"7px 14px"}}><ChevronLeft size={16}/>Back</button>;
+  const Back=()=>(<div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 10px)"}}><button onClick={()=>setSec(null)} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,marginBottom:20,padding:"7px 14px"}}><ChevronLeft size={16}/>Back</button></div>);
   const SECS=[
     {id:"family",Icon:Users,label:"Family Members",desc:members.length+" members"},
     {id:"digest",Icon:Sun,label:"Morning Text",desc:"Daily SMS with your schedule"},
@@ -4207,7 +4207,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
   );
   if(sec==="account") return (
     <div>
-      <button onClick={()=>setSec(null)} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,marginBottom:20,padding:"7px 14px"}}><ChevronLeft size={16}/>Back</button>
+      <div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 10px)"}}><button onClick={()=>setSec(null)} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,marginBottom:20,padding:"7px 14px"}}><ChevronLeft size={16}/>Back</button></div>
       <h1 style={{fontSize:28,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",marginBottom:6}}>Account</h1>
       <p style={{fontSize:14,color:"var(--cream3)",marginBottom:24}}>Manage your family name, email and password.</p>
 
@@ -5279,7 +5279,7 @@ export default function App() {
   const upc=events.filter(e=>e.date>=todayStr&&e.date<=addDays(todayStr,2)).length;
 
   const topBarEl=(
-    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:showSearch?0:12}}>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:showSearch?6:12}}>
       {showSearch ? (
         <div style={{display:"flex",alignItems:"center",gap:8,flex:1}}>
           <Search size={14} color="rgba(245,240,232,.7)"/>
@@ -5291,7 +5291,7 @@ export default function App() {
             onBlur={function(){setTimeout(function(){setShowSearch(false);setSearchQuery("");},200);}}
             style={{flex:1,background:"transparent",border:"none",padding:0,fontSize:15,color:"#f5f0e8",outline:"none",fontFamily:"-apple-system,sans-serif",WebkitAppearance:"none"}}
           />
-          <button onClick={function(){setShowSearch(false);setSearchQuery("");}} style={{background:"none",border:"none",padding:"2px 4px",color:"rgba(245,240,232,.7)",fontSize:13,fontWeight:600,fontFamily:"-apple-system,sans-serif"}}>Cancel</button>
+          <button onClick={function(){setShowSearch(false);setSearchQuery("");}} style={{background:"none",border:"none",padding:"2px 6px",color:"rgba(245,240,232,.8)",fontSize:13,fontWeight:600,fontFamily:"-apple-system,sans-serif",flexShrink:0}}>Cancel</button>
         </div>
       ) : (
         <>
@@ -5351,25 +5351,22 @@ export default function App() {
 
           {showSearch&&searchQuery.trim()&&(function(){
             var q=searchQuery.toLowerCase().trim();
-            var results=events.filter(function(ev){
+            var res=events.filter(function(ev){
               return ev.title.toLowerCase().includes(q)||
                 (ev.location&&ev.location.toLowerCase().includes(q))||
                 (ev.notes&&ev.notes.toLowerCase().includes(q))||
                 (function(){var m=members.find(function(m){return m.id===ev.memberId;});return m&&m.name.toLowerCase().includes(q);})();
             }).sort(function(a,b){return a.date.localeCompare(b.date);});
-            if(results.length===0) return (
-              <div style={{textAlign:"center",padding:"24px 0",color:"var(--cream3)",fontSize:15}}>No results for "{searchQuery}"</div>
-            );
+            if(res.length===0) return <div style={{textAlign:"center",padding:"24px 0",color:"var(--cream3)",fontSize:15}}>No results for "{searchQuery}"</div>;
             return (
               <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:16}}>
-                <p style={{fontSize:12,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em"}}>{results.length} result{results.length===1?"":"s"}</p>
-                {results.map(function(ev){
+                <p style={{fontSize:12,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em"}}>{res.length} result{res.length===1?"":"s"}</p>
+                {res.map(function(ev){
                   var m=members.find(function(m){return m.id===ev.memberId;})||{emoji:"👤",color:"var(--cream3)",name:"?"};
                   var isToday=ev.date===todayStr;
-                  var isPast=ev.date<todayStr;
                   return (
                     <div key={ev.id} onClick={function(){setGlobalSel(ev);setShowGlobalEv(true);setShowSearch(false);setSearchQuery("");}}
-                      style={{background:"#fff",border:"1px solid var(--border2)",borderLeft:"4px solid "+ev.color,borderRadius:14,padding:"12px 14px",cursor:"pointer",opacity:isPast?0.65:1}}
+                      style={{background:"#fff",border:"1px solid var(--border2)",borderLeft:"4px solid "+ev.color,borderRadius:14,padding:"12px 14px",cursor:"pointer"}}
                     >
                       <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
                         <div style={{width:30,height:30,borderRadius:10,background:ev.color+"15",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{m.emoji}</div>
