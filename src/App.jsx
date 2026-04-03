@@ -1076,6 +1076,205 @@ function Auth({onLogin}) {
   );
 }
 
+/* ─── First-Time Setup (post sign-up onboarding) ────────────────────────── */
+function FirstTimeSetup({user,onDone}) {
+  var COLORS=["#2d5a3d","#1a5c8a","#7c3aed","#c2410c","#0f766e","#b45309","#be185d","#3d6b1a"];
+  var [step,setStep]=useState(0);
+  var [familyName,setFamilyName]=useState((user&&user.family&&user.family!=="My Family")?user.family:"");
+  var [famErr,setFamErr]=useState("");
+  var [mems,setMems]=useState([{id:genId(),name:"",color:"#2d5a3d",_showPicker:false}]);
+  var [slide,setSlide]=useState(0);
+  var [saving,setSaving]=useState(false);
+  var touchX=useRef(null);
+
+  var TOUR=[
+    {emoji:"📅",title:"One shared calendar",body:"Every event, every family member, one view. Calla spots scheduling conflicts before they ruin your week.",bg:"linear-gradient(135deg,#1a3a2a,#2d5a3d)"},
+    {emoji:"⚡",title:"Calla catches it all",body:"Forward a confirmation email. Snap a school flyer. Or just speak it. Calla reads it, understands it, and adds it.",bg:"linear-gradient(135deg,#1a1a3a,#2d2d5a)"},
+    {emoji:"🧭",title:"Discover local activities",body:"Find kids sports registrations, music classes, and community events near you — refreshed every day.",bg:"linear-gradient(135deg,#0d2a1a,#0d3a5a)"},
+  ];
+
+  function goNext() {
+    if(step===0){
+      if(!familyName.trim()){setFamErr("Please enter your family name.");return;}
+      setFamErr("");setStep(1);
+    } else if(step===1){
+      setStep(2);
+    }
+  }
+
+  function addMem(){
+    setMems(function(p){return[...p,{id:genId(),name:"",color:COLORS[p.length%COLORS.length],_showPicker:false}];});
+  }
+  function updateMem(id,fields){
+    setMems(function(p){return p.map(function(m){return m.id===id?Object.assign({},m,fields):m;});});
+  }
+  function removeMem(id){
+    setMems(function(p){return p.filter(function(m){return m.id!==id;});});
+  }
+
+  function finish(){
+    setSaving(true);
+    var fname=familyName.trim()||"My Family";
+    var valid=mems.filter(function(m){return m.name.trim().length>0;});
+    var saves=[
+      supabase.from("profiles").update({family_name:fname,setup_done:true,onboarding_seen:true}).eq("id",user.id),
+      supabase.auth.updateUser({data:{family_name:fname}}),
+    ];
+    valid.forEach(function(m){
+      saves.push(supabase.from("members").upsert({id:m.id,user_id:user.id,name:m.name.trim(),color:m.color,emoji:"👤"}));
+    });
+    Promise.all(saves).catch(function(){}).finally(function(){
+      setSaving(false);
+      onDone(fname,valid);
+    });
+  }
+
+  var DOTS=(
+    <div style={{display:"flex",justifyContent:"center",gap:6,paddingTop:"calc(env(safe-area-inset-top,44px) + 18px)",paddingBottom:0}}>
+      {[0,1,2].map(function(i){return(
+        <div key={i} style={{width:i===step?22:6,height:6,borderRadius:99,background:i<=step?"var(--sage2)":"var(--border2)",transition:"all .3s"}}/>
+      );})};
+    </div>
+  );
+
+  /* ── Step 0: Family name ── */
+  if(step===0) return (
+    <div style={{height:"100vh",maxHeight:"100dvh",display:"flex",flexDirection:"column",background:"var(--ink2)"}}>
+      {DOTS}
+      <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 28px 16px"}}>
+        <div className="fu" style={{textAlign:"center"}}>
+          <div style={{fontSize:68,marginBottom:20,lineHeight:1}}>🌸</div>
+          <h1 style={{fontSize:28,fontWeight:800,letterSpacing:"-.5px",marginBottom:10,fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",lineHeight:1.15}}>Welcome to Calla</h1>
+          <p style={{color:"var(--cream3)",fontSize:16,lineHeight:1.7,marginBottom:32,fontWeight:300}}>Let's set up your family calendar in two minutes.</p>
+        </div>
+        <div className="fu">
+          <p style={{fontSize:14,fontWeight:700,color:"var(--cream2)",marginBottom:8,letterSpacing:".02em"}}>What's your family name?</p>
+          <input
+            placeholder="e.g. The Johnsons"
+            value={familyName}
+            onChange={function(e){setFamilyName(e.target.value);setFamErr("");}}
+            style={{fontSize:17,fontWeight:600}}
+            onKeyDown={function(e){if(e.key==="Enter")goNext();}}
+          />
+          {famErr&&<p style={{fontSize:13,color:"var(--rose)",marginTop:6}}>{famErr}</p>}
+          <p style={{fontSize:13,color:"var(--cream3)",marginTop:6}}>Shown in your app header and on shared calendars.</p>
+        </div>
+      </div>
+      <div style={{padding:"0 28px",paddingBottom:"calc(28px + env(safe-area-inset-bottom,0px))"}}>
+        <Btn onClick={goNext} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"16px",fontSize:16}}>
+          Continue →
+        </Btn>
+      </div>
+    </div>
+  );
+
+  /* ── Step 1: Family members ── */
+  if(step===1) return (
+    <div style={{height:"100vh",maxHeight:"100dvh",display:"flex",flexDirection:"column",background:"var(--ink2)"}}>
+      {DOTS}
+      <div style={{flex:1,overflowY:"auto",padding:"24px 24px 8px",WebkitOverflowScrolling:"touch"}}>
+        <div className="fu">
+          <h1 style={{fontSize:24,fontWeight:800,letterSpacing:"-.4px",marginBottom:8,fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",lineHeight:1.2}}>Who's in your family?</h1>
+          <p style={{color:"var(--cream3)",fontSize:15,lineHeight:1.6,marginBottom:24,fontWeight:300}}>Add names and pick a colour for each member. You can always edit this later.</p>
+          <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:14}}>
+            {mems.map(function(m,idx){return(
+              <div key={m.id} style={{background:"#fff",borderRadius:14,padding:"11px 14px",display:"flex",alignItems:"center",gap:10,boxShadow:"0 1px 4px rgba(26,46,26,.06)",position:"relative"}}>
+                {/* Colour dot — tap to pick */}
+                <div style={{position:"relative",flexShrink:0}}>
+                  <div
+                    onClick={function(){updateMem(m.id,{_showPicker:!m._showPicker});}}
+                    style={{width:36,height:36,borderRadius:"50%",background:m.color,cursor:"pointer",border:"2px solid rgba(255,255,255,.6)",boxShadow:"0 2px 6px rgba(0,0,0,.18)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    {m._showPicker&&<ChevronDown size={14} color="#fff"/>}
+                  </div>
+                  {m._showPicker&&(
+                    <div style={{position:"absolute",top:44,left:0,background:"#fff",borderRadius:14,padding:10,boxShadow:"0 4px 24px rgba(0,0,0,.15)",display:"flex",flexWrap:"wrap",gap:8,width:176,zIndex:20}}>
+                      {COLORS.map(function(c){return(
+                        <div key={c}
+                          onClick={function(){updateMem(m.id,{color:c,_showPicker:false});}}
+                          style={{width:30,height:30,borderRadius:"50%",background:c,cursor:"pointer",outline:m.color===c?"3px solid "+c:"none",outlineOffset:2,boxShadow:m.color===c?"0 0 0 2px #fff inset":"none"}}/>
+                      );})};
+                    </div>
+                  )}
+                </div>
+                <input
+                  placeholder={"Member "+(idx+1)+" — e.g. Emma"}
+                  value={m.name}
+                  onChange={function(e){updateMem(m.id,{name:e.target.value});}}
+                  style={{flex:1,fontSize:15,border:"none",outline:"none",background:"transparent",color:"#1a2e1a",fontFamily:"-apple-system,sans-serif",fontWeight:500}}
+                />
+                {mems.length>1&&(
+                  <button onClick={function(){removeMem(m.id);}} style={{background:"rgba(180,180,180,.12)",border:"none",borderRadius:"50%",width:26,height:26,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,cursor:"pointer"}}>
+                    <X size={13} color="#888"/>
+                  </button>
+                )}
+              </div>
+            );})}
+          </div>
+          <button onClick={addMem} style={{background:"none",border:"1.5px dashed var(--border3)",borderRadius:12,padding:"11px 0",width:"100%",color:"var(--sage2)",fontSize:14,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+            <Plus size={14}/>Add another member
+          </button>
+        </div>
+      </div>
+      <div style={{padding:"12px 24px",paddingBottom:"calc(24px + env(safe-area-inset-bottom,0px))"}}>
+        <Btn onClick={goNext} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"15px",fontSize:16}}>
+          {mems.some(function(m){return m.name.trim().length>0;})?'Continue →':'Skip for now →'}
+        </Btn>
+      </div>
+    </div>
+  );
+
+  /* ── Step 2: Feature tour ── */
+  var card=TOUR[slide];
+  return (
+    <div style={{height:"100vh",maxHeight:"100dvh",display:"flex",flexDirection:"column",background:"var(--ink2)"}}>
+      {DOTS}
+      <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"20px 24px 12px",overflow:"hidden"}}
+        onTouchStart={function(e){touchX.current=e.touches[0].clientX;}}
+        onTouchEnd={function(e){
+          if(touchX.current===null)return;
+          var diff=touchX.current-e.changedTouches[0].clientX;
+          if(Math.abs(diff)>40){
+            if(diff>0&&slide<TOUR.length-1)setSlide(function(s){return s+1;});
+            else if(diff<0&&slide>0)setSlide(function(s){return s-1;});
+          }
+          touchX.current=null;
+        }}>
+        <div className="fu" key={slide} style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
+          <div style={{width:"100%",borderRadius:24,padding:"40px 28px 36px",background:card.bg,textAlign:"center",boxShadow:"0 8px 36px rgba(0,0,0,.28)",marginBottom:28}}>
+            <div style={{fontSize:80,marginBottom:18,lineHeight:1,filter:"drop-shadow(0 4px 16px rgba(0,0,0,.4))"}}>{card.emoji}</div>
+            <h2 style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",letterSpacing:"-.4px",marginBottom:12,lineHeight:1.2}}>{card.title}</h2>
+            <p style={{fontSize:16,color:"rgba(245,240,232,.72)",lineHeight:1.7,fontWeight:300}}>{card.body}</p>
+          </div>
+          {/* Slide indicator dots */}
+          <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+            {TOUR.map(function(_,i){return(
+              <div key={i} onClick={function(){setSlide(i);}}
+                style={{width:i===slide?22:8,height:8,borderRadius:99,background:i===slide?"var(--sage2)":"var(--border3)",transition:"all .3s",cursor:"pointer"}}/>
+            );})};
+          </div>
+        </div>
+      </div>
+      <div style={{padding:"0 24px",paddingBottom:"calc(28px + env(safe-area-inset-bottom,0px))"}}>
+        {slide<TOUR.length-1?(
+          <div style={{display:"flex",gap:10}}>
+            <button onClick={finish} disabled={saving}
+              style={{flex:1,background:"none",border:"1px solid var(--border2)",borderRadius:12,padding:"14px",fontSize:15,fontWeight:600,color:"var(--cream3)",cursor:"pointer"}}>
+              Skip
+            </button>
+            <Btn onClick={function(){setSlide(function(s){return s+1;});}} style={{flex:2,display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"14px",fontSize:16}}>
+              Next →
+            </Btn>
+          </div>
+        ):(
+          <Btn onClick={finish} disabled={saving} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"15px",fontSize:16}}>
+            {saving?"Setting up…":"Let's get started 🌸"}
+          </Btn>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Co-parent Setup (post-login step 2) ───────────────────────────────── */
 function CoParentSetup({user,onDone}) {
   const [partnerEmail,setPartnerEmail]=useState(""),[sent,setSent]=useState(false),[skipped,setSkipped]=useState(false);
@@ -5696,7 +5895,12 @@ export default function App() {
   );
   // ── Step 2: Co-parent setup ───────────────────────────────────────────────
   if(!setupDone) return (
-    <><GS/><Toasts toasts={toasts}/><CoParentSetup user={user} onDone={function(){localStorage.setItem("calla_setup_"+user.id,"true");setSetupDone(true);}}/></>
+    <><GS/><Toasts toasts={toasts}/><FirstTimeSetup user={user} onDone={function(fname,newMembers){
+      localStorage.setItem("calla_setup_"+user.id,"true");
+      setSetupDone(true);
+      if(fname) setUser(function(u){return{...u,family:fname};});
+      if(newMembers&&newMembers.length>0) setMembers(newMembers);
+    }}/></>
   );
   // ── Step 3: Hard paywall — trial expired ──────────────────────────────────
   if(!paid && trial && trial.expired) return (
