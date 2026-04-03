@@ -6,7 +6,7 @@
     "androidScheme": "https"
   },
   "ios": {
-    "contentInset": "automatic",
+    "contentInset": "always",
     "scrollEnabled": false,
     "backgroundColor": "#f5f0e8",
     "allowsLinkPreview": false,
@@ -35,7 +35,11 @@
       "resizeOnFullScreen": true
     },
     "PushNotifications": {
-      "presentationOptions": ["badge", "sound", "alert"]
+      "presentationOptions": [
+        "badge",
+        "sound",
+        "alert"
+      ]
     }
   }
 }
