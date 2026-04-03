@@ -32,7 +32,7 @@ import {
   X, Check, AlertTriangle, Zap, Sun, Sunset, Moon,
   Copy, Link, LogOut, Share2, Folder, FileText, Calendar,
   ShoppingCart, MessageCircle, Send, List, Star, Compass, Locate
-} from "lucide-react";
+, ExternalLink } from "lucide-react";
 
 
 /* ─── Scroll Lock (iOS-safe) ────────────────────────────────────────────────
@@ -4747,6 +4747,134 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
 
   var locSet = savedCity.trim().length > 0;
 
+  useEffect(function(){
+    var rafId;
+    var t=0;
+    var canvases={};
+    function initCanvas(el,w,h){
+      el.width=w*2;el.height=h*2;
+      el.style.width=w+"px";el.style.height=h+"px";
+      var ctx=el.getContext("2d");ctx.scale(2,2);return ctx;
+    }
+    function drawSoccer(ctx,w,h,t){
+      for(var s=0;s<7;s++){ctx.fillStyle=s%2===0?"#0d4a1a":"#0a3d15";ctx.fillRect(s*(w/6),0,w/6+1,h);}
+      ctx.strokeStyle="rgba(255,255,255,.18)";ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.arc(w/2,h/2,Math.min(w,h)*0.28,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.arc(w/2,h/2,3,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,.25)";ctx.fill();
+      ctx.strokeStyle="rgba(255,255,255,.12)";ctx.lineWidth=1;
+      [[0,0.1,w,0.1],[0,0.9,w,0.9],[w/2,0,w/2,h]].forEach(function(l){ctx.beginPath();ctx.moveTo(l[0],l[1]*h);ctx.lineTo(l[2],l[3]*h);ctx.stroke();});
+      var sx=w/2+Math.sin(t*0.7)*w*0.22,sy=h/2+Math.cos(t*0.45)*h*0.18;
+      var gr=ctx.createRadialGradient(sx,sy,0,sx,sy,60);
+      gr.addColorStop(0,"rgba(255,255,200,.2)");gr.addColorStop(1,"rgba(0,0,0,0)");
+      ctx.fillStyle=gr;ctx.fillRect(0,0,w,h);
+    }
+    function drawSwim(ctx,w,h,t){
+      ctx.fillStyle="#0c3d6b";ctx.fillRect(0,0,w,h);
+      for(var i=1;i<5;i++){ctx.strokeStyle="rgba(255,255,255,.1)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,i*h/5);ctx.lineTo(w,i*h/5);ctx.stroke();}
+      [{a:9,sp:1.1,ph:0,al:.3,y:.35},{a:7,sp:0.8,ph:1.6,al:.22,y:.55},{a:11,sp:1.6,ph:.9,al:.18,y:.72},{a:5,sp:2,ph:2.5,al:.14,y:.45}].forEach(function(wv){
+        ctx.beginPath();ctx.moveTo(0,wv.y*h);
+        for(var x=0;x<=w;x+=2){ctx.lineTo(x,wv.y*h+Math.sin((x/w)*Math.PI*4+t*wv.sp+wv.ph)*wv.a);}
+        ctx.lineTo(w,h);ctx.lineTo(0,h);ctx.closePath();ctx.fillStyle="rgba(56,189,248,"+wv.al+")";ctx.fill();
+      });
+      for(var d=0;d<10;d++){var da=(Math.sin(t*2.5+d)*.5+.5)*.4+.05;ctx.beginPath();ctx.arc((d*41+t*18)%w,(d*27+t*10)%h,1.5,0,Math.PI*2);ctx.fillStyle="rgba(186,230,255,"+da+")";ctx.fill();}
+    }
+    function drawMusic(ctx,w,h,t){
+      ctx.fillStyle="#1e0533";ctx.fillRect(0,0,w,h);
+      var vg=ctx.createRadialGradient(w/2,h/2,10,w/2,h/2,w*.7);
+      vg.addColorStop(0,"rgba(120,40,210,.35)");vg.addColorStop(1,"rgba(0,0,0,.5)");
+      ctx.fillStyle=vg;ctx.fillRect(0,0,w,h);
+      var bars=10,bw=4,gap=(w-bars*bw)/(bars+1);
+      for(var b=0;b<bars;b++){
+        var bh=(Math.sin(t*2.2+b*.85)*.42+.6)*h*.55,bx=gap+b*(bw+gap),by=h-bh-8;
+        var bc=ctx.createLinearGradient(0,by,0,h);
+        bc.addColorStop(0,"rgba(216,180,254,.95)");bc.addColorStop(1,"rgba(109,40,217,.35)");
+        ctx.fillStyle=bc;ctx.beginPath();ctx.roundRect(bx,by,bw,bh,2);ctx.fill();
+      }
+      for(var p=0;p<8;p++){var pa=(Math.sin(t*1.8+p)*.5+.5)*.55+.08;ctx.beginPath();ctx.arc((p*47+t*14+p*9)%w,h-((p*31+t*22+p*13)%(h*.85)),2,0,Math.PI*2);ctx.fillStyle="rgba(232,180,255,"+pa+")";ctx.fill();}
+    }
+    function drawBball(ctx,w,h,t){
+      for(var row=0;row<9;row++){
+        ctx.fillStyle=row%2===0?"#7c2d12":"#6b2508";ctx.fillRect(0,row*(h/9),w,h/9+1);
+        for(var j=0;j<3;j++){var jx=(j+1)*(w/4)+(row%2===0?0:w/8);ctx.strokeStyle="rgba(0,0,0,.18)";ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(jx,row*(h/9));ctx.lineTo(jx,(row+1)*(h/9));ctx.stroke();}
+      }
+      ctx.strokeStyle="rgba(255,220,150,.3)";ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.arc(w/2,h+8,65,Math.PI,0);ctx.stroke();
+      ctx.beginPath();ctx.arc(w/2,h/2,20,0,Math.PI*2);ctx.stroke();
+      ctx.save();ctx.translate(w/2,h/2);ctx.rotate(t*.65);
+      ctx.strokeStyle="rgba(251,146,60,.55)";ctx.lineWidth=2;ctx.setLineDash([10,7]);
+      ctx.beginPath();ctx.arc(0,0,34,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+      var sg=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,52);
+      sg.addColorStop(0,"rgba(255,140,40,.18)");sg.addColorStop(1,"rgba(0,0,0,0)");
+      ctx.fillStyle=sg;ctx.fillRect(0,0,w,h);
+    }
+    function drawHockey(ctx,w,h,t){
+      ctx.fillStyle="#e8f4f8";ctx.fillRect(0,0,w,h);
+      var ice=ctx.createLinearGradient(0,0,0,h);
+      ice.addColorStop(0,"#d4eef8");ice.addColorStop(1,"#b8e0f0");
+      ctx.fillStyle=ice;ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle="rgba(200,0,0,.35)";ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(w/2,0);ctx.lineTo(w/2,h);ctx.stroke();
+      ctx.strokeStyle="rgba(0,0,180,.2)";ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.arc(w/2,h/2,25,0,Math.PI*2);ctx.stroke();
+      ctx.strokeStyle="rgba(0,0,180,.15)";ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(w*.2,h/2,15,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.arc(w*.8,h/2,15,0,Math.PI*2);ctx.stroke();
+      ctx.save();ctx.translate(w/2,h/2);ctx.rotate(t*.4);
+      ctx.strokeStyle="rgba(0,50,180,.2)";ctx.lineWidth=1.5;ctx.setLineDash([8,6]);
+      ctx.beginPath();ctx.arc(0,0,30,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+    }
+    function drawArt(ctx,w,h,t){
+      ctx.fillStyle="#065f46";ctx.fillRect(0,0,w,h);
+      [{x:.15,y:.2,r:30,c:"rgba(16,185,129,.4)"},{x:.8,y:.7,r:25,c:"rgba(5,150,105,.5)"},{x:.5,y:.1,r:20,c:"rgba(167,243,208,.2)"},{x:.2,y:.8,r:35,c:"rgba(6,95,70,.6)"}].forEach(function(blob,i){
+        var bx=blob.x*w+Math.sin(t*.6+i)*8,by=blob.y*h+Math.cos(t*.5+i)*6;
+        ctx.beginPath();ctx.arc(bx,by,blob.r+Math.sin(t+i)*5,0,Math.PI*2);ctx.fillStyle=blob.c;ctx.fill();
+      });
+      for(var sp=0;sp<12;sp++){var sa=(Math.sin(t*1.5+sp)*.5+.5)*.45+.1;ctx.beginPath();ctx.arc((sp*53+t*9)%w,(sp*37+t*12)%h,2.5,0,Math.PI*2);ctx.fillStyle="rgba(167,243,208,"+sa+")";ctx.fill();}
+    }
+    function drawDance(ctx,w,h,t){
+      ctx.fillStyle="#831843";ctx.fillRect(0,0,w,h);
+      var sg=ctx.createRadialGradient(w/2,h/2,5,w/2,h/2,w*.7);
+      sg.addColorStop(0,"rgba(236,72,153,.4)");sg.addColorStop(1,"rgba(0,0,0,.3)");
+      ctx.fillStyle=sg;ctx.fillRect(0,0,w,h);
+      for(var sp=0;sp<8;sp++){
+        var angle=t*.9+sp*(Math.PI*2/8),r=25+Math.sin(t*2+sp)*6;
+        var sx=w/2+Math.cos(angle)*r,sy=h/2+Math.sin(angle)*r;
+        var sa=(Math.sin(t*2+sp)*.5+.5)*.7+.15;
+        ctx.beginPath();ctx.arc(sx,sy,3,0,Math.PI*2);ctx.fillStyle="rgba(253,186,218,"+sa+")";ctx.fill();
+      }
+      var rg=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,22+Math.sin(t*3)*4);
+      rg.addColorStop(0,"rgba(249,168,212,.25)");rg.addColorStop(1,"rgba(0,0,0,0)");
+      ctx.fillStyle=rg;ctx.fillRect(0,0,w,h);
+    }
+    function drawCommunity(ctx,w,h,t){
+      ctx.fillStyle="#78350f";ctx.fillRect(0,0,w,h);
+      var sg=ctx.createRadialGradient(w/2,h*.3,5,w/2,h*.3,w*.65);
+      sg.addColorStop(0,"rgba(251,191,36,.3)");sg.addColorStop(1,"rgba(0,0,0,.2)");
+      ctx.fillStyle=sg;ctx.fillRect(0,0,w,h);
+      for(var st=0;st<5;st++){var sa=(Math.sin(t*1.2+st)*.5+.5)*.5+.15;var sr=8+Math.sin(t+st)*2;ctx.beginPath();ctx.arc(w/2+Math.cos(t*.4+st*(Math.PI*2/5))*30,h/2+Math.sin(t*.4+st*(Math.PI*2/5))*20,sr,0,Math.PI*2);ctx.fillStyle="rgba(253,224,71,"+sa+")";ctx.fill();}
+      ctx.strokeStyle="rgba(253,224,71,.15)";ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(w/2,h/2,35,0,Math.PI*2);ctx.stroke();
+    }
+    var drawFns={"Soccer":drawSoccer,"Basketball":drawBball,"Hockey":drawHockey,"Swimming":drawSwim,"Music":drawMusic,"Art":drawArt,"Dance":drawDance,"Community":drawCommunity};
+    function getOrInit(id,w,h){
+      if(!canvases[id]){var el=document.getElementById(id);if(!el)return null;canvases[id]=initCanvas(el,w,h);}return canvases[id];
+    }
+    function tick(){
+      t+=0.022;
+      filtered.forEach(function(item,i){
+        var fn=drawFns[item.category];if(!fn)return;
+        var el=document.getElementById("cvd-"+i);if(!el)return;
+        var w=el.offsetWidth||140,h=el.offsetHeight||120;
+        var ctx=getOrInit("cvd-"+i,w,h);if(!ctx)return;
+        fn(ctx,w,h,t);
+      });
+      rafId=requestAnimationFrame(tick);
+    }
+    rafId=requestAnimationFrame(tick);
+    return function(){cancelAnimationFrame(rafId);};
+  },[filtered]);
+
+
   return (
     <div style={{paddingBottom:8}}>
       {/* Hero header — matches mockup */}
@@ -4821,18 +4949,46 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
             var emoji=catEmoji[item.category]||"📅";
             var hasDeadline=item.deadline&&item.deadline.length>0;
             var hasDate=item.date&&item.date.length>0;
+            var canId="cvd-"+i;
+            var catColors={
+              "Soccer":["#0d4a1a","#16a34a"],
+              "Basketball":["#7c2d12","#ea580c"],
+              "Hockey":["#0f2d55","#3b82f6"],
+              "Swimming":["#0c3d6b","#0ea5e9"],
+              "Music":["#2e1065","#a855f7"],
+              "Art":["#065f46","#10b981"],
+              "Dance":["#831843","#ec4899"],
+              "Community":["#78350f","#f59e0b"],
+              "Other":["#1a2e1a","#4ade80"]
+            };
+            var colors=catColors[item.category]||catColors["Other"];
             return (
-              <div key={i} style={{background:"#fff",borderRadius:14,overflow:"hidden",border:"1px solid rgba(26,46,26,.07)",boxShadow:"0 1px 4px rgba(26,46,26,.06)"}}>
-                <div style={{height:110,background:"rgba(45,90,61,.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,position:"relative"}}>
-                  <span>{emoji}</span>
-                  {(hasDeadline||hasDate)&&<div style={{position:"absolute",bottom:6,left:8,background:"rgba(0,0,0,.55)",borderRadius:99,padding:"2px 8px",fontSize:10,fontWeight:600,color:"#fff"}}>{hasDeadline?"⏰ "+item.deadline:item.date}</div>}
+              <div key={i} style={{background:"#fff",borderRadius:16,overflow:"hidden",border:"1px solid rgba(26,46,26,.07)",boxShadow:"0 3px 14px rgba(26,46,26,.1)"}}>
+                <div style={{height:120,background:colors[0],display:"flex",alignItems:"center",justifyContent:"center",fontSize:56,position:"relative",overflow:"hidden"}}>
+                  <canvas id={canId} style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}}/>
+                  <span style={{position:"relative",zIndex:2,filter:"drop-shadow(0 3px 10px rgba(0,0,0,.4))",fontSize:56}}>{emoji}</span>
+                  {(hasDeadline||hasDate)&&(
+                    <div style={{position:"absolute",bottom:7,left:8,background:"rgba(0,0,0,.45)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",borderRadius:99,padding:"2px 8px",fontSize:10,fontWeight:700,color:"#fff",zIndex:3}}>
+                      {hasDeadline?"⏰ "+item.deadline:item.date}
+                    </div>
+                  )}
+                  <div style={{position:"absolute",top:7,right:7,background:"rgba(255,255,255,.15)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",border:"1px solid rgba(255,255,255,.25)",borderRadius:99,padding:"2px 8px",fontSize:9,fontWeight:800,color:"#fff",letterSpacing:".05em",textTransform:"uppercase",zIndex:3}}>
+                    {item.category||"Activity"}
+                  </div>
                 </div>
-                <div style={{padding:"10px 12px 12px"}}>
-                  <p style={{fontWeight:700,fontSize:13,color:"var(--cream)",lineHeight:1.3,marginBottom:2,fontFamily:"'Playfair Display',Georgia,serif"}}>{item.title}</p>
-                  {item.location&&<p style={{fontSize:11,color:"var(--cream3)",marginBottom:8,display:"flex",alignItems:"center",gap:3}}><MapPin size={10} color="var(--cream3)"/>{item.location}</p>}
-                  <button onClick={function(){addToCalendar(item);}} style={{width:"100%",background:"transparent",color:"var(--cream)",border:"1.5px solid var(--cream2)",borderRadius:99,padding:"7px 0",fontWeight:600,fontSize:12,fontFamily:"-apple-system,sans-serif"}}>
-                    Save to Calendar
-                  </button>
+                <div style={{padding:"10px 12px 12px",background:"#fff"}}>
+                  <p style={{fontWeight:800,fontSize:13,color:"#1a2e1a",lineHeight:1.3,marginBottom:3,fontFamily:"'Playfair Display',Georgia,serif",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.title}</p>
+                  {item.location&&<p style={{fontSize:11,color:"#8a9a8a",marginBottom:9,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:3}}><MapPin size={10} color="#8a9a8a"/>{item.location}</p>}
+                  <div style={{display:"flex",gap:7,alignItems:"center"}}>
+                    <button onClick={function(){addToCalendar(item);}} style={{flex:1,background:"#1a3a2a",color:"#f5f0e8",border:"none",borderRadius:10,padding:"9px 0",fontWeight:700,fontSize:12,fontFamily:"-apple-system,sans-serif",cursor:"pointer"}}>
+                      + Save to Calendar
+                    </button>
+                    {item.url&&item.url.length>2&&(
+                      <button onClick={function(){if(window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Browser){window.Capacitor.Plugins.Browser.open({url:item.url});}else{window.open(item.url,"_blank");}}} style={{width:36,height:36,background:"#f0ebe0",border:"2px solid #1a3a2a",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,cursor:"pointer"}}>
+                        <ExternalLink size={14} color="#1a3a2a"/>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );
