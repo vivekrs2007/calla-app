@@ -2577,17 +2577,29 @@ function FlyerScanner({members, onAdd}) {
     fetch("https://pqvxzsrpifiuovhtxldp.supabase.co/functions/v1/scan-flyer", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": "Bearer "+window.__supabaseAnonKey },
-      body: JSON.stringify({ imageBase64: base64, mediaType: mediaType })
+      body: JSON.stringify({ image: base64, mediaType: mediaType })
     }).then(function(res) {
       return res.json();
     }).then(function(data) {
       stopStepAnim();
       if (data.error) {
-        setErrorMsg(data.error || "API error — please try again.");
+        setErrorMsg(data.error || "Couldn\'t scan this flyer. Try a clearer photo.");
         setScanStage("error");
         return;
       }
-      var events = data.events || [];
+      // Edge function returns { result: "{json string}" }
+      var resultText = data.result || "";
+      var parsed = null;
+      try {
+        var clean = resultText.replace(/```json|```/g, "").trim();
+        parsed = JSON.parse(clean);
+      } catch(e) {
+        setErrorMsg("Couldn\'t read the flyer. Try a clearer photo.");
+        setScanStage("error");
+        return;
+      }
+      // Result is a single event object — wrap in array
+      var events = Array.isArray(parsed) ? parsed : (parsed && parsed.title ? [parsed] : []);
       if (!events || events.length === 0) {
         setErrorMsg("No events found in this image. Try a clearer photo of the flyer.");
         setScanStage("error");
@@ -3610,7 +3622,7 @@ function MembersScreen({members,setMembers,events,onBack,saveMember,deleteMember
   // ── Members list ──────────────────────────────────────────────────────────
   return (
     <div>
-      {onBack&&<div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 14px)",marginBottom:4}}><button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--sage)",border:"none",borderRadius:10,color:"#f5f0e8",fontWeight:700,fontSize:14,padding:"9px 16px",boxShadow:"0 2px 8px rgba(26,58,42,.25)"}}><ChevronLeft size={16}/>Back</button></div>}
+      {onBack&&<div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 14px)",marginBottom:4}}><button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--sage)",border:"none",borderRadius:10,color:"#f5f0e8",fontWeight:700,fontSize:14,marginBottom:8,padding:"9px 16px",boxShadow:"0 2px 8px rgba(26,58,42,.2)"}}><ChevronLeft size={16}/>Back</button></div>}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
         <div><p style={{fontSize:14,color:"var(--cream3)",marginTop:2}}>{members.length} member{members.length===1?"":"s"} · tap to edit profile</p></div>
         <Btn onClick={()=>setShowAdd(true)} style={{display:"flex",alignItems:"center",gap:6,padding:"10px 16px",fontSize:15}}><Plus size={14}/>Add Member</Btn>
@@ -3739,7 +3751,7 @@ function NotifScreen({events,members,onSelectEvent,topBar}) {
     <div className="screen-enter">
       <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
         {topBar}
-        <div style={{marginTop:10}}>
+        <div style={{marginTop:8}}>
           <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>Alerts</p>
           <p style={{fontSize:13,color:"rgba(245,240,232,.55)",marginTop:3,fontFamily:"-apple-system,sans-serif"}}>{up.length} upcoming event{up.length===1?"":"s"}</p>
         </div>
@@ -3799,7 +3811,7 @@ function NotifSettingsScreen({settings,setSettings,members,onBack,requestPermiss
   );
   return (
     <div>
-      <div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 14px)",marginBottom:4}}><button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--sage)",border:"none",borderRadius:10,color:"#f5f0e8",fontWeight:700,fontSize:14,padding:"9px 16px",boxShadow:"0 2px 8px rgba(26,58,42,.25)"}}><ChevronLeft size={16}/>Back</button></div>
+      <div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 14px)",marginBottom:4}}><button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--sage)",border:"none",borderRadius:10,color:"#f5f0e8",fontWeight:700,fontSize:14,marginBottom:8,padding:"9px 16px",boxShadow:"0 2px 8px rgba(26,58,42,.2)"}}><ChevronLeft size={16}/>Back</button></div>
       <div style={{marginBottom:22}}>
         <h2 style={{fontSize:26,fontWeight:700,letterSpacing:"-.3px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)"}}>Notifications</h2>
         <p style={{fontSize:15,color:"var(--cream3)",marginTop:4,fontWeight:300}}>Reminders & quiet hours</p>
@@ -3984,7 +3996,9 @@ function DigestScreen({members, user, onBack, toast}) {
 
   return (
     <div>
-      <div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 14px)",marginBottom:4}}><button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--sage)",border:"none",borderRadius:10,color:"#f5f0e8",fontWeight:700,fontSize:14,padding:"9px 16px",boxShadow:"0 2px 8px rgba(26,58,42,.25)"}}><ChevronLeft size={16}/>Back</button></div>
+      <div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 14px)",marginBottom:4}}><button onClick={onBack} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--sage)",border:"none",borderRadius:10,color:"#f5f0e8",fontWeight:700,fontSize:14,marginBottom:8,padding:"9px 16px",boxShadow:"0 2px 8px rgba(26,58,42,.2)"}}>
+        <ChevronLeft size={16}/>Back
+      </button></div>
 
       <div style={{marginBottom:22}}>
         <h2 style={{fontSize:26,fontWeight:700,letterSpacing:"-.3px",fontFamily:"\'Playfair Display\',Georgia,serif",color:"var(--cream)"}}>Morning Text</h2>
@@ -4123,7 +4137,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
   const gm=id=>id?members.find(m=>m.id===id)||{name:"Family",color:"var(--cream3)",emoji:"👨‍👩‍👧‍👦"}:{name:"Family",color:"var(--cream3)",emoji:"👨‍👩‍👧‍👦"};
   const ce=events.filter(e=>e.cost&&parseFloat(e.cost)>0);
   const tot=ce.reduce((s,e)=>{const c=parseFloat(e.cost)||0;return s+(e.costType==="monthly"?c:e.costType==="session"?c*4:e.costType==="season"?c/3:c);},0);
-  const Back=()=>(<div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 14px)",marginBottom:4}}><button onClick={()=>setSec(null)} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--sage)",border:"none",borderRadius:10,color:"#f5f0e8",fontWeight:700,fontSize:14,padding:"9px 16px",boxShadow:"0 2px 8px rgba(26,58,42,.25)"}}><ChevronLeft size={16}/>Back</button></div>);
+  const Back=()=>(<div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 10px)"}}><button onClick={()=>setSec(null)} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--sage)",border:"none",borderRadius:10,color:"#f5f0e8",fontWeight:700,fontSize:14,marginBottom:8,padding:"9px 16px",boxShadow:"0 2px 8px rgba(26,58,42,.2)"}}><ChevronLeft size={16}/>Back</button></div>);
   const SECS=[
     {id:"family",Icon:Users,label:"Family Members",desc:members.length+" members"},
     {id:"digest",Icon:Sun,label:"Morning Text",desc:"Daily SMS with your schedule"},
@@ -4205,7 +4219,7 @@ function MoreScreen({members,setMembers,events,user,paid,trialLeft,onUpgrade,onS
   );
   if(sec==="account") return (
     <div>
-      <div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 10px)"}}><button onClick={()=>setSec(null)} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--ink3)",border:"1.5px solid var(--border2)",borderRadius:10,color:"var(--cream2)",fontWeight:600,fontSize:14,marginBottom:20,padding:"7px 14px"}}><ChevronLeft size={16}/>Back</button></div>
+      <Back/>
       <h1 style={{fontSize:28,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",marginBottom:6}}>Account</h1>
       <p style={{fontSize:14,color:"var(--cream3)",marginBottom:24}}>Manage your family name, email and password.</p>
 
@@ -4599,7 +4613,7 @@ function ListsScreen({members,topBar}) {
     <div>
       <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
         {topBar}
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:10}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:8}}>
           <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>Lists</p>
           <button onClick={function(){setAddingList(true);}} style={{width:32,height:32,borderRadius:9,background:"rgba(245,240,232,.18)",border:"1px solid rgba(245,240,232,.3)",display:"flex",alignItems:"center",justifyContent:"center",minHeight:"auto",minWidth:"auto"}}><Plus size={15} color="#f5f0e8"/></button>
         </div>
@@ -4757,7 +4771,7 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
       {/* Hero header — matches mockup */}
       <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
         {topBar}
-        <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px",marginTop:10}}>Explore Nearby</p>
+        <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>Explore Nearby</p>
       </div>
       {/* Location bar */}
       <div style={{background:"#fff",borderRadius:16,padding:"14px 16px",marginBottom:14,border:"1px solid rgba(26,46,26,.08)",boxShadow:"0 1px 4px rgba(26,46,26,.06)"}}>
@@ -5306,7 +5320,7 @@ export default function App() {
                 {m.photo?<img src={m.photo} style={{width:"100%",height:"100%",objectFit:"cover"}} alt={m.name}/>:m.emoji}
               </div>
             );})}
-            <button onClick={function(){setShowSearch(function(v){if(v){setSearchQuery("");}return !v;});}} style={{width:28,height:28,background:"rgba(245,240,232,.15)",border:"1px solid rgba(245,240,232,.25)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Search size={13} color="#f5f0e8"/></button>
+            <button onClick={function(){setShowSearch(function(v){setSearchQuery("");return !v;});}} style={{width:28,height:28,background:"rgba(245,240,232,.15)",border:"1px solid rgba(245,240,232,.25)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Search size={13} color="#f5f0e8"/></button>
             <button onClick={function(){go("notif");}} style={{width:28,height:28,background:"rgba(245,240,232,.15)",border:"1px solid rgba(245,240,232,.25)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",position:"relative",flexShrink:0}}>
               <Bell size={13} color="#f5f0e8"/>
               {upc>0&&<div style={{position:"absolute",top:-3,right:-3,background:"var(--red)",color:"#f5f0e8",borderRadius:"50%",width:13,height:13,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:800,border:"1.5px solid var(--sage)"}}>{upc}</div>}
@@ -5357,8 +5371,9 @@ export default function App() {
             }).sort(function(a,b){return a.date.localeCompare(b.date);});
             if(res.length===0) return <div style={{textAlign:"center",padding:"24px 0",color:"var(--cream3)",fontSize:15}}>No results for "{searchQuery}"</div>;
             return (
-              <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:16}}>
-                <p style={{fontSize:12,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em"}}>{res.length} result{res.length===1?"":"s"}</p>
+              <div style={{background:"var(--ink)",borderRadius:16,padding:"14px 14px 8px",marginBottom:16,boxShadow:"0 2px 12px rgba(26,46,26,.08)"}}>
+                <p style={{fontSize:12,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em",marginBottom:8}}>{res.length} result{res.length===1?"":"s"}</p>
+                <div style={{display:"flex",flexDirection:"column",gap:6}}>
                 {res.map(function(ev){
                   var m=members.find(function(m){return m.id===ev.memberId;})||{emoji:"👤",color:"var(--cream3)",name:"?"};
                   var isToday=ev.date===todayStr;
@@ -5378,11 +5393,11 @@ export default function App() {
                     </div>
                   );
                 })}
+                </div>
               </div>
             );
           })()}
-          {!showSearch&&screen()}
-          {showSearch&&!searchQuery.trim()&&screen()}
+          {(!showSearch||!searchQuery.trim())&&screen()}
 
         </div>
       </div>
