@@ -5309,7 +5309,7 @@ export default function App() {
 
           {showSearch&&(
             <div style={{marginBottom:12}}>
-              <div style={{display:"flex",alignItems:"center",gap:10,background:"var(--sage)",borderRadius:12,padding:"11px 14px",border:"1px solid rgba(245,240,232,.2)",marginTop:-4}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,background:"var(--sage)",borderRadius:12,padding:"11px 14px",border:"1px solid rgba(245,240,232,.2)"}}>
                 <Search size={15} color="rgba(245,240,232,.7)"/>
                 <input
                   autoFocus
