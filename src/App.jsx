@@ -4772,7 +4772,7 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
       try {
         var clean = text.replace(/```json|```/g,"").trim();
         var parsed = JSON.parse(clean);
-        if(Array.isArray(parsed) && parsed.length>0) setResults(parsed);
+        if(Array.isArray(parsed) && parsed.length>0) setResults(parsed.map(function(ev){return Object.assign({},ev,{category:normalizeCategory(ev.category)});}));
         else setError("No activities found near "+loc+". Try a larger city name.");
       } catch(e) {
         setError("Parse error: "+e.message+". Raw: "+text.slice(0,80));
@@ -4782,6 +4782,21 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
       setError("Network error: "+err.message);
       setLoading(false);
     });
+  }
+
+  function normalizeCategory(cat) {
+    if(!cat) return "Other";
+    var c = cat.toLowerCase();
+    if(c==="soccer"||c.includes("football")||c.includes("rugby")||c.includes("lacrosse")) return "Soccer";
+    if(c==="basketball") return "Basketball";
+    if(c==="hockey"||c.includes("hockey")) return "Hockey";
+    if(c==="swimming"||c.includes("swim")||c.includes("aqua")||c.includes("water polo")||c.includes("diving")) return "Swimming";
+    if(c==="music"||c.includes("music")||c.includes("piano")||c.includes("guitar")||c.includes("violin")||c.includes("choir")||c.includes("sing")||c.includes("band")||c.includes("drum")) return "Music";
+    if(c==="art"||c.includes("art")||c.includes("paint")||c.includes("draw")||c.includes("craft")||c.includes("pottery")||c.includes("photo")||c.includes("sculpt")) return "Art";
+    if(c==="dance"||c.includes("dance")||c.includes("ballet")||c.includes("hip hop")||c.includes("jazz")||c.includes("cheer")) return "Dance";
+    if(c==="community"||c.includes("community")||c.includes("festival")||c.includes("cultural")||c.includes("market")||c.includes("fair")||c.includes("family")||c.includes("parade")||c.includes("charity")) return "Community";
+    if(c.includes("tennis")||c.includes("baseball")||c.includes("volleyball")||c.includes("cricket")||c.includes("badminton")||c.includes("golf")||c.includes("track")||c.includes("sport")||c.includes("gym")||c.includes("fitness")||c.includes("martial")||c.includes("karate")||c.includes("taekwondo")) return "Soccer";
+    return "Other";
   }
 
   function fmtFetchedAt(iso) {
@@ -4972,7 +4987,7 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
     function tick(){
       t+=0.022;
       filtered.forEach(function(item,i){
-        var fn=drawFns[item.category];if(!fn)return;
+        var fn=drawFns[item.category]||drawFns["Other"];if(!fn)return;
         var el=document.getElementById("cvd-"+i);if(!el)return;
         var w=el.offsetWidth||140,h=el.offsetHeight||120;
         var ctx=getOrInit("cvd-"+i,w,h);if(!ctx)return;
@@ -5073,7 +5088,10 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
             var emoji=catEmoji[item.category]||"📅";
             var hasDeadline=item.deadline&&item.deadline.length>4;
             var hasDate=item.date&&item.date.length>4;
-            var hasUrl=item.url&&item.url.length>6&&item.url.startsWith("http");
+            var hasRealUrl=item.url&&item.url.length>6&&item.url.startsWith("http");
+            // Always provide a URL — use real one if available, Google search otherwise
+            var effectiveUrl=hasRealUrl?item.url:"https://www.google.com/search?q="+encodeURIComponent((item.title||"")+" "+(savedCity||city||"")+" registration");
+            var hasUrl=true;
             var canId="cvd-"+i;
             var catColors={
               "Soccer":["#0d4a1a","#16a34a"],
@@ -5126,12 +5144,12 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
                       + Save to Calendar
                     </button>
                     <button
-                      onClick={function(){if(!hasUrl)return;if(window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Browser){window.Capacitor.Plugins.Browser.open({url:item.url});}else{window.open(item.url,"_blank");}}}
-                      style={{width:42,height:42,background:hasUrl?"#f0ebe0":"rgba(180,180,180,.15)",border:"2px solid "+(hasUrl?"#1a3a2a":"rgba(180,180,180,.3)"),borderRadius:11,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,cursor:hasUrl?"pointer":"default",opacity:hasUrl?1:0.4}}>
-                      <ExternalLink size={15} color={hasUrl?"#1a3a2a":"#aaa"}/>
+                      onClick={function(){if(window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Browser){window.Capacitor.Plugins.Browser.open({url:effectiveUrl});}else{window.open(effectiveUrl,"_blank");}}}
+                      style={{width:42,height:42,background:"#f0ebe0",border:"2px solid #1a3a2a",borderRadius:11,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,cursor:"pointer",opacity:1}}>
+                      <ExternalLink size={15} color="#1a3a2a"/>
                     </button>
                   </div>
-                  {!hasUrl&&<p style={{fontSize:10,color:"#aaa",marginTop:5,textAlign:"center"}}>No website available for this activity</p>}
+                  {!hasRealUrl&&<p style={{fontSize:10,color:"#aaa",marginTop:5,textAlign:"center"}}>🔍 Opens Google search for this activity</p>}
                 </div>
               </div>
             );
