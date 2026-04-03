@@ -4795,7 +4795,9 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
     if(c==="art"||c.includes("art")||c.includes("paint")||c.includes("draw")||c.includes("craft")||c.includes("pottery")||c.includes("photo")||c.includes("sculpt")) return "Art";
     if(c==="dance"||c.includes("dance")||c.includes("ballet")||c.includes("hip hop")||c.includes("jazz")||c.includes("cheer")) return "Dance";
     if(c==="community"||c.includes("community")||c.includes("festival")||c.includes("cultural")||c.includes("market")||c.includes("fair")||c.includes("family")||c.includes("parade")||c.includes("charity")) return "Community";
-    if(c.includes("tennis")||c.includes("baseball")||c.includes("volleyball")||c.includes("cricket")||c.includes("badminton")||c.includes("golf")||c.includes("track")||c.includes("sport")||c.includes("gym")||c.includes("fitness")||c.includes("martial")||c.includes("karate")||c.includes("taekwondo")) return "Soccer";
+    if(c.includes("tennis")||c.includes("baseball")||c.includes("volleyball")||c.includes("cricket")||c.includes("badminton")||c.includes("golf")||c.includes("track")||c.includes("sport")||c.includes("gym")||c.includes("fitness")||c.includes("martial")||c.includes("karate")||c.includes("taekwondo")||c.includes("gymnast")||c.includes("yoga")||c.includes("lacrosse")||c.includes("rugby")) return "Soccer";
+    if(c.includes("stem")||c.includes("coding")||c.includes("code")||c.includes("robot")||c.includes("science")||c.includes("tech")||c.includes("math")||c.includes("chess")||c.includes("academic")||c.includes("computer")||c.includes("program")||c.includes("python")||c.includes("scratch")||c.includes("steam")||c.includes("engineer")||c.includes("digital")) return "STEM";
+    if(c.includes("outdoor")||c.includes("nature")||c.includes("hike")||c.includes("hiking")||c.includes("camp")||c.includes("garden")||c.includes("environment")||c.includes("park")||c.includes("trail")||c.includes("forest")||c.includes("adventure")) return "Outdoor";
     return "Other";
   }
 
@@ -4813,10 +4815,10 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
     } catch(e) { return ""; }
   }
 
-  var categories=["All","Soccer","Basketball","Hockey","Swimming","Music","Art","Dance","Community","Other"];
+  var categories=["All","Soccer","Basketball","Hockey","Swimming","Music","Art","Dance","Community","STEM","Outdoor","Other"];
   var [filter,setFilter]=useState("All");
 
-  var catEmoji={"Soccer":"⚽","Basketball":"🏀","Hockey":"🏒","Swimming":"🏊","Music":"🎵","Art":"🎨","Dance":"💃","Community":"🏘️","Other":"📅"};
+  var catEmoji={"Soccer":"⚽","Basketball":"🏀","Hockey":"🏒","Swimming":"🏊","Music":"🎵","Art":"🎨","Dance":"💃","Community":"🏘️","STEM":"💻","Outdoor":"🌲","Other":"🎯"};
 
   function addToCalendar(item, memberId, memberColor) {
     var mid = memberId||(members[0]&&members[0].id)||"";
@@ -4980,7 +4982,70 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
       rg.addColorStop(0,"rgba(167,139,250,.3)");rg.addColorStop(1,"rgba(0,0,0,0)");
       ctx.fillStyle=rg;ctx.fillRect(0,0,w,h);
     }
-    var drawFns={"Soccer":drawSoccer,"Basketball":drawBball,"Hockey":drawHockey,"Swimming":drawSwim,"Music":drawMusic,"Art":drawArt,"Dance":drawDance,"Community":drawCommunity,"Other":drawOther};
+    function drawSTEM(ctx,w,h,t){
+      ctx.fillStyle="#0a1628";ctx.fillRect(0,0,w,h);
+      // Grid
+      ctx.strokeStyle="rgba(59,130,246,.1)";ctx.lineWidth=0.8;
+      for(var gx=0;gx<=w;gx+=w/7){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,h);ctx.stroke();}
+      for(var gy=0;gy<=h;gy+=h/5){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(w,gy);ctx.stroke();}
+      // Network nodes + connecting lines
+      var nodes=[{x:.12,y:.25},{x:.5,y:.15},{x:.85,y:.3},{x:.25,y:.65},{x:.6,y:.7},{x:.9,y:.6}];
+      var links=[[0,1],[1,2],[0,3],[1,4],[2,5],[3,4],[4,5]];
+      links.forEach(function(pair,i){
+        var a=nodes[pair[0]],b=nodes[pair[1]];
+        var pulse=(Math.sin(t*1.5+i)*.5+.5)*.25+.04;
+        ctx.strokeStyle="rgba(96,165,250,"+pulse+")";ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(a.x*w,a.y*h);ctx.lineTo(b.x*w,b.y*h);ctx.stroke();
+      });
+      nodes.forEach(function(n,i){
+        var pulse=Math.sin(t*2+i)*.5+.5,nx=n.x*w,ny=n.y*h;
+        var ng=ctx.createRadialGradient(nx,ny,0,nx,ny,12+pulse*5);
+        ng.addColorStop(0,"rgba(96,165,250,"+(0.7+pulse*.25)+")");ng.addColorStop(1,"rgba(0,0,0,0)");
+        ctx.fillStyle=ng;ctx.fillRect(nx-17,ny-17,34,34);
+        ctx.beginPath();ctx.arc(nx,ny,2.5,0,Math.PI*2);ctx.fillStyle="rgba(147,197,253,"+(0.6+pulse*.4)+")";ctx.fill();
+      });
+      // Floating binary
+      for(var b2=0;b2<8;b2++){
+        var bx=(b2*43+t*14+b2*11)%w,by=(b2*31+t*7)%(h*.85);
+        var ba=(Math.sin(t*2.2+b2)*.4+.4)*.55+.08;
+        ctx.fillStyle="rgba(96,165,250,"+ba+")";ctx.font="9px monospace";ctx.fillText(b2%2?"1":"0",bx,by+10);
+      }
+      // Central glow
+      var cg=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w*.45);
+      cg.addColorStop(0,"rgba(59,130,246,.14)");cg.addColorStop(1,"rgba(0,0,0,0)");
+      ctx.fillStyle=cg;ctx.fillRect(0,0,w,h);
+    }
+    function drawOutdoor(ctx,w,h,t){
+      var sky=ctx.createLinearGradient(0,0,0,h*.7);
+      sky.addColorStop(0,"#0d2a1a");sky.addColorStop(1,"#1a4a28");
+      ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
+      // Stars / fireflies
+      for(var s=0;s<14;s++){
+        var sa=(Math.sin(t*1.6+s)*.5+.5)*.55+.1;
+        ctx.beginPath();ctx.arc((s*47+t*5)%w,(s*29)%(h*.6),1.5,0,Math.PI*2);
+        ctx.fillStyle="rgba(187,247,208,"+sa+")";ctx.fill();
+      }
+      // Rolling hill silhouette
+      ctx.fillStyle="rgba(8,35,18,.85)";
+      ctx.beginPath();ctx.moveTo(0,h);
+      for(var hx=0;hx<=w;hx+=3){ctx.lineTo(hx,h*.7+Math.sin(hx/w*Math.PI*3+t*.35)*9);}
+      ctx.lineTo(w,h);ctx.closePath();ctx.fill();
+      // Floating leaves
+      [{x:.18,sp:.7,ph:0},{x:.48,sp:.5,ph:1.3},{x:.72,sp:.9,ph:2.5},{x:.33,sp:.6,ph:.8}].forEach(function(lf,i){
+        var lx=lf.x*w+Math.sin(t*lf.sp+lf.ph)*14;
+        var ly=h*.08+((t*lf.sp*18+lf.ph*28)%(h*.62));
+        var la=Math.sin(t*lf.sp+lf.ph)*.3+.65;
+        ctx.save();ctx.translate(lx,ly);ctx.rotate(t*lf.sp+lf.ph);
+        ctx.fillStyle="rgba(74,222,128,"+la+")";
+        ctx.beginPath();ctx.ellipse(0,0,5,3,0,0,Math.PI*2);ctx.fill();
+        ctx.restore();
+      });
+      // Ground glow
+      var gg=ctx.createRadialGradient(w/2,h*.75,0,w/2,h*.75,w*.5);
+      gg.addColorStop(0,"rgba(34,197,94,.18)");gg.addColorStop(1,"rgba(0,0,0,0)");
+      ctx.fillStyle=gg;ctx.fillRect(0,0,w,h);
+    }
+    var drawFns={"Soccer":drawSoccer,"Basketball":drawBball,"Hockey":drawHockey,"Swimming":drawSwim,"Music":drawMusic,"Art":drawArt,"Dance":drawDance,"Community":drawCommunity,"STEM":drawSTEM,"Outdoor":drawOutdoor,"Other":drawOther};
     function getOrInit(id,w,h){
       if(!canvases[id]){var el=document.getElementById(id);if(!el)return null;canvases[id]=initCanvas(el,w,h);}return canvases[id];
     }
@@ -5102,6 +5167,8 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
               "Art":["#065f46","#10b981"],
               "Dance":["#831843","#ec4899"],
               "Community":["#78350f","#f59e0b"],
+              "STEM":["#0a1628","#3b82f6"],
+              "Outdoor":["#0d2a1a","#22c55e"],
               "Other":["#2a1a3a","#7c3aed"]
             };
             var colors=catColors[item.category]||catColors["Other"];

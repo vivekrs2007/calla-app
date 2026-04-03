@@ -69,7 +69,7 @@ Use real venue names, community centres, recreation halls, and cultural centres 
 JSON array format (40 items):
 [{
   "title": "event name",
-  "category": "Soccer or Basketball or Hockey or Swimming or Music or Art or Dance or Community or Other",
+  "category": "Soccer or Basketball or Hockey or Swimming or Music or Art or Dance or Community or STEM or Outdoor or Other",
   "date": "YYYY-MM-DD or empty",
   "deadline": "YYYY-MM-DD or empty",
   "location": "specific venue name, ${city}",

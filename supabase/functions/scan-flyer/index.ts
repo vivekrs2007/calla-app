@@ -94,7 +94,7 @@ serve(async (req) => {
           system: `You find local kids activities for ${city}. Respond ONLY with a valid JSON array. No markdown. Every result must be in ${city}.`,
           messages: [{
             role: "user",
-            content: `List 12 kids activities, sports registrations, swim lessons, music classes and community events within ${rad}km of ${location} happening between ${today} and ${nextMonth}. Include registration deadlines. Use realistic venue names in ${city}. JSON array: title, category (Soccer/Basketball/Hockey/Swimming/Music/Art/Dance/Community/Other), date (YYYY-MM-DD or ""), deadline (YYYY-MM-DD or ""), location (venue in ${city}), description (max 120 chars), url (or ""). All results must be in ${city}.`,
+            content: `List 12 kids activities, sports registrations, swim lessons, music classes and community events within ${rad}km of ${location} happening between ${today} and ${nextMonth}. Include registration deadlines. Use realistic venue names in ${city}. JSON array: title, category (Soccer/Basketball/Hockey/Swimming/Music/Art/Dance/Community/STEM/Outdoor/Other), date (YYYY-MM-DD or ""), deadline (YYYY-MM-DD or ""), location (venue in ${city}), description (max 120 chars), url (or ""). All results must be in ${city}.`,
           }],
         }),
       });
