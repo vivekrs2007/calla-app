@@ -1076,41 +1076,154 @@ function Auth({onLogin}) {
   );
 }
 
+/* ─── Tour Demo Animations ──────────────────────────────────────────────── */
+function CalendarDemo() {
+  var [phase,setPhase]=useState(0);
+  useEffect(function(){
+    var active=true;
+    function run(){
+      if(!active)return;
+      setPhase(0);
+      var t1=setTimeout(function(){if(active)setPhase(1);},700);
+      var t2=setTimeout(function(){if(active)setPhase(2);},1400);
+      var t3=setTimeout(function(){if(active)setPhase(3);},2100);
+      var t4=setTimeout(function(){if(active)run();},4400);
+      return function(){clearTimeout(t1);clearTimeout(t2);clearTimeout(t3);clearTimeout(t4);};
+    }
+    run();
+    return function(){active=false;};
+  },[]);
+  var evs=[
+    {e:"⚽",t:"Soccer pickup",time:"3:30 PM",c:"#4ade80"},
+    {e:"🎵",t:"Piano lesson",time:"3:45 PM",c:"#c084fc",conflict:true},
+    {e:"🏀",t:"Basketball",time:"4:00 PM",c:"#fb923c"},
+  ];
+  return (
+    <div style={{background:"rgba(255,255,255,.08)",borderRadius:14,padding:"12px 14px"}}>
+      <p style={{fontSize:10,color:"rgba(255,255,255,.38)",fontWeight:700,letterSpacing:".1em",marginBottom:10,margin:"0 0 10px 0"}}>{new Date().toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}).toUpperCase()}</p>
+      {evs.map(function(ev,i){
+        var show=phase>i;
+        return (
+          <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderTop:i>0?"1px solid rgba(255,255,255,.07)":"none",opacity:show?1:0,transform:show?"none":"translateY(6px)",transition:"opacity .35s ease "+(i*.1)+"s, transform .35s ease "+(i*.1)+"s"}}>
+            <div style={{width:3,height:30,borderRadius:2,background:ev.c,flexShrink:0}}/>
+            <div style={{flex:1}}>
+              <p style={{fontSize:13,fontWeight:600,color:"#f5f0e8",margin:0}}>{ev.e} {ev.t}</p>
+              <p style={{fontSize:11,color:"rgba(245,240,232,.42)",margin:0}}>{ev.time}</p>
+            </div>
+            {ev.conflict&&show&&phase>=2&&<div style={{background:"rgba(239,68,68,.85)",borderRadius:99,padding:"2px 8px",fontSize:10,fontWeight:700,color:"#fff",animation:"pulse 1.5s infinite",flexShrink:0}}>⚠️ Conflict</div>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+function CatchDemo() {
+  var MODES=[
+    {icon:"🎙️",label:"Voice memo",hint:"\"Soccer registration April 15th...\"",result:"⚽ Soccer Registration · Apr 15"},
+    {icon:"📧",label:"Forward email",hint:"Forward to team@getcalla.ca",result:"🎵 Piano lesson · Apr 9 · 4:00 PM"},
+    {icon:"📷",label:"Snap a flyer",hint:"Point camera at any event flyer",result:"🏊 Swim camp · Jul 8–12 · Minto"},
+  ];
+  var [idx,setIdx]=useState(0);
+  var [showResult,setShowResult]=useState(false);
+  useEffect(function(){
+    var active=true;
+    function run(){
+      if(!active)return;
+      setShowResult(false);
+      var t1=setTimeout(function(){if(active)setShowResult(true);},1100);
+      var t2=setTimeout(function(){
+        if(!active)return;
+        setIdx(function(i){return(i+1)%MODES.length;});
+        run();
+      },3000);
+    }
+    run();
+    return function(){active=false;};
+  },[]);
+  var mode=MODES[idx];
+  return (
+    <div style={{background:"rgba(255,255,255,.08)",borderRadius:14,padding:"14px 14px"}}>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+        <div style={{width:38,height:38,borderRadius:12,background:"rgba(255,255,255,.12)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{mode.icon}</div>
+        <div style={{flex:1}}>
+          <p style={{fontSize:12,fontWeight:700,color:"rgba(245,240,232,.9)",margin:0}}>{mode.label}</p>
+          <p style={{fontSize:11,color:"rgba(245,240,232,.42)",margin:"2px 0 0 0"}}>{mode.hint}</p>
+        </div>
+      </div>
+      <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6,opacity:showResult?1:0,transition:"opacity .3s ease"}}>
+        <div style={{flex:1,height:1,background:"rgba(255,255,255,.15)"}}/>
+        <p style={{fontSize:10,color:"rgba(245,240,232,.38)",margin:0,fontWeight:600,letterSpacing:".06em"}}>CALLA ADDED</p>
+        <div style={{flex:1,height:1,background:"rgba(255,255,255,.15)"}}/>
+      </div>
+      <div style={{background:"rgba(255,255,255,.1)",borderRadius:10,padding:"8px 12px",opacity:showResult?1:0,transform:showResult?"none":"translateY(5px)",transition:"opacity .4s ease .1s, transform .4s ease .1s"}}>
+        <p style={{fontSize:13,fontWeight:600,color:"#f5f0e8",margin:0}}>{mode.result}</p>
+      </div>
+    </div>
+  );
+}
+function DiscoverDemo() {
+  var ITEMS=[
+    {e:"⚽",t:"Youth Soccer League",loc:"Minto Recreation Centre",c:"#4ade80"},
+    {e:"💻",t:"Python Coding Camp",loc:"Ottawa Public Library",c:"#60a5fa"},
+    {e:"🎵",t:"Music Together",loc:"NAC Arts Centre",c:"#c084fc"},
+  ];
+  var [count,setCount]=useState(0);
+  useEffect(function(){
+    var active=true;
+    function run(){
+      if(!active)return;
+      setCount(0);
+      var t1=setTimeout(function(){if(active)setCount(1);},500);
+      var t2=setTimeout(function(){if(active)setCount(2);},1100);
+      var t3=setTimeout(function(){if(active)setCount(3);},1700);
+      var t4=setTimeout(function(){if(active)run();},4200);
+    }
+    run();
+    return function(){active=false;};
+  },[]);
+  return (
+    <div style={{background:"rgba(255,255,255,.08)",borderRadius:14,padding:"10px 12px"}}>
+      <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:10}}>
+        <MapPin size={11} color="rgba(245,240,232,.45)"/>
+        <p style={{fontSize:10,color:"rgba(245,240,232,.45)",fontWeight:700,margin:0,letterSpacing:".08em"}}>OTTAWA, ON · NEARBY</p>
+      </div>
+      {ITEMS.map(function(item,i){
+        var show=count>i;
+        return (
+          <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderTop:i>0?"1px solid rgba(255,255,255,.07)":"none",opacity:show?1:0,transform:show?"none":"translateY(8px)",transition:"opacity .35s ease, transform .35s ease"}}>
+            <div style={{width:30,height:30,borderRadius:8,background:"rgba(255,255,255,.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,flexShrink:0}}>{item.e}</div>
+            <div style={{flex:1}}>
+              <p style={{fontSize:12,fontWeight:700,color:"#f5f0e8",margin:0}}>{item.t}</p>
+              <p style={{fontSize:10,color:"rgba(245,240,232,.38)",margin:"1px 0 0 0"}}>{item.loc}</p>
+            </div>
+            <div style={{width:6,height:6,borderRadius:"50%",background:item.c,flexShrink:0}}/>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ─── First-Time Setup (post sign-up onboarding) ────────────────────────── */
 function FirstTimeSetup({user,onDone}) {
   var COLORS=["#2d5a3d","#1a5c8a","#7c3aed","#c2410c","#0f766e","#b45309","#be185d","#3d6b1a"];
+  var EMOJIS=["👦","👧","👨","👩","👴","👵","🧒","🧑","👶","🧔","👱","🧕"];
   var [step,setStep]=useState(0);
   var [familyName,setFamilyName]=useState((user&&user.family&&user.family!=="My Family")?user.family:"");
   var [famErr,setFamErr]=useState("");
-  var [mems,setMems]=useState([{id:genId(),name:"",color:"#2d5a3d",_showPicker:false}]);
+  var [mems,setMems]=useState([{id:genId(),name:"",color:"#2d5a3d",emoji:"👤",_showPicker:false,_showEmoji:false}]);
   var [slide,setSlide]=useState(0);
   var [saving,setSaving]=useState(false);
   var touchX=useRef(null);
 
-  var TOUR=[
-    {emoji:"📅",title:"One shared calendar",body:"Every event, every family member, one view. Calla spots scheduling conflicts before they ruin your week.",bg:"linear-gradient(135deg,#1a3a2a,#2d5a3d)"},
-    {emoji:"⚡",title:"Calla catches it all",body:"Forward a confirmation email. Snap a school flyer. Or just speak it. Calla reads it, understands it, and adds it.",bg:"linear-gradient(135deg,#1a1a3a,#2d2d5a)"},
-    {emoji:"🧭",title:"Discover local activities",body:"Find kids sports registrations, music classes, and community events near you — refreshed every day.",bg:"linear-gradient(135deg,#0d2a1a,#0d3a5a)"},
-  ];
-
-  function goNext() {
-    if(step===0){
-      if(!familyName.trim()){setFamErr("Please enter your family name.");return;}
-      setFamErr("");setStep(1);
-    } else if(step===1){
-      setStep(2);
-    }
+  function goNext(){
+    if(step===0){if(!familyName.trim()){setFamErr("Please enter your family name.");return;}setFamErr("");setStep(1);}
+    else if(step===1){setStep(2);}
   }
-
-  function addMem(){
-    setMems(function(p){return[...p,{id:genId(),name:"",color:COLORS[p.length%COLORS.length],_showPicker:false}];});
-  }
-  function updateMem(id,fields){
-    setMems(function(p){return p.map(function(m){return m.id===id?Object.assign({},m,fields):m;});});
-  }
-  function removeMem(id){
-    setMems(function(p){return p.filter(function(m){return m.id!==id;});});
-  }
+  function addMem(){setMems(function(p){return[...p,{id:genId(),name:"",color:COLORS[p.length%COLORS.length],emoji:"👤",_showPicker:false,_showEmoji:false}];});}
+  function updateMem(id,fields){setMems(function(p){return p.map(function(m){return m.id===id?Object.assign({},m,fields):m;});});}
+  function removeMem(id){setMems(function(p){return p.filter(function(m){return m.id!==id;});});}
+  function closeAll(){setMems(function(p){return p.map(function(m){return Object.assign({},m,{_showPicker:false,_showEmoji:false});});});}
 
   function finish(){
     setSaving(true);
@@ -1121,19 +1234,14 @@ function FirstTimeSetup({user,onDone}) {
       supabase.auth.updateUser({data:{family_name:fname}}),
     ];
     valid.forEach(function(m){
-      saves.push(supabase.from("members").upsert({id:m.id,user_id:user.id,name:m.name.trim(),color:m.color,emoji:"👤"}));
+      saves.push(supabase.from("members").upsert({id:m.id,user_id:user.id,name:m.name.trim(),color:m.color,emoji:m.emoji||"👤"}));
     });
-    Promise.all(saves).catch(function(){}).finally(function(){
-      setSaving(false);
-      onDone(fname,valid);
-    });
+    Promise.all(saves).catch(function(){}).finally(function(){setSaving(false);onDone(fname,valid);});
   }
 
   var DOTS=(
-    <div style={{display:"flex",justifyContent:"center",gap:6,paddingTop:"calc(env(safe-area-inset-top,44px) + 18px)",paddingBottom:0}}>
-      {[0,1,2].map(function(i){return(
-        <div key={i} style={{width:i===step?22:6,height:6,borderRadius:99,background:i<=step?"var(--sage2)":"var(--border2)",transition:"all .3s"}}/>
-      );})};
+    <div style={{display:"flex",justifyContent:"center",gap:6,paddingTop:"calc(env(safe-area-inset-top,44px) + 18px)"}}>
+      {[0,1,2].map(function(i){return <div key={i} style={{width:i===step?22:6,height:6,borderRadius:99,background:i<=step?"var(--sage2)":"var(--border2)",transition:"all .3s"}}/>;})};
     </div>
   );
 
@@ -1149,21 +1257,15 @@ function FirstTimeSetup({user,onDone}) {
         </div>
         <div className="fu">
           <p style={{fontSize:14,fontWeight:700,color:"var(--cream2)",marginBottom:8,letterSpacing:".02em"}}>What's your family name?</p>
-          <input
-            placeholder="e.g. The Johnsons"
-            value={familyName}
+          <input placeholder="e.g. The Johnsons" value={familyName}
             onChange={function(e){setFamilyName(e.target.value);setFamErr("");}}
-            style={{fontSize:17,fontWeight:600}}
-            onKeyDown={function(e){if(e.key==="Enter")goNext();}}
-          />
+            style={{fontSize:17,fontWeight:600}} onKeyDown={function(e){if(e.key==="Enter")goNext();}}/>
           {famErr&&<p style={{fontSize:13,color:"var(--rose)",marginTop:6}}>{famErr}</p>}
           <p style={{fontSize:13,color:"var(--cream3)",marginTop:6}}>Shown in your app header and on shared calendars.</p>
         </div>
       </div>
       <div style={{padding:"0 28px",paddingBottom:"calc(28px + env(safe-area-inset-bottom,0px))"}}>
-        <Btn onClick={goNext} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"16px",fontSize:16}}>
-          Continue →
-        </Btn>
+        <Btn onClick={goNext} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"16px",fontSize:16}}>Continue →</Btn>
       </div>
     </div>
   );
@@ -1172,36 +1274,47 @@ function FirstTimeSetup({user,onDone}) {
   if(step===1) return (
     <div style={{height:"100vh",maxHeight:"100dvh",display:"flex",flexDirection:"column",background:"var(--ink2)"}}>
       {DOTS}
-      <div style={{flex:1,overflowY:"auto",padding:"24px 24px 8px",WebkitOverflowScrolling:"touch"}}>
+      <div style={{flex:1,overflowY:"auto",padding:"24px 24px 8px",WebkitOverflowScrolling:"touch"}} onClick={closeAll}>
         <div className="fu">
           <h1 style={{fontSize:24,fontWeight:800,letterSpacing:"-.4px",marginBottom:8,fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",lineHeight:1.2}}>Who's in your family?</h1>
-          <p style={{color:"var(--cream3)",fontSize:15,lineHeight:1.6,marginBottom:24,fontWeight:300}}>Add names and pick a colour for each member. You can always edit this later.</p>
+          <p style={{color:"var(--cream3)",fontSize:15,lineHeight:1.6,marginBottom:24,fontWeight:300}}>Pick a colour and emoji for each member. You can always edit this later.</p>
           <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:14}}>
             {mems.map(function(m,idx){return(
-              <div key={m.id} style={{background:"#fff",borderRadius:14,padding:"11px 14px",display:"flex",alignItems:"center",gap:10,boxShadow:"0 1px 4px rgba(26,46,26,.06)",position:"relative"}}>
-                {/* Colour dot — tap to pick */}
+              <div key={m.id} style={{background:"#fff",borderRadius:14,padding:"11px 14px",display:"flex",alignItems:"center",gap:10,boxShadow:"0 1px 4px rgba(26,46,26,.06)",position:"relative"}}
+                onClick={function(e){e.stopPropagation();}}>
+                {/* Colour picker */}
                 <div style={{position:"relative",flexShrink:0}}>
-                  <div
-                    onClick={function(){updateMem(m.id,{_showPicker:!m._showPicker});}}
-                    style={{width:36,height:36,borderRadius:"50%",background:m.color,cursor:"pointer",border:"2px solid rgba(255,255,255,.6)",boxShadow:"0 2px 6px rgba(0,0,0,.18)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                    {m._showPicker&&<ChevronDown size={14} color="#fff"/>}
-                  </div>
+                  <div onClick={function(){updateMem(m.id,{_showPicker:!m._showPicker,_showEmoji:false});}}
+                    style={{width:36,height:36,borderRadius:"50%",background:m.color,cursor:"pointer",border:"2px solid rgba(255,255,255,.6)",boxShadow:"0 2px 6px rgba(0,0,0,.18)",flexShrink:0}}/>
                   {m._showPicker&&(
-                    <div style={{position:"absolute",top:44,left:0,background:"#fff",borderRadius:14,padding:10,boxShadow:"0 4px 24px rgba(0,0,0,.15)",display:"flex",flexWrap:"wrap",gap:8,width:176,zIndex:20}}>
+                    <div style={{position:"absolute",top:44,left:0,background:"#fff",borderRadius:14,padding:10,boxShadow:"0 4px 24px rgba(0,0,0,.15)",display:"flex",flexWrap:"wrap",gap:8,width:176,zIndex:30}}>
                       {COLORS.map(function(c){return(
-                        <div key={c}
-                          onClick={function(){updateMem(m.id,{color:c,_showPicker:false});}}
+                        <div key={c} onClick={function(){updateMem(m.id,{color:c,_showPicker:false});}}
                           style={{width:30,height:30,borderRadius:"50%",background:c,cursor:"pointer",outline:m.color===c?"3px solid "+c:"none",outlineOffset:2,boxShadow:m.color===c?"0 0 0 2px #fff inset":"none"}}/>
-                      );})};
+                      );})}
                     </div>
                   )}
                 </div>
-                <input
-                  placeholder={"Member "+(idx+1)+" — e.g. Emma"}
-                  value={m.name}
+                {/* Emoji picker */}
+                <div style={{position:"relative",flexShrink:0}}>
+                  <div onClick={function(){updateMem(m.id,{_showEmoji:!m._showEmoji,_showPicker:false});}}
+                    style={{width:36,height:36,borderRadius:10,background:"rgba(26,46,26,.06)",border:"1.5px solid rgba(26,46,26,.12)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,cursor:"pointer"}}>
+                    {m.emoji||"👤"}
+                  </div>
+                  {m._showEmoji&&(
+                    <div style={{position:"absolute",top:44,left:0,background:"#fff",borderRadius:14,padding:10,boxShadow:"0 4px 24px rgba(0,0,0,.15)",display:"flex",flexWrap:"wrap",gap:6,width:216,zIndex:30}}>
+                      {EMOJIS.map(function(em){return(
+                        <div key={em} onClick={function(){updateMem(m.id,{emoji:em,_showEmoji:false});}}
+                          style={{width:36,height:36,borderRadius:8,background:m.emoji===em?"rgba(45,90,61,.12)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,cursor:"pointer",border:m.emoji===em?"1.5px solid var(--sage2)":"1.5px solid transparent"}}>
+                          {em}
+                        </div>
+                      );})}
+                    </div>
+                  )}
+                </div>
+                <input placeholder={"Member "+(idx+1)+" — e.g. Emma"} value={m.name}
                   onChange={function(e){updateMem(m.id,{name:e.target.value});}}
-                  style={{flex:1,fontSize:15,border:"none",outline:"none",background:"transparent",color:"#1a2e1a",fontFamily:"-apple-system,sans-serif",fontWeight:500}}
-                />
+                  style={{flex:1,fontSize:15,border:"none",outline:"none",background:"transparent",color:"#1a2e1a",fontFamily:"-apple-system,sans-serif",fontWeight:500}}/>
                 {mems.length>1&&(
                   <button onClick={function(){removeMem(m.id);}} style={{background:"rgba(180,180,180,.12)",border:"none",borderRadius:"50%",width:26,height:26,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,cursor:"pointer"}}>
                     <X size={13} color="#888"/>
@@ -1223,47 +1336,44 @@ function FirstTimeSetup({user,onDone}) {
     </div>
   );
 
-  /* ── Step 2: Feature tour ── */
-  var card=TOUR[slide];
+  /* ── Step 2: Animated feature tour ── */
+  var CARDS=[
+    {title:"One shared calendar",body:"Every event, every member — one view. Calla spots conflicts before they ruin your week.",bg:"linear-gradient(140deg,#0f2a1a 0%,#1a4a2d 100%)",Demo:CalendarDemo},
+    {title:"Calla catches it all",body:"Voice, email, or a photo of a flyer. Calla reads it and adds the event automatically.",bg:"linear-gradient(140deg,#0f0f2a 0%,#1a1a4a 100%)",Demo:CatchDemo},
+    {title:"Discover nearby",body:"Kids sports, music classes, and community events near you — refreshed every day.",bg:"linear-gradient(140deg,#0a1f2a 0%,#0d3545 100%)",Demo:DiscoverDemo},
+  ];
+  var card=CARDS[slide];
+  var Demo=card.Demo;
   return (
     <div style={{height:"100vh",maxHeight:"100dvh",display:"flex",flexDirection:"column",background:"var(--ink2)"}}>
       {DOTS}
-      <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"20px 24px 12px",overflow:"hidden"}}
+      <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"16px 24px 8px",overflow:"hidden"}}
         onTouchStart={function(e){touchX.current=e.touches[0].clientX;}}
         onTouchEnd={function(e){
           if(touchX.current===null)return;
           var diff=touchX.current-e.changedTouches[0].clientX;
-          if(Math.abs(diff)>40){
-            if(diff>0&&slide<TOUR.length-1)setSlide(function(s){return s+1;});
-            else if(diff<0&&slide>0)setSlide(function(s){return s-1;});
-          }
+          if(Math.abs(diff)>40){if(diff>0&&slide<CARDS.length-1)setSlide(function(s){return s+1;});else if(diff<0&&slide>0)setSlide(function(s){return s-1;});}
           touchX.current=null;
         }}>
         <div className="fu" key={slide} style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
-          <div style={{width:"100%",borderRadius:24,padding:"40px 28px 36px",background:card.bg,textAlign:"center",boxShadow:"0 8px 36px rgba(0,0,0,.28)",marginBottom:28}}>
-            <div style={{fontSize:80,marginBottom:18,lineHeight:1,filter:"drop-shadow(0 4px 16px rgba(0,0,0,.4))"}}>{card.emoji}</div>
-            <h2 style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",letterSpacing:"-.4px",marginBottom:12,lineHeight:1.2}}>{card.title}</h2>
-            <p style={{fontSize:16,color:"rgba(245,240,232,.72)",lineHeight:1.7,fontWeight:300}}>{card.body}</p>
+          <div style={{width:"100%",borderRadius:24,padding:"18px 18px 20px",background:card.bg,boxShadow:"0 8px 36px rgba(0,0,0,.3)",marginBottom:20,overflow:"hidden"}}>
+            <Demo/>
+            <h2 style={{fontSize:22,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",letterSpacing:"-.3px",marginBottom:8,lineHeight:1.2,marginTop:16}}>{card.title}</h2>
+            <p style={{fontSize:14,color:"rgba(245,240,232,.62)",lineHeight:1.65,fontWeight:300,margin:0}}>{card.body}</p>
           </div>
-          {/* Slide indicator dots */}
           <div style={{display:"flex",gap:8,justifyContent:"center"}}>
-            {TOUR.map(function(_,i){return(
+            {CARDS.map(function(_,i){return(
               <div key={i} onClick={function(){setSlide(i);}}
                 style={{width:i===slide?22:8,height:8,borderRadius:99,background:i===slide?"var(--sage2)":"var(--border3)",transition:"all .3s",cursor:"pointer"}}/>
-            );})};
+            );})}
           </div>
         </div>
       </div>
-      <div style={{padding:"0 24px",paddingBottom:"calc(28px + env(safe-area-inset-bottom,0px))"}}>
-        {slide<TOUR.length-1?(
+      <div style={{padding:"0 24px",paddingBottom:"calc(24px + env(safe-area-inset-bottom,0px))"}}>
+        {slide<CARDS.length-1?(
           <div style={{display:"flex",gap:10}}>
-            <button onClick={finish} disabled={saving}
-              style={{flex:1,background:"none",border:"1px solid var(--border2)",borderRadius:12,padding:"14px",fontSize:15,fontWeight:600,color:"var(--cream3)",cursor:"pointer"}}>
-              Skip
-            </button>
-            <Btn onClick={function(){setSlide(function(s){return s+1;});}} style={{flex:2,display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"14px",fontSize:16}}>
-              Next →
-            </Btn>
+            <button onClick={finish} disabled={saving} style={{flex:1,background:"none",border:"1px solid var(--border2)",borderRadius:12,padding:"14px",fontSize:15,fontWeight:600,color:"var(--cream3)",cursor:"pointer"}}>Skip</button>
+            <Btn onClick={function(){setSlide(function(s){return s+1;});}} style={{flex:2,display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"14px",fontSize:16}}>Next →</Btn>
           </div>
         ):(
           <Btn onClick={finish} disabled={saving} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"15px",fontSize:16}}>
