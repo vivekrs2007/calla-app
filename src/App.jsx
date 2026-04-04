@@ -3215,7 +3215,7 @@ function FlyerScanner({members, onAdd}) {
   );
 }
 
-function InboxScreen({members,onAdd,user,topBar}) {
+function InboxScreen({members,onAdd,user,familyId,topBar}) {
   const [tab,setTab]=useState("email");
   const [text,setText]=useState("");
   const [stage,setStage]=useState("idle");
@@ -3224,6 +3224,79 @@ function InboxScreen({members,onAdd,user,topBar}) {
   const [deleteProgress,setDeleteProgress]=useState(0);
   const [instructor,setInstructor]=useState(null); // {name, group, type, isUpdate, isCancelled}
   const [log,setLog]=useState([]);
+
+  // ── Received emails from catch address ───────────────────────────────────
+  const [catchItems,setCatchItems]=useState([]);
+  const [loadingCatch,setLoadingCatch]=useState(false);
+  const [selectedCatchId,setSelectedCatchId]=useState(null); // id of item being processed
+
+  var catchPrefix=user&&user.id?user.id.replace(/-/g,"").slice(0,10):"";
+
+  function loadCatchItems(){
+    if(!catchPrefix) return;
+    setLoadingCatch(true);
+    // Query by catch_prefix OR by family_id so both co-parents see shared inbox
+    var q=supabase.from("catch_items")
+      .select("id,from_address,from_name,subject,body_text,received_at,processed")
+      .eq("processed",false)
+      .order("received_at",{ascending:false})
+      .limit(20);
+    if(familyId){
+      q=supabase.from("catch_items")
+        .select("id,from_address,from_name,subject,body_text,received_at,processed")
+        .eq("family_id",familyId)
+        .eq("processed",false)
+        .order("received_at",{ascending:false})
+        .limit(20);
+    } else {
+      q=supabase.from("catch_items")
+        .select("id,from_address,from_name,subject,body_text,received_at,processed")
+        .eq("catch_prefix",catchPrefix)
+        .eq("processed",false)
+        .order("received_at",{ascending:false})
+        .limit(20);
+    }
+    q.then(function(res){
+      setLoadingCatch(false);
+      if(res.data) setCatchItems(res.data);
+    }).catch(function(){setLoadingCatch(false);});
+  }
+
+  // Load on mount and when tab becomes email
+  useEffect(function(){
+    if(tab==="email") loadCatchItems();
+  },[tab,familyId,catchPrefix]);
+
+  // Poll every 30 s while on email tab
+  useEffect(function(){
+    if(tab!=="email") return;
+    var interval=setInterval(function(){loadCatchItems();},30000);
+    return function(){clearInterval(interval);};
+  },[tab,familyId,catchPrefix]);
+
+  function openCatchItem(item){
+    setSelectedCatchId(item.id);
+    setText(item.body_text||item.subject||"");
+    // Scroll to top — textarea will be populated
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  function deleteCatchItem(id){
+    supabase.from("catch_items").update({processed:true,processed_at:new Date().toISOString()}).eq("id",id).then(function(){
+      setCatchItems(function(prev){return prev.filter(function(x){return x.id!==id;});});
+    }).catch(function(){});
+  }
+
+  function fmtReceivedAt(iso){
+    if(!iso) return "";
+    var d=new Date(iso);
+    var now=new Date();
+    var diff=Math.floor((now-d)/60000);
+    if(diff<2) return "just now";
+    if(diff<60) return diff+"m ago";
+    if(diff<1440) return Math.floor(diff/60)+"h ago";
+    return d.toLocaleDateString("en-CA",{month:"short",day:"numeric"});
+  }
 
   // ── Instructor detection ──────────────────────────────────────────────────
   function detectInstructor(txt){
@@ -3580,6 +3653,11 @@ function InboxScreen({members,onAdd,user,topBar}) {
     });
     var logSubject=instructor?("From "+(instructor.name||"Instructor")+(instructor.group?" · "+instructor.group:"")):text.split("\n")[0].slice(0,60)||"Email";
     setLog(function(l){return [{id:genId(),subject:logSubject,date:todayStr,count:extracted.length,instructor:!!instructor},...l];});
+    // Mark the catch_item as processed if this came from the inbox
+    if(selectedCatchId){
+      deleteCatchItem(selectedCatchId);
+      setSelectedCatchId(null);
+    }
     setStage("done");
     setTimeout(function(){setStage("idle");setText("");setExtracted([]);setChecked(new Set());setDeleteProgress(0);setInstructor(null);},2200);
   };
@@ -3633,8 +3711,47 @@ function InboxScreen({members,onAdd,user,topBar}) {
             <p style={{fontSize:15,color:"var(--sage3)"}}>Forward any school or coach email to this address, or CC it when signing up for activities.</p>
           </Card>
 
+          {/* ── Received emails from catch address ─────────────────────── */}
+          {(catchItems.length>0||loadingCatch)&&(
+            <div style={{marginBottom:16}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+                <p style={{fontSize:13,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".05em"}}>
+                  📬 Arrived at your catch address {catchItems.length>0&&<span style={{background:"var(--sage2)",color:"#fff",borderRadius:99,padding:"1px 7px",fontSize:12,fontWeight:700,marginLeft:6}}>{catchItems.length}</span>}
+                </p>
+                <button onClick={loadCatchItems} style={{background:"none",border:"none",color:"var(--sage2)",fontSize:13,fontWeight:600,padding:"4px 0"}}>Refresh</button>
+              </div>
+              {loadingCatch&&catchItems.length===0&&(
+                <div style={{textAlign:"center",padding:"18px 0",color:"var(--cream3)",fontSize:14}}>Checking inbox…</div>
+              )}
+              {catchItems.map(function(item){
+                var isSelected=selectedCatchId===item.id;
+                return (
+                  <div key={item.id} style={{background:isSelected?"rgba(45,90,61,.1)":"var(--ink2)",border:"1.5px solid "+(isSelected?"var(--sage2)":"var(--border2)"),borderRadius:14,padding:"12px 14px",marginBottom:8,position:"relative"}}>
+                    <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
+                      <div style={{width:36,height:36,borderRadius:10,background:"rgba(59,130,246,.10)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>📧</div>
+                      <div style={{flex:1,minWidth:0}}>
+                        <p style={{fontWeight:700,fontSize:14,color:"var(--cream)",marginBottom:2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.subject||"(No subject)"}</p>
+                        <p style={{fontSize:13,color:"var(--cream3)",marginBottom:0,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.from_name||item.from_address||"Unknown sender"} · {fmtReceivedAt(item.received_at)}</p>
+                      </div>
+                      <button onClick={function(){deleteCatchItem(item.id);}} style={{background:"none",border:"none",padding:"4px",color:"var(--cream3)",fontSize:16,flexShrink:0,cursor:"pointer"}}>×</button>
+                    </div>
+                    <div style={{display:"flex",gap:8,marginTop:10}}>
+                      <button onClick={function(){openCatchItem(item);}} style={{flex:1,background:"var(--sage2)",color:"#fff",border:"none",borderRadius:10,padding:"9px",fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                        ✨ Extract Events
+                      </button>
+                      <button onClick={function(){deleteCatchItem(item.id);}} style={{background:"var(--ink3)",color:"var(--cream3)",border:"none",borderRadius:10,padding:"9px 14px",fontWeight:600,fontSize:13,cursor:"pointer"}}>
+                        Discard
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+              <div style={{borderBottom:"1px solid var(--border2)",margin:"14px 0 16px"}}/>
+            </div>
+          )}
+
           <div style={{position:"relative",marginBottom:10}}>
-            <textarea rows={7} placeholder={"Paste any email here...\n\nWorks for:\n• Coach/instructor updates & cancellations\n• School event notices\n• Registration deadlines\n• Any email with event details"} value={text} onChange={e=>setText(e.target.value)} style={{resize:"none",fontSize:15,lineHeight:1.65}}/>
+            <textarea rows={7} placeholder={"Paste any email here...\n\nWorks for:\n• Coach/instructor updates & cancellations\n• School event notices\n• Registration deadlines\n• Any email with event details"} value={text} onChange={e=>{setText(e.target.value);if(!e.target.value)setSelectedCatchId(null);}} style={{resize:"none",fontSize:15,lineHeight:1.65}}/>
           </div>
           <button onClick={analyze} disabled={!text.trim()} style={{width:"100%",background:text.trim()?"var(--ink)":"var(--ink4)",color:text.trim()?"var(--cream)":"var(--cream3)",borderRadius:12,padding:"14px",fontWeight:700,fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",gap:8,border:"none"}}>
             Extract Events — Delete Email
@@ -5703,7 +5820,7 @@ export default function App() {
         var u=session.user;
         var meta=u.user_metadata||{};
         setUser({id:u.id,name:meta.name||"Parent",family:meta.family_name||"My Family",email:u.email});
-        supabase.from("profiles").select("setup_done,name,family_name,trial_start,paid,onboarding_seen").eq("id",u.id).then(function(pr){
+        supabase.from("profiles").select("setup_done,name,family_name,trial_start,paid,onboarding_seen,catch_prefix").eq("id",u.id).then(function(pr){
           if(pr.data&&pr.data.length>0){
             var profile=pr.data[0];
             var done=profile.setup_done===true||localStorage.getItem("calla_setup_"+u.id)==="true";
@@ -5718,9 +5835,17 @@ export default function App() {
             }
             if(profile.paid===true) setPaid(true);
             if(!profile.onboarding_seen) setShowOnboarding(true);
+            // Store catch prefix so receive-email edge function can reverse-lookup this user
+            if(!profile.catch_prefix){
+              var pfx=u.id.replace(/-/g,"").slice(0,10);
+              supabase.from("profiles").update({catch_prefix:pfx}).eq("id",u.id).then(function(){});
+            }
           } else {
             setSetupDone(localStorage.getItem("calla_setup_"+u.id)==="true");
             setShowOnboarding(true);
+            // Also set catch prefix for brand-new profiles
+            var pfx2=u.id.replace(/-/g,"").slice(0,10);
+            supabase.from("profiles").update({catch_prefix:pfx2}).eq("id",u.id).then(function(){});
           }
           loadUserData(u.id);
         }).catch(function(){
@@ -5746,6 +5871,23 @@ export default function App() {
     });
     return function(){if(sub&&sub.data&&sub.data.subscription)sub.data.subscription.unsubscribe();};
   },[]);
+
+  // ── Catch inbox badge: poll for unread catch_items ────────────────────────
+  useEffect(function(){
+    if(!user||!user.id) return;
+    function refreshBadge(){
+      var pfx=user.id.replace(/-/g,"").slice(0,10);
+      var q=familyId
+        ? supabase.from("catch_items").select("id",{count:"exact",head:true}).eq("family_id",familyId).eq("processed",false)
+        : supabase.from("catch_items").select("id",{count:"exact",head:true}).eq("catch_prefix",pfx).eq("processed",false);
+      q.then(function(res){
+        setInboxBadge(res.count||0);
+      }).catch(function(){});
+    }
+    refreshBadge();
+    var iv=setInterval(refreshBadge,60000);
+    return function(){clearInterval(iv);};
+  },[user,familyId]);
 
   // ── Load events + members from Supabase ───────────────────────────────────
   function loadUserData(userId){
@@ -6053,7 +6195,7 @@ export default function App() {
 
   const screen=()=>{
     if(tab==="home")    return <DashScreen events={selectedMemberId?events.filter(function(e){return e.memberId===selectedMemberId;}):events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)} onSelectEv={function(ev){setGlobalSel(ev);setShowGlobalEv(true);}} trialExpired={!paid&&trial&&trial.expired} onUpgrade={function(){setShowPaywall(true);}} selectedMemberId={selectedMemberId} onClearMember={function(){setSelectedMemberId(null);}} topBar={topBarEl} familyName={user&&user.family}/>;
-    if(tab==="inbox")   return <InboxScreen members={members} onAdd={addEvent} user={user} topBar={topBarEl}/>;
+    if(tab==="inbox")   return <InboxScreen members={members} onAdd={addEvent} user={user} familyId={familyId} topBar={topBarEl}/>;
     if(tab==="discover") return !paid&&trial&&trial.expired ? (
       <div style={{textAlign:"center",padding:"60px 24px"}}>
         <div style={{fontSize:48,marginBottom:16}}>🔒</div>
