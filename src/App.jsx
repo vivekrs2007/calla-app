@@ -3391,6 +3391,10 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
     var atM;
     while((atM=atRe.exec(ctx))!==null){
       var cand=atM[1].trim();
+      // Skip if candidate starts with a time (e.g. "3pm", "12:30pm", "3 pm")
+      if(/^\d{1,2}(?::\d{2})?\s*(?:am|pm)/i.test(cand)) continue;
+      // Skip common non-venue words
+      if(/^(the|a|an|this|that|our|your|his|her|their|my)\b/i.test(cand)) continue;
       // Must contain a venue-like word OR be Title Case
       var venueWords2=["field","park","arena","centre","center","school","hall","court","pool","studio","gym","complex","rink","church","ground","facility","track","dome","stadium","pavilion","rec","rec centre","community","ymca","ice","sport","diamond","pitch","oval","square","road","rd","ave","street","st","drive","dr","blvd","way"];
       var lo2=cand.toLowerCase();
@@ -3401,7 +3405,12 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
         atMatches.push(cand);
       }
     }
-    if(atMatches.length) return atMatches[0];
+    // Prefer the match that actually contains a venue word
+    if(atMatches.length){
+      var venueWords3=["field","park","arena","centre","center","school","hall","court","pool","studio","gym","complex","rink","church","ground","facility","track","dome","stadium","pavilion","rec","community","ymca"];
+      var best=atMatches.find(function(c){return venueWords3.some(function(vw){return c.toLowerCase().includes(vw);});});
+      return best||atMatches[0];
+    }
 
     // Pattern 3: venue word preceded by 1-4 Title Case words
     var venueWordsMain=["Field","Park","Arena","Centre","Center","School","Hall","Court","Pool","Studio","Gym","Complex","Sportsplex","Rink","Church","Grounds","Facility","Stadium","Track","Diamond","Dome","Pitch","Pavilion","Rec","YMCA","Community"];
