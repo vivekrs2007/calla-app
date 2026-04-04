@@ -6065,7 +6065,28 @@ export default function App() {
     if(tab==="lists")   return <ListsScreen members={members} topBar={topBarEl}/>;
     if(tab==="members") return <MembersScreen members={members} setMembers={setMembers} events={events}/>;
     if(tab==="notif")   return <NotifScreen events={events} members={members} onSelectEvent={ev=>{setGlobalSel(ev);setTab("home");}} topBar={topBarEl}/>;
-    if(tab==="more")    return <MoreScreen members={members} setMembers={setMembers} events={events} user={user} setUser={setUser} paid={paid} trialLeft={trial?trial.left:null} onUpgrade={()=>setShowPaywall(true)} notifSettings={notif} setNotifSettings={setNotif} saveMember={saveMember} deleteMember={deleteMember} toast={toast} familyId={familyId} sendInvite={sendInvite} requestPermission={requestNotificationPermission} onSignOut={()=>{supabase.auth.signOut();setUser(null);setSetupDone(false);setTab("home");setEvents([]);setMembers([]);setPaid(false);setShowPaywall(false);setFamilyId(null);toast({icon:"👋",title:"Signed out",color:"var(--cream3)"});}} topBar={topBarEl}/>;
+    if(tab==="more")    return <MoreScreen members={members} setMembers={setMembers} events={events} user={user} setUser={setUser} paid={paid} trialLeft={trial?trial.left:null} onUpgrade={()=>setShowPaywall(true)} notifSettings={notif} setNotifSettings={setNotif} saveMember={saveMember} deleteMember={deleteMember} toast={toast} familyId={familyId} sendInvite={sendInvite} requestPermission={requestNotificationPermission} onSignOut={()=>{
+  // Sign out from Supabase auth
+  supabase.auth.signOut().catch(function(){});
+  // Manually clear Supabase session from WKWebView storage
+  // (onAuthStateChange is not reliable in Capacitor)
+  try {
+    Object.keys(localStorage).forEach(function(k){
+      if(k.startsWith("sb-")||k.startsWith("supabase")||k.startsWith("calla_setup")) localStorage.removeItem(k);
+    });
+  } catch(e){}
+  // Reset all app state
+  setUser(null);
+  setSetupDone(false);
+  setTab("home");
+  setEvents([]);
+  setMembers([]);
+  setPaid(false);
+  setShowPaywall(false);
+  setFamilyId(null);
+  setTrialStart(null);
+  toast({icon:"👋",title:"Signed out",color:"var(--cream3)"});
+}} topBar={topBarEl}/>;
   };
 
   return (
