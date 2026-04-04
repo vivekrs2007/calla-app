@@ -3529,11 +3529,11 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
       }
 
       // ── Extract subject line ─────────────────────────────────────────────
-      var subjectMatch=text.match(/subject[:\s]+([^\n]+)/i);
+      var subjectMatch=t.match(/subject[:\s]+([^\n]+)/i);
       var subjectLine=subjectMatch?subjectMatch[1].trim():"";
 
       // ── Detect instructor ────────────────────────────────────────────────
-      var inst=detectInstructor(text);
+      var inst=detectInstructor(t);
       setInstructor(inst);
 
       // ── Build base title ─────────────────────────────────────────────────
@@ -3550,17 +3550,17 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
       // ── 1. Specific named dates: March 29, Apr 6th, etc. ─────────────────
       var namedRe=/([A-Z][a-z]+\.?\s+\d{1,2}(?:st|nd|rd|th)?)/g;
       var nm;
-      while((nm=namedRe.exec(text))!==null){
+      while((nm=namedRe.exec(t))!==null){
         var ds=parseNamedDate(nm[1]);
         if(!ds||usedDates[ds]) continue;
         usedDates[ds]=true;
         // Get the CURRENT LINE containing the date — tightest possible context
-        var lineStart2=text.lastIndexOf("\n",nm.index)+1;
-        var lineEnd2=text.indexOf("\n",nm.index);
-        if(lineEnd2===-1) lineEnd2=text.length;
-        var lineCtx=text.slice(lineStart2,lineEnd2);
+        var lineStart2=t.lastIndexOf("\n",nm.index)+1;
+        var lineEnd2=t.indexOf("\n",nm.index);
+        if(lineEnd2===-1) lineEnd2=t.length;
+        var lineCtx=t.slice(lineStart2,lineEnd2);
         // Also get ±1 line context if needed
-        var nearCtx=text.slice(Math.max(0,nm.index-80),Math.min(text.length,nm.index+120));
+        var nearCtx=t.slice(Math.max(0,nm.index-80),Math.min(t.length,nm.index+120));
         // Time: prefer same line, fall back to near context
         var tm2=lineCtx.match(/(\d{1,2}(?::\d{2})?\s*(?:am|pm))/i)||nearCtx.match(/(\d{1,2}(?::\d{2})?\s*(?:am|pm))/i);
         // Location: prefer same line
@@ -3588,10 +3588,10 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
         var wds=parseWeekdayDate(wm[0]);
         if(!wds||usedDates[wds]) continue;
         usedDates[wds]=true;
-        var ctx3fwd=text.slice(wm.index,Math.min(text.length,wm.index+200));
+        var ctx3fwd=t.slice(wm.index,Math.min(t.length,wm.index+200));
         var tm3=ctx3fwd.match(/(\d{1,2}(?::\d{2})?\s*(?:am|pm))/i);
-        var loc3=getLocation(ctx3fwd)||getLocation(text);
-        var lineBefore3=text.slice(Math.max(0,wm.index-120),wm.index);
+        var loc3=getLocation(ctx3fwd)||getLocation(t);
+        var lineBefore3=t.slice(Math.max(0,wm.index-120),wm.index);
         var lastLine3=lineBefore3.split("\n").pop().trim();
         var sentenceTitle3=lastLine3.replace(/\s+(?:on|at|this|next)\s*$/i,"").trim();
         var title3=sentenceTitle3&&sentenceTitle3.length>2&&sentenceTitle3.length<50?sentenceTitle3:(titlePrefix||subjectLine||wm[1].charAt(0).toUpperCase()+wm[1].slice(1)+" Event");
@@ -3603,10 +3603,10 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
       var rm3;
       while((rm3=recRe.exec(lo))!==null){
         var rdi=WD.indexOf(rm3[1]);
-        var rctx=text.slice(rm3.index,Math.min(text.length,rm3.index+300));
+        var rctx=t.slice(rm3.index,Math.min(t.length,rm3.index+300));
         var rtm=rctx.match(/(\d{1,2}(?::\d{2})?\s*(?:am|pm))/i);
-        var rloc=getLocation(rctx)||getLocation(text);
-        var rlineBefore=text.slice(Math.max(0,rm3.index-120),rm3.index);
+        var rloc=getLocation(rctx)||getLocation(t);
+        var rlineBefore=t.slice(Math.max(0,rm3.index-120),rm3.index);
         var rLastLine=rlineBefore.split("\n").pop().trim();
         var rSentTitle=rLastLine.replace(/\s+(?:every|on|at)\s*$/i,"").trim();
         var rtitle=rSentTitle&&rSentTitle.length>2&&rSentTitle.length<50?rSentTitle:(titlePrefix||subjectLine||rm3[1].charAt(0).toUpperCase()+rm3[1].slice(1)+" Session");
@@ -3618,16 +3618,16 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
           var rds=rd.toISOString().split("T")[0];
           if(!usedDates[rds]){
             usedDates[rds]=true;
-            evs.push({id:genId(),title:rtitle,date:rds,time:parseTime(rtm&&rtm[1]||""),location:rloc,memberId:suggestMember(text),confidence:rtm?"high":"medium",notes:""});
+            evs.push({id:genId(),title:rtitle,date:rds,time:parseTime(rtm&&rtm[1]||""),location:rloc,memberId:suggestMember(t),confidence:rtm?"high":"medium",notes:""});
           }
         }
       }
 
       // ── 4. Fallback — no dates found but has time and location ───────────
       if(!evs.length){
-        var fbTm=text.match(/(\d{1,2}(?::\d{2})?\s*(?:am|pm))/i);
-        var fbLoc=getLocation(text);
-        evs.push({id:genId(),title:titlePrefix||subjectLine||"",date:"",time:parseTime(fbTm&&fbTm[1]||""),location:fbLoc,memberId:suggestMember(text),confidence:"low",notes:""});
+        var fbTm=t.match(/(\d{1,2}(?::\d{2})?\s*(?:am|pm))/i);
+        var fbLoc=getLocation(t);
+        evs.push({id:genId(),title:titlePrefix||subjectLine||"",date:"",time:parseTime(fbTm&&fbTm[1]||""),location:fbLoc,memberId:suggestMember(t),confidence:"low",notes:""});
       }
 
       // ── Deletion animation ───────────────────────────────────────────────
