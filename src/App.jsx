@@ -3276,9 +3276,10 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
 
   function openCatchItem(item){
     setSelectedCatchId(item.id);
-    setText(item.body_text||item.subject||"");
-    // Scroll to top — textarea will be populated
-    window.scrollTo({top:0,behavior:"smooth"});
+    var body=item.body_text||item.subject||"";
+    setText(body);
+    // Auto-analyze immediately — no need to scroll and tap another button
+    analyze(body);
   }
 
   function deleteCatchItem(id){
@@ -3432,11 +3433,13 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
   }
 
   // ── Smart email parser ────────────────────────────────────────────────────
-  const analyze=()=>{
-    if(!text.trim()) return;
+  const analyze=(overrideText)=>{
+    var t=overrideText||text;
+    if(!t.trim()) return;
+    if(overrideText) setText(overrideText);
     setStage("analyzing");
     setTimeout(function(){
-      var lo=text.toLowerCase();
+      var lo=t.toLowerCase();
       var MN=["january","february","march","april","may","june","july","august","september","october","november","december"];
       var MNA=["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
       var WD=["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
@@ -3895,9 +3898,23 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
       )}
 
       {stage==="done"&&(
-        <div style={{textAlign:"center",padding:"36px 0"}}>
-          <div style={{width:64,height:64,background:"rgba(45,90,61,.06)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px",border:"1px solid rgba(83,136,122,.4)"}}><Check size={28} color="var(--sage2)"/></div>
-          <p style={{fontWeight:800,fontSize:18,color:"var(--sage3)",marginBottom:6}}>Added to Calendar!</p>
+        <div style={{textAlign:"center",padding:"48px 0",animation:"catchDone .5s ease-out"}}>
+          <style>{`
+            @keyframes catchDone {
+              0%   { opacity:0; transform:scale(.85); }
+              60%  { opacity:1; transform:scale(1.06); }
+              100% { opacity:1; transform:scale(1); }
+            }
+            @keyframes flashRing {
+              0%   { box-shadow:0 0 0 0 rgba(45,160,100,.7); }
+              70%  { box-shadow:0 0 0 22px rgba(45,160,100,0); }
+              100% { box-shadow:0 0 0 0 rgba(45,160,100,0); }
+            }
+          `}</style>
+          <div style={{width:72,height:72,background:"rgba(45,90,61,.10)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px",border:"2px solid var(--sage2)",animation:"flashRing .8s ease-out .1s both"}}>
+            <Check size={34} color="var(--sage2)"/>
+          </div>
+          <p style={{fontWeight:800,fontSize:22,color:"var(--sage3)",marginBottom:8,letterSpacing:"-.3px"}}>Added to Calendar! 🎉</p>
           <p style={{fontSize:15,color:"var(--cream3)"}}>Email deleted · Events saved · Nothing else stored</p>
         </div>
       )}
