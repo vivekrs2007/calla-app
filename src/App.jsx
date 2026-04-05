@@ -6225,10 +6225,13 @@ export default function App() {
       var fid=invite.family_id;
       // Join the family
       supabase.from("family_members").upsert({family_id:fid,user_id:user.id,role:"parent"}).then(function(){
-        // Mark invite as accepted
+        // Mark invite as accepted + skip setup for partner
         supabase.from("invites").update({status:"accepted"}).eq("id",invite.id).then(function(){});
-        // Update profile family_id
-        supabase.from("profiles").update({family_id:fid}).eq("id",user.id).then(function(){});
+        supabase.from("profiles").update({family_id:fid,setup_done:true}).eq("id",user.id).then(function(){});
+        // Skip all onboarding for the partner
+        localStorage.setItem("calla_setup_"+user.id,"true");
+        localStorage.setItem("calla_coparent_onboarding_seen","true");
+        setSetupDone(true);
         setFamilyId(fid);
         setPendingInvite(null);
         // Clear URL
@@ -6324,15 +6327,39 @@ export default function App() {
   // ── Step 0b: Pending invite — user is logged in, invite in URL ────────────
   if(user&&pendingInvite) return (
     <><GS/><Toasts toasts={toasts}/>
-    <div style={{height:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28,background:"var(--ink2)",textAlign:"center"}}>
-      <div className="fu">
-        <div style={{fontSize:52,marginBottom:16}}>👨‍👩‍👧</div>
-        <h2 style={{fontSize:26,fontWeight:700,marginBottom:10,fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",letterSpacing:"-.5px"}}>You've been invited!</h2>
-        <p style={{fontSize:15,color:"var(--cream3)",marginBottom:28,lineHeight:1.7}}>Someone shared their Calla family calendar with you. Accept to see all their events and stay in sync.</p>
-        <Btn onClick={function(){acceptInvite(pendingInvite);}} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:12}}>
-          <Check size={16}/>Accept &amp; Join Family
+    <div style={{height:"100vh",maxHeight:"100dvh",display:"flex",flexDirection:"column",background:"var(--ink2)",overflow:"hidden"}}>
+      {/* Premium header */}
+      <div style={{background:"linear-gradient(160deg,#1e3d2a 0%,#2d5a3d 100%)",padding:"calc(env(safe-area-inset-top,44px) + 24px) 28px 28px",textAlign:"center"}}>
+        <div style={{fontSize:52,marginBottom:10}}>🌸</div>
+        <h1 style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",letterSpacing:"-.5px",marginBottom:6}}>You're invited to Calla</h1>
+        <p style={{fontSize:14,color:"rgba(245,240,232,.6)",fontWeight:400}}>Family calendar · Made in Canada 🍁</p>
+      </div>
+      <div style={{flex:1,overflowY:"auto",padding:"28px 24px"}}>
+        <div className="fu">
+          <p style={{fontSize:16,color:"var(--cream3)",lineHeight:1.75,marginBottom:24,textAlign:"center"}}>Someone shared their family calendar with you. Once you join, you'll both see every event and update in real time.</p>
+          {/* What you get */}
+          <div style={{background:"rgba(45,90,61,.08)",border:"1px solid rgba(83,136,122,.2)",borderRadius:16,padding:"18px 16px",marginBottom:28}}>
+            {[["📅","One shared calendar — always in sync"],["📬","School emails auto-added as events"],["⚡","Instant conflict alerts"],["🎙️","Add events by voice"]].map(function([icon,text]){return(
+              <div key={text} style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
+                <span style={{fontSize:20,flexShrink:0}}>{icon}</span>
+                <p style={{fontSize:14,color:"var(--cream)",fontWeight:500,lineHeight:1.4}}>{text}</p>
+              </div>
+            );})}
+          </div>
+          {/* Install nudge */}
+          <div style={{background:"rgba(160,140,60,.08)",border:"1px solid rgba(160,140,60,.2)",borderRadius:12,padding:"12px 14px",marginBottom:24,display:"flex",gap:10,alignItems:"flex-start"}}>
+            <span style={{fontSize:18,flexShrink:0}}>📲</span>
+            <p style={{fontSize:13,color:"var(--cream3)",lineHeight:1.55,margin:0}}>
+              <strong style={{color:"var(--cream2)"}}>Add Calla to your home screen</strong> — tap <strong style={{color:"var(--cream2)"}}>Share → Add to Home Screen</strong> in Safari for the best experience.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div style={{flexShrink:0,padding:"16px 24px",paddingBottom:"calc(20px + env(safe-area-inset-bottom,0px))"}}>
+        <Btn onClick={function(){acceptInvite(pendingInvite);}} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"16px",fontSize:16,marginBottom:12}}>
+          <Check size={16}/>Accept &amp; go to my calendar →
         </Btn>
-        <button onClick={function(){setPendingInvite(null);window.history.replaceState({},"",window.location.pathname);}} style={{background:"none",border:"none",color:"var(--cream3)",fontSize:14,cursor:"pointer"}}>
+        <button onClick={function(){setPendingInvite(null);window.history.replaceState({},"",window.location.pathname);}} style={{background:"none",border:"none",color:"var(--cream3)",fontSize:14,cursor:"pointer",display:"block",width:"100%",textAlign:"center",padding:"8px"}}>
           Decline for now
         </button>
       </div>
