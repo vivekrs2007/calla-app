@@ -2606,14 +2606,14 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
         {topBar}
         <p style={{fontSize:11,fontWeight:600,color:"rgba(245,240,232,.45)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:4,fontFamily:"-apple-system,sans-serif"}}>{dashDay}</p>
         <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px",marginBottom:12}}>{dashGreet},<br/><em style={{fontStyle:"italic",color:"#c9a84c"}}>{familyName||"My Family"}.</em></p>
-        <div style={{display:"flex",gap:10,justifyContent:"center"}}>
+        <div style={{background:"rgba(255,255,255,.10)",borderRadius:14,padding:4,display:"flex",gap:4}}>
           <button onClick={function(){if(trialExpired){onUpgrade&&onUpgrade();return;}onShowAdd();}}
-            style={{background:"#f5f0e8",color:"var(--sage)",border:"none",borderRadius:100,padding:"11px 24px",fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:7,fontFamily:"-apple-system,sans-serif"}}>
-            <Plus size={16}/>Add Event
+            style={{flex:1,padding:"9px 0",borderRadius:10,background:"#f5f0e8",color:"#1e3d2a",fontWeight:700,fontSize:13,border:"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6,transition:"all .2s",fontFamily:"-apple-system,sans-serif"}}>
+            <Plus size={14}/>Add Event
           </button>
           <button onClick={function(){if(trialExpired){onUpgrade&&onUpgrade();return;}onShowVoice();}}
-            style={{background:"rgba(245,240,232,.15)",color:"#f5f0e8",border:"1.5px solid rgba(245,240,232,.35)",borderRadius:100,padding:"11px 24px",fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:7,fontFamily:"-apple-system,sans-serif"}}>
-            <Mic size={16} color="#f5f0e8"/>Voice
+            style={{flex:1,padding:"9px 0",borderRadius:10,background:"transparent",color:"rgba(245,240,232,.85)",fontWeight:700,fontSize:13,border:"none",display:"flex",alignItems:"center",justifyContent:"center",gap:6,transition:"all .2s",fontFamily:"-apple-system,sans-serif"}}>
+            <Mic size={14} color="rgba(245,240,232,.85)"/>Voice
           </button>
         </div>
       </div>
