@@ -3791,8 +3791,8 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
           <div style={{position:"relative",marginBottom:10}}>
             <textarea rows={7} placeholder={"Paste any email here...\n\nWorks for:\n• Coach/instructor updates & cancellations\n• School event notices\n• Registration deadlines\n• Any email with event details"} value={text} onChange={e=>{setText(e.target.value);if(!e.target.value)setSelectedCatchId(null);}} style={{resize:"none",fontSize:15,lineHeight:1.65}}/>
           </div>
-          <button onClick={analyze} disabled={!text.trim()} style={{width:"100%",background:text.trim()?"var(--ink)":"var(--ink4)",color:text.trim()?"var(--cream)":"var(--cream3)",borderRadius:12,padding:"14px",fontWeight:700,fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",gap:8,border:"none"}}>
-            Extract Events — Delete Email
+          <button onClick={()=>analyze()} disabled={!text.trim()} style={{width:"100%",background:text.trim()?"var(--sage)":"var(--ink4)",color:text.trim()?"#f5f0e8":"var(--cream3)",borderRadius:12,padding:"14px",fontWeight:700,fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",gap:8,border:"none",opacity:text.trim()?1:0.5}}>
+            ✨ Extract Events
           </button>
         </>
       )}
