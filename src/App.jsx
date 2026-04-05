@@ -3402,7 +3402,10 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
       var isTitleCase=/^[A-Z]/.test(cand);
       var isAddress=/\d/.test(cand);
       if((hasVenueWord||isTitleCase||isAddress)&&cand.length>3&&cand.length<55){
-        atMatches.push(cand);
+        // Strip everything from an em dash / en dash / " - " onward (e.g. "Minto Arena — Coach Smith")
+        cand=cand.split(/\s*[—–]\s*/)[0].trim();
+        cand=cand.split(/\s+-\s+/)[0].trim();
+        if(cand.length>3) atMatches.push(cand);
       }
     }
     // Prefer the match that actually contains a venue word
@@ -3428,7 +3431,15 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
         var vIdx=words.map(function(w){return w.toLowerCase();}).lastIndexOf(vw.toLowerCase());
         if(vIdx>=0){
           var start=Math.max(0,vIdx-4);
-          var result=words.slice(start,vIdx+1).filter(function(w){return w.length>0;}).join(" ");
+          var candidate=words.slice(start,vIdx+1).filter(function(w){return w.length>0;});
+          // Walk backwards from venue word, keep only Title Case words (stops at lowercase like "at","3pm")
+          var venueResult=[];
+          for(var ci=candidate.length-1;ci>=0;ci--){
+            var cw=candidate[ci];
+            if(/^[A-Z]/.test(cw)){venueResult.unshift(cw);}
+            else{break;}
+          }
+          var result=venueResult.length>0?venueResult.join(" "):candidate.join(" ");
           if(result.length>3) return result;
         }
       }
@@ -3448,6 +3459,7 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
     if(overrideText) setText(overrideText);
     setStage("analyzing");
     setTimeout(function(){
+      try{
       var lo=t.toLowerCase();
       var MN=["january","february","march","april","may","june","july","august","september","october","november","december"];
       var MNA=["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
@@ -3604,7 +3616,7 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
         var lastLine3=lineBefore3.split("\n").pop().trim();
         var sentenceTitle3=lastLine3.replace(/\s+(?:on|at|this|next)\s*$/i,"").trim();
         var title3=sentenceTitle3&&sentenceTitle3.length>2&&sentenceTitle3.length<50?sentenceTitle3:(titlePrefix||subjectLine||wm[1].charAt(0).toUpperCase()+wm[1].slice(1)+" Event");
-        evs.push({id:genId(),title:title3,date:wds,time:parseTime(tm3&&tm3[1]||""),location:loc3,memberId:suggestMember(ctx3),confidence:tm3?"high":"medium",notes:""});
+        evs.push({id:genId(),title:title3,date:wds,time:parseTime(tm3&&tm3[1]||""),location:loc3,memberId:suggestMember(ctx3fwd),confidence:tm3?"high":"medium",notes:""});
       }
 
       // ── 3. Recurring "every Monday" ──────────────────────────────────────
@@ -3639,39 +3651,48 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
         evs.push({id:genId(),title:titlePrefix||subjectLine||"",date:"",time:parseTime(fbTm&&fbTm[1]||""),location:fbLoc,memberId:suggestMember(t),confidence:"low",notes:""});
       }
 
-      // ── Deletion animation ───────────────────────────────────────────────
-      setStage("deleting");
-      setDeleteProgress(0);
-      var prog=0;
-      var iv=setInterval(function(){
-        prog=Math.min(100,prog+4);
-        setDeleteProgress(prog);
-        if(prog>=100){
-          clearInterval(iv);
-          setTimeout(function(){
-            setExtracted(evs);
-            setChecked(new Set(evs.map(function(e){return e.id;})));
-            setStage("review");
-          },400);
-        }
-      },28);
+      // Go straight to review — deletion happens only after user confirms Save
+      setExtracted(evs);
+      setChecked(new Set(evs.map(function(e){return e.id;})));
+      setStage("review");
+      }catch(e){
+        console.error("analyze crash:",e);
+        setStage("idle");
+      }
     },1200);
   };
 
     const confirmEmail=()=>{
+    // Add events to calendar
     extracted.filter(function(e){return checked.has(e.id);}).forEach(function(e){
       var m=members.find(function(x){return x.id===e.memberId;})||members[0];
       onAdd({...e,color:m&&m.color||"#111",id:genId()});
     });
     var logSubject=instructor?("From "+(instructor.name||"Instructor")+(instructor.group?" · "+instructor.group:"")):text.split("\n")[0].slice(0,60)||"Email";
     setLog(function(l){return [{id:genId(),subject:logSubject,date:todayStr,count:extracted.length,instructor:!!instructor},...l];});
-    // Mark the catch_item as processed if this came from the inbox
+    // If this came from the inbox, run deletion animation THEN delete + done
     if(selectedCatchId){
-      deleteCatchItem(selectedCatchId);
-      setSelectedCatchId(null);
+      var captureCatchId=selectedCatchId;
+      setStage("deleting");
+      setDeleteProgress(0);
+      var prog2=0;
+      var iv2=setInterval(function(){
+        prog2=Math.min(100,prog2+4);
+        setDeleteProgress(prog2);
+        if(prog2>=100){
+          clearInterval(iv2);
+          deleteCatchItem(captureCatchId);
+          setSelectedCatchId(null);
+          setTimeout(function(){
+            setStage("done");
+            setTimeout(function(){setStage("idle");setText("");setExtracted([]);setChecked(new Set());setDeleteProgress(0);setInstructor(null);},2200);
+          },300);
+        }
+      },28);
+    } else {
+      setStage("done");
+      setTimeout(function(){setStage("idle");setText("");setExtracted([]);setChecked(new Set());setDeleteProgress(0);setInstructor(null);},2200);
     }
-    setStage("done");
-    setTimeout(function(){setStage("idle");setText("");setExtracted([]);setChecked(new Set());setDeleteProgress(0);setInstructor(null);},2200);
   };
 
   const cd=function(c){return c==="high"?"var(--sage2)":c==="medium"?"#D97706":"#DC2626";};

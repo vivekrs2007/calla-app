@@ -39,14 +39,23 @@ serve(async (req) => {
 
   try {
     const rawBody = await req.text();
+    console.log("receive-email called, method:", req.method, "body length:", rawBody.length);
+
     let body: any = {};
-    try { body = JSON.parse(rawBody); } catch (_) {}
+    try { body = JSON.parse(rawBody); } catch (_) {
+      console.log("Body is not JSON");
+    }
+
+    console.log("body keys:", Object.keys(body).join(","), "| body.prefix:", body.prefix, "| body.type:", body.type);
 
     const SUPABASE_URL        = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const WEBHOOK_SECRET       = Deno.env.get("WEBHOOK_SECRET"); // used for direct calls
+    const WEBHOOK_SECRET       = Deno.env.get("WEBHOOK_SECRET");
+
+    console.log("env check — SUPABASE_URL:", !!SUPABASE_URL, "SERVICE_KEY:", !!SUPABASE_SERVICE_KEY, "WEBHOOK_SECRET:", !!WEBHOOK_SECRET);
 
     if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+      console.error("Missing env vars!");
       return new Response(JSON.stringify({ error: "Missing env vars" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -87,7 +96,9 @@ serve(async (req) => {
       // Verify optional webhook secret for direct calls
       if (WEBHOOK_SECRET) {
         const provided = req.headers.get("x-webhook-secret");
+        console.log("secret check — provided:", provided, "expected:", WEBHOOK_SECRET, "match:", provided === WEBHOOK_SECRET);
         if (provided !== WEBHOOK_SECRET) {
+          console.error("Webhook secret mismatch — rejecting");
           return new Response(JSON.stringify({ error: "Unauthorized" }), {
             status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
