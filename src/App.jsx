@@ -690,11 +690,92 @@ const ONBOARD_SLIDES = [
   },
 ];
 
-function Auth({onLogin}) {
-  const [slide,setSlide]=useState(0),[showForm,setShowForm]=useState(true),[mode,setMode]=useState("signup"),[name,setName]=useState(""),[family,setFamily]=useState(""),[email,setEmail]=useState(""),[pass,setPass]=useState(""),[loading,setLoading]=useState(false),[showPass,setShowPass]=useState(false),[authError,setAuthError]=useState("");
+// ── Password reset screen — shown after user clicks the reset link in email ──
+function ResetPasswordScreen({onDone}){
+  var [pass,setPass]=useState("");
+  var [confirm,setConfirm]=useState("");
+  var [showPass,setShowPass]=useState(false);
+  var [loading,setLoading]=useState(false);
+  var [error,setError]=useState("");
+  var [done,setDone]=useState(false);
 
-  // Clear error when switching tabs
-  function switchMode(m){setMode(m);setAuthError("");}
+  function getStrength(p){
+    if(!p) return 0;
+    var s=0;
+    if(p.length>=8)s++;
+    if(p.length>=12)s++;
+    if(/[A-Z]/.test(p))s++;
+    if(/[0-9]/.test(p))s++;
+    if(/[^A-Za-z0-9]/.test(p))s++;
+    return Math.min(s,3);
+  }
+
+  function submit(){
+    setError("");
+    if(pass.length<8){setError("Password must be at least 8 characters.");return;}
+    if(pass!==confirm){setError("Passwords don't match — please re-enter.");return;}
+    setLoading(true);
+    supabase.auth.updateUser({password:pass}).then(function(res){
+      setLoading(false);
+      if(res.error){setError(res.error.message||"Failed to update password. Please try again.");return;}
+      setDone(true);
+      setTimeout(function(){onDone&&onDone();},2200);
+    }).catch(function(){setLoading(false);setError("Network error. Please try again.");});
+  }
+
+  var str=getStrength(pass);
+  var strCols=["var(--rose)","var(--gold2)","var(--sage2)"];
+  var strLabels=["Weak","Good","Strong"];
+
+  return(
+    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:24,background:"var(--ink)"}}>
+      <div className="fu" style={{width:"100%",maxWidth:380}}>
+        <div style={{textAlign:"center",marginBottom:24}}>
+          <div style={{width:52,height:52,background:"var(--sage)",borderRadius:16,display:"inline-flex",alignItems:"center",justifyContent:"center",marginBottom:14}}><span style={{fontSize:22}}>🔑</span></div>
+          <h1 style={{fontSize:24,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif"}}>Set new password</h1>
+          <p style={{color:"var(--cream3)",fontSize:14,marginTop:4}}>Choose a strong password for your Calla account.</p>
+        </div>
+        {done?(
+          <div style={{background:"rgba(45,90,61,.08)",border:"1px solid rgba(45,90,61,.25)",borderRadius:16,padding:"28px 20px",textAlign:"center"}}>
+            <div style={{fontSize:40,marginBottom:12}}>✅</div>
+            <p style={{fontWeight:700,fontSize:16,color:"var(--sage2)",marginBottom:6}}>Password updated!</p>
+            <p style={{fontSize:14,color:"var(--cream3)"}}>Taking you to your calendar…</p>
+          </div>
+        ):(
+          <Card>
+            <div style={{display:"flex",flexDirection:"column",gap:12}}>
+              <div style={{position:"relative"}}>
+                <input placeholder="New password (8+ characters)" type={showPass?"text":"password"} value={pass} onChange={function(e){setPass(e.target.value);}} style={{paddingRight:44,width:"100%"}}/>
+                <button type="button" onClick={function(){setShowPass(function(s){return !s;});}} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",color:"var(--cream3)",fontSize:15,fontWeight:600,padding:4}}>{showPass?"Hide":"Show"}</button>
+              </div>
+              {pass.length>0&&(
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <div style={{display:"flex",gap:3,flex:1}}>
+                    {[1,2,3].map(function(i){return(<div key={i} style={{flex:1,height:3,borderRadius:2,background:i<=str?strCols[str-1]:"var(--ink5)",transition:"background .3s"}}/>);})}
+                  </div>
+                  <span style={{fontSize:11,color:strCols[str-1],fontWeight:600,minWidth:40}}>{strLabels[str-1]}</span>
+                </div>
+              )}
+              <input placeholder="Confirm new password" type={showPass?"text":"password"} value={confirm} onChange={function(e){setConfirm(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")submit();}} style={{width:"100%"}}/>
+              {pass&&confirm&&pass!==confirm&&<p style={{fontSize:12,color:"var(--rose)",margin:"0"}}>Passwords don't match</p>}
+              {pass&&confirm&&pass===confirm&&confirm.length>=8&&<p style={{fontSize:12,color:"var(--sage2)",margin:"0"}}>✓ Passwords match</p>}
+              <Btn onClick={submit} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:4}}>
+                {loading?<div style={{width:16,height:16,border:"2px solid rgba(255,255,255,.3)",borderTopColor:"#fff",borderRadius:"50%",animation:"spin .7s linear infinite"}}/>:"Update password →"}
+              </Btn>
+              {error&&<div style={{background:"rgba(168,56,56,.08)",border:"1px solid rgba(168,56,56,.2)",borderRadius:10,padding:"10px 14px",fontSize:14,color:"var(--rose)",textAlign:"center"}}>{error}</div>}
+            </div>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Auth({onLogin}) {
+  const [slide,setSlide]=useState(0),[showForm,setShowForm]=useState(true),[mode,setMode]=useState("signup"),[name,setName]=useState(""),[family,setFamily]=useState(""),[email,setEmail]=useState(""),[pass,setPass]=useState(""),[confirmPass,setConfirmPass]=useState(""),[loading,setLoading]=useState(false),[showPass,setShowPass]=useState(false),[authError,setAuthError]=useState(""),[verifyEmailSent,setVerifyEmailSent]=useState(false);
+
+  // Clear error + confirmPass when switching tabs
+  function switchMode(m){setMode(m);setAuthError("");setConfirmPass("");}
 
   const go=()=>{
     setAuthError("");
@@ -706,6 +787,7 @@ function Auth({onLogin}) {
       if(!email.includes("@")||!email.includes(".")){setAuthError("Please enter a valid email address.");return;}
       if(!pass.trim()){setAuthError("Please choose a password.");return;}
       if(pass.length<8){setAuthError("Password must be at least 8 characters.");return;}
+      if(pass!==confirmPass){setAuthError("Passwords don't match — please re-enter.");return;}
     } else {
       if(!email.trim()){setAuthError("Please enter your email address.");return;}
       if(!pass.trim()){setAuthError("Please enter your password.");return;}
@@ -721,13 +803,21 @@ function Auth({onLogin}) {
           } else if(msg.toLowerCase().includes("invalid email")){
             setAuthError("Please enter a valid email address.");
           } else if(msg.toLowerCase().includes("password")){
-            setAuthError("Password must be at least 6 characters.");
+            setAuthError("Password must be at least 8 characters.");
+          } else if(msg.toLowerCase().includes("rate")||msg.toLowerCase().includes("too many")){
+            setAuthError("Too many attempts — please wait a few minutes and try again.");
           } else {
             setAuthError("Something went wrong. Please try again.");
           }
           return;
         }
         var u=res.data.user;
+        var session=res.data.session;
+        // Email confirmation enabled — no session yet, show verify message
+        if(!session&&u&&!u.confirmed_at){
+          setVerifyEmailSent(true);
+          return;
+        }
         supabase.from("profiles").upsert({id:u.id,name:name.trim(),family_name:family.trim(),setup_done:false,trial_start:new Date().toISOString(),paid:false}).then(function(){
           onLogin({id:u.id,name:name.trim()||"Parent",family:family.trim()||"My Family",email:email.trim()});
         });
@@ -735,7 +825,17 @@ function Auth({onLogin}) {
     } else {
       supabase.auth.signInWithPassword({email:email.trim().toLowerCase(),password:pass}).then(function(res){
         setLoading(false);
-        if(res.error){setAuthError("Wrong email or password — try again.");return;}
+        if(res.error){
+          var msg=res.error.message||"";
+          if(msg.toLowerCase().includes("rate")||msg.toLowerCase().includes("too many")){
+            setAuthError("Too many attempts — please wait a few minutes and try again.");
+          } else if(msg.toLowerCase().includes("email not confirmed")){
+            setAuthError("Please verify your email first. Check your inbox for the confirmation link.");
+          } else {
+            setAuthError("Wrong email or password — try again.");
+          }
+          return;
+        }
         var u=res.data.user;
         var meta=u.user_metadata||{};
         localStorage.setItem("calla_setup_"+u.id,"true");
@@ -979,6 +1079,31 @@ function Auth({onLogin}) {
     </div>
   );
 
+  // ── Email verification sent screen ───────────────────────────────────────
+  if(verifyEmailSent) return (
+    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:24,background:"var(--ink)"}}>
+      <div className="fu" style={{width:"100%",maxWidth:380,textAlign:"center"}}>
+        <div style={{fontSize:56,marginBottom:16}}>📬</div>
+        <h1 style={{fontSize:24,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",marginBottom:10}}>Check your inbox</h1>
+        <p style={{fontSize:15,color:"var(--cream3)",lineHeight:1.7,marginBottom:24}}>
+          We sent a confirmation link to <strong style={{color:"var(--cream)"}}>{email}</strong>.<br/>
+          Click it to activate your account and get started.
+        </p>
+        <div style={{background:"rgba(45,90,61,.08)",border:"1px solid rgba(45,90,61,.2)",borderRadius:14,padding:"16px 18px",marginBottom:24,textAlign:"left"}}>
+          {[["📂","Check your spam/junk folder if you don't see it"],["⏱️","The link expires in 24 hours"],["🔄","It may take 1–2 minutes to arrive"]].map(function([icon,tip]){return(
+            <div key={tip} style={{display:"flex",gap:10,marginBottom:10,alignItems:"flex-start"}}>
+              <span style={{fontSize:15,flexShrink:0}}>{icon}</span>
+              <p style={{fontSize:13,color:"var(--cream3)",lineHeight:1.5}}>{tip}</p>
+            </div>
+          );})}
+        </div>
+        <button onClick={function(){setVerifyEmailSent(false);}} style={{background:"none",border:"none",color:"var(--sage3)",fontSize:14,fontWeight:600,cursor:"pointer"}}>
+          ← Use a different email
+        </button>
+      </div>
+    </div>
+  );
+
   // ── Sign-up / login form ──
   return (
     <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:24,background:"var(--ink)"}}>
@@ -1048,6 +1173,19 @@ function Auth({onLogin}) {
               })()}
               <button type="button" onClick={()=>setShowPass(function(s){return !s;})} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",color:"var(--cream3)",fontSize:15,fontWeight:600,padding:4}}>{showPass?"Hide":"Show"}</button>
             </div>
+            {mode==="signup"&&(
+              <div style={{position:"relative"}}>
+                <input placeholder="Confirm password" type={showPass?"text":"password"} value={confirmPass} onChange={function(e){setConfirmPass(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")go();}} style={{paddingRight:confirmPass?36:12,width:"100%"}}/>
+                {confirmPass&&pass&&(
+                  <div style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",width:20,height:20,borderRadius:"50%",background:pass===confirmPass?"var(--sage2)":"var(--rose)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    {pass===confirmPass
+                      ? <svg width="11" height="8" viewBox="0 0 11 8" fill="none"><path d="M1 4l3 3L10 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      : <span style={{fontSize:11,color:"#fff",fontWeight:700}}>✕</span>
+                    }
+                  </div>
+                )}
+              </div>
+            )}
             <Btn onClick={go} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:4}}>
               {loading
                 ? <div style={{width:16,height:16,border:"2px solid rgba(255,255,255,.3)",borderTopColor:"#fff",borderRadius:"50%",animation:"spin .7s linear infinite"}}/>
@@ -4802,10 +4940,13 @@ function MoreScreen({members,setMembers,events,user,setUser,paid,trialLeft,onUpg
         <div style={{background:"rgba(200,50,50,.05)",border:"1px solid rgba(200,50,50,.15)",borderRadius:16,padding:"20px 18px",marginBottom:8}}>
           <p style={{fontWeight:700,fontSize:16,color:"var(--rose)",textAlign:"center",marginBottom:6}}>Taking a break?</p>
           <p style={{fontSize:15,color:"rgba(220,130,130,.75)",textAlign:"center",marginBottom:18,fontWeight:400}}>Your session data will be cleared.</p>
-          <div style={{display:"flex",gap:10}}>
+          <div style={{display:"flex",gap:10,marginBottom:10}}>
             <button onClick={()=>setConfirmSignOut(false)} style={{flex:1,padding:13,borderRadius:12,background:"#fff",border:"1.5px solid var(--border2)",fontWeight:600,fontSize:15,color:"var(--cream2)",boxShadow:"0 1px 3px rgba(45,60,45,.06)"}}>Cancel</button>
             <button onClick={()=>onSignOut&&onSignOut()} style={{flex:1,padding:13,borderRadius:12,background:"#c03030",border:"none",fontWeight:700,fontSize:15,color:"var(--cream)",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}><LogOut size={15}/>Sign Out</button>
           </div>
+          <button onClick={function(){supabase.auth.signOut({scope:"global"}).catch(function(){});onSignOut&&onSignOut();}} style={{width:"100%",padding:"11px",borderRadius:12,background:"none",border:"1px solid rgba(200,50,50,.3)",fontWeight:600,fontSize:13,color:"var(--rose)",cursor:"pointer"}}>
+            Sign out of all devices
+          </button>
         </div>
       )}
 
@@ -5873,6 +6014,7 @@ const DN={enabled:true,reminders:["60","1440"],digest:"daily_morning",quietHours
 export default function App() {
   const [user,setUser]           = useState(null);
   const [authLoading,setAuthLoading] = useState(true);
+  const [recoveryMode,setRecoveryMode] = useState(false);
   const [setupDone,setSetupDone] = useState(false);
   const [tab,setTab]             = useState("home");
   const [globalSel,setGlobalSel] = useState(null);
@@ -6070,6 +6212,10 @@ export default function App() {
     var sub=supabase.auth.onAuthStateChange(function(event,session){
       if(event==="SIGNED_OUT"){
         setUser(null);setSetupDone(false);setEvents([]);setMembers([]);setFamilyId(null);setTrialStart(null);
+      } else if(event==="PASSWORD_RECOVERY"){
+        // User clicked the reset link in their email — show set-new-password screen
+        setRecoveryMode(true);
+        setAuthLoading(false);
       } else if((event==="SIGNED_IN"||event==="TOKEN_REFRESHED")&&session&&session.user){
         var u=session.user;
         var meta=u.user_metadata||{};
@@ -6354,6 +6500,14 @@ export default function App() {
       supabase.from("events").delete().eq("member_id",id).then(function(){});
     }
   };
+
+  // ── Password recovery — user clicked reset link in email ─────────────────
+  if(recoveryMode) return (
+    <><GS/><ResetPasswordScreen onDone={function(){
+      setRecoveryMode(false);
+      toast({icon:"🔑",title:"Password updated successfully!",color:"var(--sage2)"});
+    }}/></>
+  );
 
   // ── Step 0: Loading session ───────────────────────────────────────────────
   if(authLoading) return (
