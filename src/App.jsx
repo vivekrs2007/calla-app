@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, Fragment } from "react";
 import { supabase, SUPABASE_KEY } from "./supabase.js";
+import { App as CapApp } from "@capacitor/app";
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken } from "firebase/messaging";
 
@@ -794,7 +795,7 @@ function Auth({onLogin}) {
     }
     setLoading(true);
     if(mode==="signup"){
-      supabase.auth.signUp({email:email.trim().toLowerCase(),password:pass,options:{data:{name:name.trim(),family_name:family.trim()}}}).then(function(res){
+      supabase.auth.signUp({email:email.trim().toLowerCase(),password:pass,options:{data:{name:name.trim(),family_name:family.trim()},emailRedirectTo:"ca.getcalla.app://"}}).then(function(res){
         setLoading(false);
         if(res.error){
           var msg=res.error.message||"";
@@ -813,6 +814,14 @@ function Auth({onLogin}) {
         }
         var u=res.data.user;
         var session=res.data.session;
+        // Supabase returns fake success (no error) for duplicate emails when confirm is on
+        // Detect by checking identities — empty array means email already registered
+        if(u&&u.identities&&u.identities.length===0){
+          setLoading(false);
+          setAuthError("An account with this email already exists.");
+          setMode("login");
+          return;
+        }
         // Email confirmation enabled — no session yet, show verify message
         if(!session&&u&&!u.confirmed_at){
           setVerifyEmailSent(true);
@@ -1205,7 +1214,7 @@ function Auth({onLogin}) {
                 <p style={{fontSize:13,color:"var(--cream3)",textAlign:"center"}}>No credit card required · No ads · Your data is private</p>
               </div>
             )}
-            {mode==="login"&&<button type="button" onClick={function(){if(!email.trim()){setAuthError("Enter your email above first.");return;}setLoading(true);supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(),{redirectTo:window.location.origin}).then(function(res){setLoading(false);if(res.error){setAuthError("Could not send reset email. Please try again.");}else{setAuthError("✓ Password reset email sent! Check your inbox.");}});}} style={{background:"none",border:"none",color:"var(--sage3)",fontSize:14,fontWeight:600,cursor:"pointer"}}>Forgot password?</button>}
+            {mode==="login"&&<button type="button" onClick={function(){if(!email.trim()){setAuthError("Enter your email above first.");return;}setLoading(true);supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(),{redirectTo:"ca.getcalla.app://"}).then(function(res){setLoading(false);if(res.error){setAuthError("Could not send reset email. Please try again.");}else{setAuthError("✓ Password reset email sent! Check your inbox.");}});}} style={{background:"none",border:"none",color:"var(--sage3)",fontSize:14,fontWeight:600,cursor:"pointer"}}>Forgot password?</button>}
           </div>
         </Card>
 
@@ -6225,7 +6234,38 @@ export default function App() {
         });
       }
     });
-    return function(){if(sub&&sub.data&&sub.data.subscription)sub.data.subscription.unsubscribe();};
+    // ── Deep link handler — catches email confirm + password reset on iOS/Android
+    var deepLinkListener = CapApp.addListener("appUrlOpen", function(event) {
+      var url = event.url || "";
+      if (!url.startsWith("ca.getcalla.app://")) return;
+      try {
+        // Extract query params from the deep link URL
+        var queryString = url.includes("?") ? url.split("?")[1] : "";
+        var params = new URLSearchParams(queryString);
+        var code = params.get("code");
+        var type = params.get("type") || "";
+        if (code) {
+          supabase.auth.exchangeCodeForSession(code).then(function(res) {
+            if (res.error || !res.data || !res.data.session) return;
+            var u = res.data.session.user;
+            var meta = u.user_metadata || {};
+            if (type === "recovery") {
+              setRecoveryMode(true);
+              setAuthLoading(false);
+            } else {
+              // Email confirmed — log user in
+              setUser({ id: u.id, name: meta.name || "Parent", family: meta.family_name || "My Family", email: u.email });
+              setAuthLoading(false);
+            }
+          }).catch(function() {});
+        }
+      } catch(e) {}
+    });
+
+    return function(){
+      if(sub&&sub.data&&sub.data.subscription)sub.data.subscription.unsubscribe();
+      deepLinkListener.then && deepLinkListener.then(function(l){ l.remove && l.remove(); });
+    };
   },[]);
 
   // ── Catch inbox badge: poll + Realtime subscription ──────────────────────
@@ -6534,7 +6574,7 @@ export default function App() {
         if(!inviteAuthName.trim()){setInviteAuthError("Please enter your name.");return;}
         if(!inviteAuthPass.trim()||inviteAuthPass.length<8){setInviteAuthError("Password must be at least 8 characters.");return;}
         setInviteAuthLoading(true);
-        supabase.auth.signUp({email:invitedEmailLower,password:inviteAuthPass,options:{data:{name:inviteAuthName.trim(),family_name:""}}}).then(function(res){
+        supabase.auth.signUp({email:invitedEmailLower,password:inviteAuthPass,options:{data:{name:inviteAuthName.trim(),family_name:""},emailRedirectTo:"ca.getcalla.app://"}}).then(function(res){
           if(res.error){
             setInviteAuthLoading(false);
             var msg=res.error.message||"";
@@ -6548,6 +6588,13 @@ export default function App() {
             return;
           }
           var u=res.data.user;
+          // Detect duplicate email (Supabase fake success) — identities will be empty
+          if(u&&u.identities&&u.identities.length===0){
+            setInviteAuthLoading(false);
+            setInviteAuthMode("login");
+            setInviteAuthError("You already have a Calla account with this email. Enter your password below to sign in and join.");
+            return;
+          }
           supabase.from("profiles").upsert({id:u.id,name:inviteAuthName.trim(),family_name:"",setup_done:false,trial_start:new Date().toISOString(),paid:false}).then(function(){
             var uobj={id:u.id,name:inviteAuthName.trim()||"Partner",family:"",email:invitedEmailLower};
             acceptInvite(pendingInvite,uobj);
