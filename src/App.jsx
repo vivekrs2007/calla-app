@@ -5947,10 +5947,17 @@ export default function App() {
   const toast=t=>{const id=genId();setToasts(p=>[...p,{...t,id}]);setTimeout(()=>setToasts(p=>p.filter(x=>x.id!==id)),3000);};
 
   // ── Check for invite token in URL on load ─────────────────────────────────
+  // Persist to localStorage so it survives Supabase auth redirects
   useEffect(function(){
     var params=new URLSearchParams(window.location.search);
     var token=params.get("invite");
-    if(token) setPendingInvite(token);
+    if(token){
+      localStorage.setItem("calla_pending_invite",token);
+      setPendingInvite(token);
+    } else {
+      var stored=localStorage.getItem("calla_pending_invite");
+      if(stored) setPendingInvite(stored);
+    }
   },[]);
 
   // ── Restore session on page load ──────────────────────────────────────────
@@ -6007,7 +6014,7 @@ export default function App() {
               // Stale session — account no longer exists, force sign-out
               supabase.auth.signOut().catch(function(){});
               Object.keys(localStorage).forEach(function(k){
-                if(k.startsWith("sb-")||k.startsWith("supabase")||k.startsWith("calla_")) localStorage.removeItem(k);
+                if((k.startsWith("sb-")||k.startsWith("supabase")||k.startsWith("calla_"))&&k!=="calla_pending_invite") localStorage.removeItem(k);
               });
               setUser(null);
               setAuthLoading(false);
@@ -6234,6 +6241,7 @@ export default function App() {
         setSetupDone(true);
         setFamilyId(fid);
         setPendingInvite(null);
+        localStorage.removeItem("calla_pending_invite");
         // Clear URL
         window.history.replaceState({},"",window.location.pathname);
         // Reload shared data
@@ -6359,7 +6367,7 @@ export default function App() {
         <Btn onClick={function(){acceptInvite(pendingInvite);}} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"16px",fontSize:16,marginBottom:12}}>
           <Check size={16}/>Accept &amp; go to my calendar →
         </Btn>
-        <button onClick={function(){setPendingInvite(null);window.history.replaceState({},"",window.location.pathname);}} style={{background:"none",border:"none",color:"var(--cream3)",fontSize:14,cursor:"pointer",display:"block",width:"100%",textAlign:"center",padding:"8px"}}>
+        <button onClick={function(){setPendingInvite(null);localStorage.removeItem("calla_pending_invite");window.history.replaceState({},"",window.location.pathname);}} style={{background:"none",border:"none",color:"var(--cream3)",fontSize:14,cursor:"pointer",display:"block",width:"100%",textAlign:"center",padding:"8px"}}>
           Decline for now
         </button>
       </div>
