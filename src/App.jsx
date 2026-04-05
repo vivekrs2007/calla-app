@@ -651,45 +651,6 @@ const Toasts = ({toasts}) => (
 );
 
 /* ─── Auth / Onboarding ─────────────────────────────────────────────────── */
-const ONBOARD_SLIDES = [
-  {
-    bg:        "linear-gradient(160deg,#1a2e1a 0%,#2d5a3d 100%)",
-    textColor: "#f5f0e8",
-    eyebrow:   "FAMILY CALENDAR APP",
-    headline:  "Never miss a game.\nNever double-book again.",
-    sub:       "One shared family calendar that catches conflicts before your week falls apart. Forward emails, snap flyers, or just say it.",
-    cta:       "See how it works →",
-    visual:    { type: "chaos-pills" },
-  },
-  {
-    bg:        "linear-gradient(160deg,#1a2e1a 0%,#2d4a20 100%)",
-    textColor: "#f5f0e8",
-    eyebrow:   "THREE WAYS TO ADD",
-    headline:  "Forward it.\nSnap it. Say it.",
-    sub:       "School emails, paper flyers, and voice notes become real calendar events in seconds.",
-    cta:       "Show me a real example →",
-    visual:    { type: "email-delete" },
-  },
-  {
-    bg:        "linear-gradient(160deg,#1a2e1a 0%,#1a3a2a 100%)",
-    textColor: "#f5f0e8",
-    eyebrow:   "DISCOVER & MORNING BRIEF",
-    headline:  "Find what's nearby.\nKnow what's next.",
-    sub:       "Discover activities near you and wake up with one simple summary of your whole day.",
-    cta:       "Show me my mornings →",
-    visual:    { type: "superpowers" },
-  },
-  {
-    bg:        "linear-gradient(160deg,#1a2e1a 0%,#2d5a3d 100%)",
-    textColor: "#f5f0e8",
-    eyebrow:   "FREE FOR 60 DAYS",
-    headline:  "Start free.\nStay coordinated.",
-    sub:       "Both parents. All kids. One calm plan for the week ahead.",
-    cta:       "Create our family calendar →",
-    final:     true,
-    visual:    { type: "trust" },
-  },
-];
 
 // ── Password reset screen — shown after user clicks the reset link in email ──
 function ResetPasswordScreen({onDone}){
@@ -773,7 +734,7 @@ function ResetPasswordScreen({onDone}){
 }
 
 function Auth({onLogin}) {
-  const [slide,setSlide]=useState(0),[showForm,setShowForm]=useState(true),[mode,setMode]=useState("signup"),[name,setName]=useState(""),[family,setFamily]=useState(""),[email,setEmail]=useState(""),[pass,setPass]=useState(""),[confirmPass,setConfirmPass]=useState(""),[loading,setLoading]=useState(false),[showPass,setShowPass]=useState(false),[authError,setAuthError]=useState(""),[verifyEmailSent,setVerifyEmailSent]=useState(false);
+  const [mode,setMode]=useState("signup"),[name,setName]=useState(""),[family,setFamily]=useState(""),[email,setEmail]=useState(""),[pass,setPass]=useState(""),[confirmPass,setConfirmPass]=useState(""),[loading,setLoading]=useState(false),[showPass,setShowPass]=useState(false),[authError,setAuthError]=useState(""),[verifyEmailSent,setVerifyEmailSent]=useState(false);
 
   // Clear error + confirmPass when switching tabs
   function switchMode(m){setMode(m);setAuthError("");setConfirmPass("");}
@@ -852,376 +813,143 @@ function Auth({onLogin}) {
       }).catch(function(){setLoading(false);setAuthError("Network error. Please check your connection and try again.");});
     }
   };
-  const cur=ONBOARD_SLIDES[slide];
-
-  if(!showForm) return (
-    <div style={{height:"100vh",maxHeight:"100dvh",display:"flex",flexDirection:"column",background:cur.bg,transition:"background .6s",overflow:"hidden"}}>
-
-      {/* Top bar — logo + slide counter */}
-      <div style={{flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"env(safe-area-inset-top,16px) 24px 0"}}>
-        <div style={{display:"flex",alignItems:"center",gap:8,paddingTop:16}}>
-          <div style={{width:28,height:28,background:"rgba(245,240,232,.2)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <span style={{fontSize:14}}>🌸</span>
-          </div>
-          <span style={{fontSize:15,fontWeight:700,color:"rgba(245,240,232,.9)",letterSpacing:"-.01em"}}>calla</span>
-        </div>
-        <button onClick={()=>{setMode("login");setShowForm(true);setAuthError("");}}
-          style={{background:"rgba(245,240,232,.12)",border:"1px solid rgba(245,240,232,.2)",borderRadius:99,padding:"6px 14px",fontSize:13,fontWeight:600,color:"rgba(245,240,232,.8)",paddingTop:16}}>
-          Sign in
-        </button>
-      </div>
-
-      {/* Main content */}
-      <div className="fu" key={slide} style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column",justifyContent:"center",padding:"24px 28px 16px"}}>
-
-        {/* Eyebrow label */}
-        <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(245,240,232,.12)",borderRadius:99,padding:"4px 12px",marginBottom:20,alignSelf:"flex-start",border:"1px solid rgba(245,240,232,.15)"}}>
-          <span style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.7)",letterSpacing:".12em"}}>{cur.eyebrow}</span>
-        </div>
-
-        {/* Headline — Playfair Display, large */}
-        <h1 style={{fontSize:32,fontWeight:800,color:cur.textColor,lineHeight:1.15,letterSpacing:"-.6px",marginBottom:14,fontFamily:"'Playfair Display',Georgia,serif",whiteSpace:"pre-line"}}>{cur.headline}</h1>
-
-        {/* Subheadline */}
-        <p style={{fontSize:15,color:cur.textColor,opacity:.82,lineHeight:1.65,marginBottom:16,fontWeight:300,maxWidth:340}}>{cur.sub}</p>
-
-        {/* Visual block — changes per slide */}
-
-        {/* SLIDE 1: Phone mockup — voice adding an event */}
-        {cur.visual&&cur.visual.type==="chaos-pills"&&(
-          <div style={{marginBottom:8}}>
-            <div style={{background:"rgba(245,240,232,.07)",border:"1px solid rgba(245,240,232,.14)",borderRadius:20,padding:"16px"}}>
-              <div style={{display:"flex",gap:8,marginBottom:10}}>
-                <div style={{flex:1,background:"rgba(45,90,61,.3)",border:"1px solid rgba(45,90,61,.5)",borderRadius:14,padding:"14px 10px",textAlign:"center"}}>
-                  <span style={{fontSize:28,display:"block",marginBottom:6}}>🧒</span>
-                  <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Saturday</p>
-                  <p style={{fontSize:10,color:"rgba(245,240,232,.5)",marginTop:2}}>Soccer · 10am</p>
-                </div>
-                <div style={{flex:1,display:"flex",flexDirection:"column",gap:6}}>
-                  <div style={{background:"rgba(45,90,61,.18)",border:"1px solid rgba(45,90,61,.3)",borderRadius:10,padding:"8px 10px",display:"flex",alignItems:"center",gap:6}}>
-                    <span style={{fontSize:14}}>👩</span>
-                    <div>
-                      <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.85)"}}>Mom · free</p>
-                      <p style={{fontSize:10,color:"rgba(100,200,120,.8)"}}>No conflicts ✓</p>
-                    </div>
-                  </div>
-                  <div style={{background:"rgba(45,90,61,.18)",border:"1px solid rgba(45,90,61,.3)",borderRadius:10,padding:"8px 10px",display:"flex",alignItems:"center",gap:6}}>
-                    <span style={{fontSize:14}}>👨</span>
-                    <div>
-                      <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.85)"}}>Dad · free</p>
-                      <p style={{fontSize:10,color:"rgba(100,200,120,.8)"}}>Ready to drive ✓</p>
-                    </div>
-                  </div>
-                  <div style={{background:"rgba(220,140,30,.12)",border:"1px solid rgba(220,140,30,.25)",borderRadius:10,padding:"8px 10px",textAlign:"center"}}>
-                    <p style={{fontSize:10,fontWeight:700,color:"rgba(245,240,232,.85)"}}>April</p>
-                    <div style={{display:"flex",justifyContent:"center",gap:3,marginTop:4}}>
-                      {[1,2,3,4,5].map(function(d,i){return(
-                        <div key={i} style={{width:18,height:18,borderRadius:4,background:i===2?"rgba(220,140,30,.5)":"rgba(245,240,232,.08)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                          <span style={{fontSize:11,color:"rgba(245,240,232,.7)"}}>{11+d}</span>
-                        </div>
-                      );})}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div style={{background:"rgba(245,240,232,.05)",borderRadius:10,padding:"8px 10px",display:"flex",alignItems:"center",gap:6}}>
-                <span style={{fontSize:12}}>⚡</span>
-                <p style={{fontSize:11,color:"rgba(245,240,232,.6)"}}>Conflicts caught automatically, both parents notified</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* SLIDE 2: Three ways to add — matching landing page */}
-        {cur.visual&&cur.visual.type==="email-delete"&&(
-          <div style={{marginBottom:8}}>
-            <div style={{background:"rgba(245,240,232,.06)",border:"1px solid rgba(245,240,232,.12)",borderRadius:20,padding:"14px"}}>
-              <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                <div style={{display:"flex",alignItems:"center",gap:10,background:"rgba(59,130,246,.12)",border:"1px solid rgba(59,130,246,.25)",borderRadius:12,padding:"10px 12px"}}>
-                  <div style={{width:32,height:32,borderRadius:8,background:"rgba(59,130,246,.25)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    <span style={{fontSize:16}}>📧</span>
-                  </div>
-                  <div style={{flex:1}}>
-                    <p style={{fontSize:12,fontWeight:700,color:"rgba(245,240,232,.9)"}}>01 · Forward it</p>
-                    <p style={{fontSize:10,color:"rgba(245,240,232,.5)",marginTop:1}}>Any school email → event created automatically</p>
-                  </div>
-                  <span style={{fontSize:11,fontWeight:700,color:"rgba(100,200,120,.9)"}}>✓</span>
-                </div>
-                <div style={{display:"flex",alignItems:"center",gap:10,background:"rgba(45,90,61,.15)",border:"1px solid rgba(45,90,61,.3)",borderRadius:12,padding:"10px 12px"}}>
-                  <div style={{width:32,height:32,borderRadius:8,background:"rgba(45,90,61,.3)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    <span style={{fontSize:16}}>📸</span>
-                  </div>
-                  <div style={{flex:1}}>
-                    <p style={{fontSize:12,fontWeight:700,color:"rgba(245,240,232,.9)"}}>02 · Snap it</p>
-                    <p style={{fontSize:10,color:"rgba(245,240,232,.5)",marginTop:1}}>Photo of a flyer → date, time and details extracted</p>
-                  </div>
-                  <span style={{fontSize:11,fontWeight:700,color:"rgba(100,200,120,.9)"}}>✓</span>
-                </div>
-                <div style={{display:"flex",alignItems:"center",gap:10,background:"rgba(124,58,237,.12)",border:"1px solid rgba(124,58,237,.25)",borderRadius:12,padding:"10px 12px"}}>
-                  <div style={{width:32,height:32,borderRadius:8,background:"rgba(124,58,237,.25)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    <span style={{fontSize:16}}>🎙️</span>
-                  </div>
-                  <div style={{flex:1}}>
-                    <p style={{fontSize:12,fontWeight:700,color:"rgba(245,240,232,.9)"}}>03 · Say it</p>
-                    <p style={{fontSize:10,color:"rgba(245,240,232,.5)",marginTop:1}}>Voice to calendar, other parent notified instantly</p>
-                  </div>
-                  <span style={{fontSize:11,fontWeight:700,color:"rgba(100,200,120,.9)"}}>✓</span>
-                </div>
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:6,marginTop:8,background:"rgba(220,60,60,.1)",border:"1px solid rgba(220,60,60,.2)",borderRadius:10,padding:"8px 12px"}}>
-                <span style={{fontSize:12}}>🔒</span>
-                <p style={{fontSize:11,color:"rgba(255,140,140,.85)",fontWeight:600}}>Email permanently deleted after extraction</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        
-
-        {/* SLIDE 3: Discover + Morning Brief — matching landing page */}
-        {cur.visual&&cur.visual.type==="superpowers"&&(
-          <div style={{marginBottom:8}}>
-            <div style={{background:"rgba(245,240,232,.06)",border:"1px solid rgba(245,240,232,.12)",borderRadius:20,padding:"14px"}}>
-              <div style={{display:"flex",gap:8,marginBottom:10}}>
-                <div style={{flex:1,background:"rgba(45,90,61,.18)",border:"1px solid rgba(45,90,61,.3)",borderRadius:14,padding:"12px 10px"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
-                    <span style={{fontSize:16}}>🧭</span>
-                    <p style={{fontSize:12,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Nearby</p>
-                  </div>
-                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                    {["⚽ Soccer U8","🎵 Piano","🏊 Swim class"].map(function(t,i){return(
-                      <div key={i} style={{background:"rgba(45,90,61,.25)",borderRadius:7,padding:"5px 8px"}}>
-                        <p style={{fontSize:10,color:"rgba(245,240,232,.8)",fontWeight:500}}>{t}</p>
-                      </div>
-                    );})}
-                  </div>
-                </div>
-                <div style={{flex:1,background:"rgba(124,58,237,.1)",border:"1px solid rgba(124,58,237,.22)",borderRadius:14,padding:"12px 10px"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
-                    <span style={{fontSize:16}}>☀️</span>
-                    <p style={{fontSize:12,fontWeight:700,color:"rgba(245,240,232,.9)"}}>Today</p>
-                  </div>
-                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                    <div style={{background:"rgba(0,0,0,.2)",borderRadius:7,padding:"5px 8px"}}>
-                      <p style={{fontSize:10,color:"rgba(245,240,232,.7)"}}>8:30am Soccer · Liam</p>
-                    </div>
-                    <div style={{background:"rgba(0,0,0,.2)",borderRadius:7,padding:"5px 8px"}}>
-                      <p style={{fontSize:10,color:"rgba(245,240,232,.7)"}}>3:00pm Piano · Emma</p>
-                    </div>
-                    <div style={{background:"rgba(220,140,30,.15)",borderRadius:7,padding:"5px 8px"}}>
-                      <p style={{fontSize:10,color:"rgba(220,140,30,.9)",fontWeight:600}}>⚡ Overlap at 3pm</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div style={{background:"rgba(245,240,232,.05)",borderRadius:10,padding:"8px 10px",display:"flex",alignItems:"center",gap:6}}>
-                <span style={{fontSize:12}}>📱</span>
-                <p style={{fontSize:11,color:"rgba(245,240,232,.55)"}}>Morning SMS sent · wake up knowing your whole day</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* SLIDE 4: Pricing card — matching landing page */}
-        {cur.visual&&cur.visual.type==="trust"&&(
-          <div style={{marginBottom:8}}>
-            <div style={{background:"linear-gradient(160deg,rgba(45,90,61,.35) 0%,rgba(26,58,42,.5) 100%)",border:"1px solid rgba(45,90,61,.5)",borderRadius:20,padding:"18px",position:"relative",overflow:"hidden"}}>
-              <div style={{position:"absolute",top:-40,right:-40,width:120,height:120,borderRadius:"50%",background:"radial-gradient(circle,rgba(82,183,136,.15) 0%,transparent 70%)"}}/>
-              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-                <span style={{fontSize:20}}>🌿</span>
-                <p style={{fontSize:14,fontWeight:800,color:"rgba(245,240,232,.95)",fontFamily:"'Playfair Display',Georgia,serif"}}>Calla Family Plan</p>
-              </div>
-              <div style={{marginBottom:10}}>
-                <div style={{display:"inline-block",background:"rgba(201,168,76,.15)",border:"1px solid rgba(201,168,76,.3)",borderRadius:20,padding:"4px 12px",marginBottom:8}}>
-                  <span style={{fontSize:11,fontWeight:700,color:"rgba(201,168,76,.9)"}}>60 days completely free</span>
-                </div>
-                <div style={{display:"flex",alignItems:"baseline",gap:4}}>
-                  <span style={{fontSize:32,fontWeight:900,color:"rgba(201,168,76,.95)",fontFamily:"'Playfair Display',Georgia,serif"}}>$19.99</span>
-                  <span style={{fontSize:12,color:"rgba(245,240,232,.5)"}}>per year</span>
-                </div>
-              </div>
-              <div style={{display:"flex",flexDirection:"column",gap:5}}>
-                {["Both parents included","All kids — unlimited","Conflict detection","Forward · Snap · Voice","Morning brief","Cancel anytime"].map(function(f,i){return(
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:7}}>
-                    <span style={{fontSize:11,color:"rgba(82,183,136,.9)",fontWeight:700}}>✓</span>
-                    <p style={{fontSize:11,color:"rgba(245,240,232,.75)"}}>{f}</p>
-                  </div>
-                );})}
-              </div>
-            </div>
-          </div>
-        )}
-
-      </div>
-
-      {/* ALWAYS-VISIBLE bottom section — pinned */}
-      <div style={{flexShrink:0,padding:"12px 24px calc(28px + env(safe-area-inset-bottom,0px)) 24px"}}>
-
-        {/* Dot indicators */}
-        <div style={{display:"flex",justifyContent:"center",gap:5,marginBottom:16}}>
-          {ONBOARD_SLIDES.map(function(_,i){return(
-            <div key={i} onClick={function(){setSlide(i);}}
-              style={{width:i===slide?24:6,height:6,borderRadius:3,background:i===slide?"rgba(245,240,232,.9)":"rgba(245,240,232,.25)",transition:"width .3s cubic-bezier(.34,1.56,.64,1)",cursor:"pointer"}}/>
-          );})}
-        </div>
-
-        {/* Primary CTA */}
-        <button
-          onClick={function(){if(cur.final){setShowForm(true);}else setSlide(function(s){return s+1;});}}
-          style={{background:"rgba(245,240,232,.95)",color:"#1a3a1a",padding:"17px",borderRadius:16,fontWeight:800,fontSize:16,width:"100%",boxShadow:"0 8px 32px rgba(0,0,0,.25)",letterSpacing:"-.01em"}}>
-          {cur.cta}
-        </button>
-
-        {/* Secondary */}
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8}}>
-          {slide===0
-            ? <button onClick={function(){setMode("login");setShowForm(true);}} style={{background:"transparent",color:"rgba(245,240,232,.45)",fontSize:14,fontWeight:400,padding:"8px 0",border:"none",width:"100%",textAlign:"center"}}>
-                Already have an account? <span style={{color:"rgba(245,240,232,.7)",fontWeight:600}}>Sign in</span>
-              </button>
-            : <>
-                <button onClick={function(){setSlide(function(s){return s-1;});}} style={{background:"transparent",color:"rgba(245,240,232,.45)",fontSize:14,padding:"8px",border:"none"}}>← Back</button>
-                {!cur.final&&<button onClick={function(){setShowForm(true);}} style={{background:"transparent",color:"rgba(245,240,232,.35)",fontSize:14,padding:"8px",border:"none"}}>Skip</button>}
-              </>
-          }
-        </div>
-      </div>
-    </div>
-  );
-
   // ── Email verification sent screen ───────────────────────────────────────
   if(verifyEmailSent) return (
-    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:24,background:"var(--ink)"}}>
-      <div className="fu" style={{width:"100%",maxWidth:380,textAlign:"center"}}>
-        <div style={{fontSize:56,marginBottom:16}}>📬</div>
-        <h1 style={{fontSize:24,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",marginBottom:10}}>Check your inbox</h1>
-        <p style={{fontSize:15,color:"var(--cream3)",lineHeight:1.7,marginBottom:24}}>
-          We sent a confirmation link to <strong style={{color:"var(--cream)"}}>{email}</strong>.<br/>
-          Click it to activate your account and get started.
-        </p>
-        <div style={{background:"rgba(45,90,61,.08)",border:"1px solid rgba(45,90,61,.2)",borderRadius:14,padding:"16px 18px",marginBottom:24,textAlign:"left"}}>
-          {[["📂","Check your spam/junk folder if you don't see it"],["⏱️","The link expires in 24 hours"],["🔄","It may take 1–2 minutes to arrive"]].map(function([icon,tip]){return(
-            <div key={tip} style={{display:"flex",gap:10,marginBottom:10,alignItems:"flex-start"}}>
-              <span style={{fontSize:15,flexShrink:0}}>{icon}</span>
-              <p style={{fontSize:13,color:"var(--cream3)",lineHeight:1.5}}>{tip}</p>
-            </div>
-          );})}
+    <div style={{height:"100vh",maxHeight:"100dvh",display:"flex",flexDirection:"column",background:"linear-gradient(160deg,#1a2e1a 0%,#2d5a3d 60%,var(--ink) 100%)"}}>
+      <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",padding:"24px 24px calc(env(safe-area-inset-bottom,24px) + 24px)"}}>
+        <div className="fu" style={{width:"100%",maxWidth:400,textAlign:"center"}}>
+          <div style={{fontSize:64,marginBottom:20}}>📬</div>
+          <h1 style={{fontSize:28,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",marginBottom:12,color:"#f5f0e8"}}>Check your inbox</h1>
+          <p style={{fontSize:15,color:"rgba(245,240,232,.75)",lineHeight:1.75,marginBottom:28}}>
+            We sent a confirmation link to<br/><strong style={{color:"#f5f0e8"}}>{email}</strong>
+          </p>
+          <div style={{background:"rgba(245,240,232,.06)",border:"1px solid rgba(245,240,232,.12)",borderRadius:16,padding:"20px",marginBottom:28,textAlign:"left"}}>
+            {[["📂","Check your spam/junk folder if you don't see it"],["📱","Tap the link — it will open straight in the app"],["⏱️","The link expires in 24 hours"]].map(function([icon,tip]){return(
+              <div key={tip} style={{display:"flex",gap:12,marginBottom:12,alignItems:"flex-start"}}>
+                <span style={{fontSize:18,flexShrink:0}}>{icon}</span>
+                <p style={{fontSize:14,color:"rgba(245,240,232,.7)",lineHeight:1.5}}>{tip}</p>
+              </div>
+            );})}
+          </div>
+          <button onClick={function(){setVerifyEmailSent(false);}} style={{background:"none",border:"1px solid rgba(245,240,232,.2)",borderRadius:99,color:"rgba(245,240,232,.6)",fontSize:14,fontWeight:600,cursor:"pointer",padding:"10px 24px"}}>
+            ← Use a different email
+          </button>
         </div>
-        <button onClick={function(){setVerifyEmailSent(false);}} style={{background:"none",border:"none",color:"var(--sage3)",fontSize:14,fontWeight:600,cursor:"pointer"}}>
-          ← Use a different email
-        </button>
       </div>
     </div>
   );
 
   // ── Sign-up / login form ──
   return (
-    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:24,background:"var(--ink)"}}>
-      <div className="fu" style={{width:"100%",maxWidth:380}}>
-        <div style={{textAlign:"center",marginBottom:24}}>
-          <div style={{width:52,height:52,background:"var(--sage)",borderRadius:16,display:"inline-flex",alignItems:"center",justifyContent:"center",marginBottom:14}}><span style={{fontSize:22}}>🌸</span></div>
-          <h1 style={{fontSize:26,fontWeight:700,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif"}}>Calla</h1>
-          <p style={{color:"var(--cream3)",fontSize:15,marginTop:3}}>The family brain you don't have to be.</p>
-        </div>
+    <div style={{height:"100vh",maxHeight:"100dvh",display:"flex",flexDirection:"column",background:"var(--ink)",overflow:"hidden"}}>
 
-        {/* Privacy reassurance above form */}
-        <div style={{background:"rgba(45,90,61,.06)",border:"1px solid rgba(83,136,122,.2)",borderRadius:12,padding:"12px 14px",marginBottom:16,display:"flex",gap:10,alignItems:"flex-start"}}>
-          <div style={{width:22,height:22,background:"var(--sage2)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}}>
-            <Check size={11} color="#fff"/>
-          </div>
-          <div>
-            <p style={{fontWeight:700,fontSize:15,color:"var(--sage3)",marginBottom:3}}>Your privacy is protected</p>
-            <div style={{display:"flex",flexDirection:"column",gap:3}}>
-              {["No ads, ever","Emails deleted immediately after extraction","Your data is never sold or shared"].map((pt,i)=>(
-                <p key={i} style={{fontSize:15,color:"var(--sage3)"}}>· {pt}</p>
-              ))}
-            </div>
-          </div>
+      {/* Dark green header */}
+      <div style={{background:"linear-gradient(160deg,#1a2e1a 0%,#2d5a3d 100%)",padding:"calc(env(safe-area-inset-top,44px) + 28px) 28px 36px",textAlign:"center",flexShrink:0}}>
+        <div style={{width:64,height:64,background:"rgba(245,240,232,.12)",border:"1.5px solid rgba(245,240,232,.18)",borderRadius:20,display:"inline-flex",alignItems:"center",justifyContent:"center",marginBottom:14}}>
+          <span style={{fontSize:30}}>🌸</span>
         </div>
+        <h1 style={{fontSize:32,fontWeight:700,letterSpacing:"-.8px",fontFamily:"'Playfair Display',Georgia,serif",color:"#f5f0e8",marginBottom:6}}>Calla</h1>
+        <p style={{color:"rgba(245,240,232,.6)",fontSize:14,fontWeight:400,letterSpacing:".01em"}}>The family brain you don't have to be.</p>
+      </div>
 
-        <Card>
-          <div style={{display:"flex",background:"var(--ink3)",borderRadius:12,padding:3,border:"1px solid var(--border)",marginBottom:20}}>
-            {["signup","login"].map(m=>(
-              <button key={m} onClick={()=>switchMode(m)} style={{flex:1,padding:"9px",borderRadius:8,background:mode===m?"var(--ink4)":"transparent",color:mode===m?"var(--cream)":"var(--cream3)",fontWeight:600,fontSize:15,border:"none",boxShadow:mode===m?"0 1px 4px rgba(0,0,0,.08)":"none"}}>
+      {/* Scrollable form area */}
+      <div style={{flex:1,overflowY:"auto",padding:"0 20px calc(env(safe-area-inset-bottom,24px) + 24px)"}}>
+
+        {/* Card — slightly overlapping header */}
+        <div style={{background:"var(--ink)",borderRadius:24,marginTop:-20,padding:"24px 20px 20px",boxShadow:"0 -4px 24px rgba(0,0,0,.08)"}}>
+
+          {/* Tab switcher */}
+          <div style={{display:"flex",background:"var(--ink3)",borderRadius:14,padding:4,border:"1px solid var(--border)",marginBottom:24}}>
+            {["signup","login"].map(function(m){return(
+              <button key={m} onClick={function(){switchMode(m);}} style={{flex:1,padding:"11px",borderRadius:10,background:mode===m?"#fff":"transparent",color:mode===m?"var(--sage)":"var(--cream3)",fontWeight:700,fontSize:15,border:"none",boxShadow:mode===m?"0 2px 8px rgba(0,0,0,.1)":"none",transition:"all .2s",fontFamily:"'DM Sans',sans-serif"}}>
                 {m==="signup"?"Create Family":"Sign In"}
               </button>
-            ))}
+            );})}
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+
+          <div style={{display:"flex",flexDirection:"column",gap:14}}>
             {mode==="signup"&&(
               <>
-                <input placeholder="Your name" value={name} onChange={e=>setName(e.target.value)}/>
-                <input placeholder="e.g. The Johnsons" value={family} onChange={e=>setFamily(e.target.value)}/>
+                <input placeholder="Your name" value={name} onChange={function(e){setName(e.target.value);}} style={{fontSize:16,padding:"15px 16px",borderRadius:14,border:"1.5px solid var(--ink5)",background:"#fff",color:"var(--sage)",fontFamily:"'DM Sans',sans-serif"}}/>
+                <input placeholder="Family name · e.g. The Johnsons" value={family} onChange={function(e){setFamily(e.target.value);}} style={{fontSize:16,padding:"15px 16px",borderRadius:14,border:"1.5px solid var(--ink5)",background:"#fff",color:"var(--sage)",fontFamily:"'DM Sans',sans-serif"}}/>
               </>
             )}
             <div style={{position:"relative"}}>
-              <input placeholder="you@example.com" type="email" value={email} onChange={e=>setEmail(e.target.value)} style={{paddingRight:36}}/>
+              <input placeholder="Email address" type="email" value={email} onChange={function(e){setEmail(e.target.value);}} style={{fontSize:16,padding:"15px 16px",borderRadius:14,border:"1.5px solid var(--ink5)",background:"#fff",color:"var(--sage)",width:"100%",paddingRight:44,fontFamily:"'DM Sans',sans-serif"}}/>
               {email.includes("@")&&email.includes(".")&&(
-                <div style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",width:20,height:20,borderRadius:"50%",background:"var(--sage2)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
-                    <path d="M1 4l3 3L10 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{strokeDasharray:20,strokeDashoffset:0,animation:"tickDraw .3s ease forwards"}}/>
-                  </svg>
+                <div style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",width:22,height:22,borderRadius:"50%",background:"var(--sage2)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <svg width="11" height="8" viewBox="0 0 11 8" fill="none"><path d="M1 4l3 3L10 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </div>
               )}
             </div>
             <div style={{position:"relative"}}>
-              <input placeholder="Choose a password (8+ characters)" type={showPass?"text":"password"} value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()} style={{paddingRight:44}}/>
-              {mode==="signup"&&pass.length>0&&(function(){
-                var str=pass.length>=10&&/[A-Z]/.test(pass)&&/[0-9]/.test(pass)?3:pass.length>=6?2:1;
-                var cols=["var(--rose)","var(--gold2)","var(--sage2)"];
-                var labels=["Weak","Good","Strong"];
-                return(
-                  <div style={{display:"flex",alignItems:"center",gap:8,marginTop:6}}>
-                    <div style={{display:"flex",gap:3,flex:1}}>
-                      {[1,2,3].map(function(i){return(
-                        <div key={i} style={{flex:1,height:3,borderRadius:2,background:i<=str?cols[str-1]:"var(--ink5)",transition:"background .3s"}}/>
-                      );})}
-                    </div>
-                    <span style={{fontSize:11,color:cols[str-1],fontWeight:600,minWidth:40}}>{labels[str-1]}</span>
-                  </div>
-                );
-              })()}
-              <button type="button" onClick={()=>setShowPass(function(s){return !s;})} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",color:"var(--cream3)",fontSize:15,fontWeight:600,padding:4}}>{showPass?"Hide":"Show"}</button>
+              <input placeholder={mode==="signup"?"Choose a password (8+ chars)":"Password"} type={showPass?"text":"password"} value={pass} onChange={function(e){setPass(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")go();}} style={{fontSize:16,padding:"15px 16px",borderRadius:14,border:"1.5px solid var(--ink5)",background:"#fff",color:"var(--sage)",width:"100%",paddingRight:64,fontFamily:"'DM Sans',sans-serif"}}/>
+              <button type="button" onClick={function(){setShowPass(function(s){return !s;});}} style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",color:"var(--cream3)",fontSize:13,fontWeight:700,padding:4,cursor:"pointer"}}>{showPass?"Hide":"Show"}</button>
             </div>
+            {mode==="signup"&&pass.length>0&&(function(){
+              var str=pass.length>=10&&/[A-Z]/.test(pass)&&/[0-9]/.test(pass)?3:pass.length>=6?2:1;
+              var cols=["#e05555","#d4960a","var(--sage2)"];
+              var labels=["Weak","Fair","Strong"];
+              return(
+                <div style={{display:"flex",alignItems:"center",gap:8,marginTop:-6}}>
+                  <div style={{display:"flex",gap:4,flex:1}}>
+                    {[1,2,3].map(function(i){return(<div key={i} style={{flex:1,height:4,borderRadius:2,background:i<=str?cols[str-1]:"var(--ink5)",transition:"background .3s"}}/>);})}
+                  </div>
+                  <span style={{fontSize:12,color:cols[str-1],fontWeight:700,minWidth:42}}>{labels[str-1]}</span>
+                </div>
+              );
+            })()}
             {mode==="signup"&&(
               <div style={{position:"relative"}}>
-                <input placeholder="Confirm password" type={showPass?"text":"password"} value={confirmPass} onChange={function(e){setConfirmPass(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")go();}} style={{paddingRight:confirmPass?36:12,width:"100%"}}/>
+                <input placeholder="Confirm password" type={showPass?"text":"password"} value={confirmPass} onChange={function(e){setConfirmPass(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")go();}} style={{fontSize:16,padding:"15px 16px",borderRadius:14,border:"1.5px solid "+(confirmPass&&pass&&pass!==confirmPass?"#e05555":confirmPass&&pass&&pass===confirmPass?"var(--sage2)":"var(--ink5)"),background:"#fff",color:"var(--sage)",width:"100%",paddingRight:44,fontFamily:"'DM Sans',sans-serif"}}/>
                 {confirmPass&&pass&&(
-                  <div style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",width:20,height:20,borderRadius:"50%",background:pass===confirmPass?"var(--sage2)":"var(--rose)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <div style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",width:22,height:22,borderRadius:"50%",background:pass===confirmPass?"var(--sage2)":"#e05555",display:"flex",alignItems:"center",justifyContent:"center"}}>
                     {pass===confirmPass
                       ? <svg width="11" height="8" viewBox="0 0 11 8" fill="none"><path d="M1 4l3 3L10 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      : <span style={{fontSize:11,color:"#fff",fontWeight:700}}>✕</span>
-                    }
+                      : <span style={{fontSize:11,color:"#fff",fontWeight:700}}>✕</span>}
                   </div>
                 )}
               </div>
             )}
-            <Btn onClick={go} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:4}}>
-              {loading
-                ? <div style={{width:16,height:16,border:"2px solid rgba(255,255,255,.3)",borderTopColor:"#fff",borderRadius:"50%",animation:"spin .7s linear infinite"}}/>
-                : <>{mode==="signup"?"Let's get started →":"Sign In →"}</>
-              }
-            </Btn>
-            {authError&&<div style={{background:authError.startsWith("✓")?"rgba(45,90,61,.08)":"rgba(168,56,56,.08)",border:"1px solid "+(authError.startsWith("✓")?"rgba(45,90,61,.25)":"rgba(168,56,56,.2)"),borderRadius:10,padding:"10px 14px",marginTop:8,fontSize:14,color:authError.startsWith("✓")?"var(--sage2)":"var(--rose)",textAlign:"center"}}>{authError}</div>}
-          </div>
 
-          {/* Privacy micro-copy — signup only. Forgot password — login only */}
-          <div style={{marginTop:14,paddingTop:14,borderTop:"1px solid var(--border)",display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
-            {mode==="signup"&&(
-              <div style={{display:"flex",alignItems:"center",gap:5}}>
-                <div style={{width:12,height:12,borderRadius:"50%",background:"var(--sage2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                  <Check size={7} color="#fff"/>
-                </div>
-                <p style={{fontSize:13,color:"var(--cream3)",textAlign:"center"}}>No credit card required · No ads · Your data is private</p>
+            {/* CTA */}
+            <button onClick={go} style={{background:"linear-gradient(135deg,#1a2e1a 0%,#2d5a3d 100%)",color:"#f5f0e8",padding:"17px",borderRadius:16,fontWeight:700,fontSize:17,width:"100%",border:"none",boxShadow:"0 6px 20px rgba(26,46,26,.35)",letterSpacing:"-.01em",marginTop:4,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontFamily:"'DM Sans',sans-serif"}}>
+              {loading
+                ? <div style={{width:18,height:18,border:"2px solid rgba(255,255,255,.3)",borderTopColor:"#fff",borderRadius:"50%",animation:"spin .7s linear infinite"}}/>
+                : <>{mode==="signup"?"Create my family calendar →":"Sign in →"}</>
+              }
+            </button>
+
+            {authError&&(
+              <div style={{background:authError.startsWith("✓")?"rgba(45,90,61,.08)":"rgba(224,85,85,.08)",border:"1px solid "+(authError.startsWith("✓")?"rgba(45,90,61,.25)":"rgba(224,85,85,.25)"),borderRadius:12,padding:"12px 16px",fontSize:14,color:authError.startsWith("✓")?"var(--sage2)":"#c0392b",textAlign:"center",lineHeight:1.5}}>
+                {authError}
               </div>
             )}
-            {mode==="login"&&<button type="button" onClick={function(){if(!email.trim()){setAuthError("Enter your email above first.");return;}setLoading(true);supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(),{redirectTo:"ca.getcalla.app://"}).then(function(res){setLoading(false);if(res.error){setAuthError("Could not send reset email. Please try again.");}else{setAuthError("✓ Password reset email sent! Check your inbox.");}});}} style={{background:"none",border:"none",color:"var(--sage3)",fontSize:14,fontWeight:600,cursor:"pointer"}}>Forgot password?</button>}
+
+            {mode==="login"&&(
+              <button type="button" onClick={function(){if(!email.trim()){setAuthError("Enter your email above first.");return;}setLoading(true);supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(),{redirectTo:"ca.getcalla.app://"}).then(function(res){setLoading(false);if(res.error){setAuthError("Could not send reset email. Please try again.");}else{setAuthError("✓ Password reset email sent! Check your inbox.");}});}} style={{background:"none",border:"none",color:"var(--sage3)",fontSize:14,fontWeight:600,cursor:"pointer",padding:"4px 0",textAlign:"center"}}>
+                Forgot password?
+              </button>
+            )}
           </div>
-        </Card>
+
+          {/* Privacy line */}
+          <div style={{marginTop:20,paddingTop:16,borderTop:"1px solid var(--ink4)",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+            <div style={{width:14,height:14,borderRadius:"50%",background:"var(--sage2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              <Check size={8} color="#fff"/>
+            </div>
+            <p style={{fontSize:12,color:"var(--cream3)",textAlign:"center"}}>No credit card · No ads · Your data is never sold</p>
+          </div>
+        </div>
+
+        {/* Made in Canada */}
+        <p style={{textAlign:"center",fontSize:12,color:"var(--cream3)",marginTop:16,paddingBottom:8}}>Built in Ottawa, Canada 🍁</p>
 
       </div>
     </div>
   );
 }
+
 
 /* ─── Tour Demo Animations ──────────────────────────────────────────────── */
 function CalendarDemo() {
