@@ -2602,7 +2602,7 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
   return (
     <div className="screen-enter">
       {/* ── Hero header ── */}
-      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
+      <div style={{background:"linear-gradient(160deg,#1e3d2a 0%,#2d5a3d 100%)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 28px 28px",boxShadow:"0 4px 24px rgba(30,61,42,.25)"}}>
         {topBar}
         <p style={{fontSize:11,fontWeight:600,color:"rgba(245,240,232,.45)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:4,fontFamily:"-apple-system,sans-serif"}}>{dashDay}</p>
         <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px",marginBottom:12}}>{dashGreet},<br/><em style={{fontStyle:"italic",color:"#c9a84c"}}>{familyName||"My Family"}.</em></p>
@@ -4303,7 +4303,7 @@ function NotifScreen({events,members,onSelectEvent,topBar}) {
   });
   return (
     <div className="screen-enter">
-      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
+      <div style={{background:"linear-gradient(160deg,#1e3d2a 0%,#2d5a3d 100%)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 28px 28px",boxShadow:"0 4px 24px rgba(30,61,42,.25)"}}>
         {topBar}
         <div style={{marginTop:8}}>
           <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>Alerts</p>
@@ -4709,7 +4709,7 @@ function MoreScreen({members,setMembers,events,user,setUser,paid,trialLeft,onUpg
   if(!sec) return (
     <div className="screen-enter" style={{paddingBottom:8}}>
       {/* Hero header */}
-      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
+      <div style={{background:"linear-gradient(160deg,#1e3d2a 0%,#2d5a3d 100%)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 28px 28px",boxShadow:"0 4px 24px rgba(30,61,42,.25)"}}>
 {topBar}
         <p style={{fontSize:11,fontWeight:600,color:"rgba(245,240,232,.45)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:4,fontFamily:"-apple-system,sans-serif"}}>Your account</p>
         <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px"}}>{user&&user.family||"My Family"}</p>
@@ -5161,7 +5161,7 @@ function ListsScreen({members,topBar}) {
 
   return (
     <div className="screen-enter">
-      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
+      <div style={{background:"linear-gradient(160deg,#1e3d2a 0%,#2d5a3d 100%)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 28px 28px",boxShadow:"0 4px 24px rgba(30,61,42,.25)"}}>
         {topBar}
         <p style={{fontSize:11,fontWeight:600,color:"rgba(245,240,232,.45)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:4,fontFamily:"-apple-system,sans-serif"}}>Family Lists</p>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
@@ -5587,7 +5587,7 @@ function DiscoverScreen({members,onAdd,user,topBar}) {
   return (
     <div className="screen-enter" style={{paddingBottom:8}}>
       {/* Hero header */}
-      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
+      <div style={{background:"linear-gradient(160deg,#1e3d2a 0%,#2d5a3d 100%)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 28px 28px",boxShadow:"0 4px 24px rgba(30,61,42,.25)"}}>
         {topBar}
         <p style={{fontSize:11,fontWeight:600,color:"rgba(245,240,232,.45)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:4,fontFamily:"-apple-system,sans-serif"}}>Local Activities</p>
         <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.15,letterSpacing:"-.4px",marginBottom:6}}>Explore Nearby</p>
