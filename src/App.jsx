@@ -5972,14 +5972,15 @@ export default function App() {
   useEffect(function(){
     if(!pendingInvite) return;
     setInviteDetailsLoading(true);
-    supabase.from("invites").select("id,family_id,invited_email,status").eq("token",pendingInvite).single().then(function(res){
+    supabase.from("invites").select("id,family_id,invited_email,status").eq("token",pendingInvite).eq("status","pending").maybeSingle().then(function(res){
       setInviteDetailsLoading(false);
+      if(res.error) console.error("Invite lookup error:",res.error);
       if(res.data){
         setInviteDetails(res.data);
       } else {
         setInviteDetails(null);
       }
-    }).catch(function(){setInviteDetailsLoading(false);});
+    }).catch(function(e){console.error("Invite lookup failed:",e);setInviteDetailsLoading(false);});
   },[pendingInvite]);
 
   // ── Restore session on page load ──────────────────────────────────────────
