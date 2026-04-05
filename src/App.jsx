@@ -1418,12 +1418,17 @@ function AiDisclosureModal({onDone}) {
 
 /* ─── Co-parent Setup (post-login step 2) ───────────────────────────────── */
 function CoParentSetup({user,onDone,onInvite}) {
-  const [partnerEmail,setPartnerEmail]=useState(""),[sent,setSent]=useState(false),[skipped,setSkipped]=useState(false),[sending,setSending]=useState(false);
+  const [partnerEmail,setPartnerEmail]=useState(""),[sent,setSent]=useState(false),[skipped,setSkipped]=useState(false),[sending,setSending]=useState(false),[inviteErr,setInviteErr]=useState("");
   function doInvite(){
     if(!partnerEmail.includes("@")||partnerEmail.trim()===user.email||sending) return;
+    setInviteErr("");
     setSending(true);
     if(onInvite){
-      onInvite(partnerEmail,function(ok){setSending(false);setSent(true);});
+      onInvite(partnerEmail,function(ok,errMsg){
+        setSending(false);
+        if(ok) setSent(true);
+        else setInviteErr(errMsg||"Couldn't send invite. Check the email and try again.");
+      });
     } else {
       setSending(false);setSent(true);
     }
@@ -1463,10 +1468,11 @@ function CoParentSetup({user,onDone,onInvite}) {
 
       {/* Pinned bottom — always visible */}
       <div style={{flexShrink:0,padding:"16px 24px",paddingBottom:"calc(20px + env(safe-area-inset-bottom,0px))"}}>
-        <div style={{display:"flex",gap:10,marginBottom:12}}>
-          <input placeholder="partner@email.com" type="email" value={partnerEmail} onChange={e=>setPartnerEmail(e.target.value)} style={{flex:1,fontSize:15}} onKeyDown={e=>e.key==="Enter"&&doInvite()}/>
+        <div style={{display:"flex",gap:10,marginBottom:inviteErr?8:12}}>
+          <input placeholder="partner@email.com" type="email" value={partnerEmail} onChange={e=>{setPartnerEmail(e.target.value);setInviteErr("");}} style={{flex:1,fontSize:15,borderColor:inviteErr?"var(--rose)":undefined}} onKeyDown={e=>e.key==="Enter"&&doInvite()}/>
           <Btn onClick={doInvite} style={{padding:"0 22px",flexShrink:0,fontSize:15}}>{sending?"Sending…":"Invite"}</Btn>
         </div>
+        {inviteErr&&<p style={{fontSize:13,color:"var(--rose)",marginBottom:10,textAlign:"center"}}>{inviteErr}</p>}
         <button onClick={()=>setSkipped(true)} style={{background:"none",border:"none",color:"var(--cream3)",fontSize:15,fontWeight:400,display:"block",width:"100%",textAlign:"center",padding:"10px"}}>I'll invite someone later</button>
       </div>
     </div>
@@ -6346,7 +6352,7 @@ export default function App() {
   // ── Step 2b: Invite co-parent (shown once after first-time setup) ─────────
   if(showCoParentSetup) return (
     <><GS/><Toasts toasts={toasts}/><CoParentSetup user={user}
-      onInvite={function(email,cb){sendInvite(email,function(){cb&&cb(true);},function(){cb&&cb(false);});}}
+      onInvite={function(email,cb){sendInvite(email,function(){cb&&cb(true);},function(err){cb&&cb(false,err);});}}
       onDone={function(){
         localStorage.setItem("calla_coparent_onboarding_seen","true");
         setShowCoParentSetup(false);
