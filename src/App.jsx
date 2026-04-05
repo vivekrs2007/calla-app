@@ -3615,13 +3615,19 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
         if(!wds||usedDates[wds]) continue;
         usedDates[wds]=true;
         var ctx3fwd=t.slice(wm.index,Math.min(t.length,wm.index+200));
-        var tm3=ctx3fwd.match(/(\d{1,2}(?::\d{2})?\s*(?:am|pm))/i);
+        // Search both before and after the weekday for a time (e.g. "at 10 PM on Monday")
+        var ctx3around=t.slice(Math.max(0,wm.index-80),Math.min(t.length,wm.index+200));
+        var tm3=ctx3around.match(/(\d{1,2}(?::\d{2})?\s*(?:am|pm))/i);
         var loc3=getLocation(ctx3fwd)||getLocation(t);
         var lineBefore3=t.slice(Math.max(0,wm.index-120),wm.index);
         var lastLine3=lineBefore3.split("\n").pop().trim();
-        var sentenceTitle3=lastLine3.replace(/\s+(?:on|at|this|next)\s*$/i,"").trim();
+        var sentenceTitle3=lastLine3
+          .replace(/\s+(?:on|at|this|next)\s*$/i,"")                      // strip trailing "at/on"
+          .replace(/\s+(?:at\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm)\b/gi,"") // strip time (e.g. "at 10 PM")
+          .trim();
         var title3=sentenceTitle3&&sentenceTitle3.length>2&&sentenceTitle3.length<50?sentenceTitle3:(titlePrefix||subjectLine||wm[1].charAt(0).toUpperCase()+wm[1].slice(1)+" Event");
-        evs.push({id:genId(),title:title3,date:wds,time:parseTime(tm3&&tm3[1]||""),location:loc3,memberId:suggestMember(ctx3fwd),confidence:tm3?"high":"medium",notes:""});
+        // Use full text for member suggestion so names before the weekday are found
+        evs.push({id:genId(),title:title3,date:wds,time:parseTime(tm3&&tm3[1]||""),location:loc3,memberId:suggestMember(t),confidence:tm3?"high":"medium",notes:""});
       }
 
       // ── 3. Recurring "every Monday" ──────────────────────────────────────
@@ -3824,11 +3830,13 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
 
       {tab==="email"&&stage==="review"&&(
         <div>
-          {/* Email deleted confirmation */}
+          {/* Privacy note — only shown when reviewing a caught inbox email */}
+          {selectedCatchId&&(
           <div style={{background:"rgba(45,90,61,.06)",border:"1px solid rgba(83,136,122,.2)",borderRadius:12,padding:"12px 14px",marginBottom:14,display:"flex",gap:10,alignItems:"center"}}>
             <Check size={16} color="var(--sage2)" style={{flexShrink:0}}/>
-            <div style={{flex:1}}><p style={{fontWeight:700,color:"var(--sage3)",fontSize:15}}>Email permanently deleted ✓</p><p style={{fontSize:15,color:"var(--sage3)"}}>Only the events below will be saved</p></div>
+            <div style={{flex:1}}><p style={{fontWeight:700,color:"var(--sage3)",fontSize:15}}>Email will be deleted on save ✓</p><p style={{fontSize:15,color:"var(--sage3)"}}>Only the events below will be saved</p></div>
           </div>
+          )}
 
           {/* Instructor broadcast card */}
           {instructor&&(
