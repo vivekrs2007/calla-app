@@ -5984,14 +5984,29 @@ export default function App() {
             } else {
               setUser(function(prev){return Object.assign({},prev,{catchPrefix:profile.catch_prefix});});
             }
-          } else {
+          } else if(pr.error){
+            // DB error — don't block, proceed cautiously
             setSetupDone(localStorage.getItem("calla_setup_"+u.id)==="true");
-            setShowOnboarding(true);
-            // Brand-new profile — generate from family name in metadata
-            var familySlug2=(meta.family_name||"").toLowerCase().replace(/[^a-z0-9]/g,"").slice(0,15);
-            var pfx2=familySlug2.length>=3?familySlug2+u.id.replace(/-/g,"").slice(-3):u.id.replace(/-/g,"").slice(0,10);
-            supabase.from("profiles").update({catch_prefix:pfx2}).eq("id",u.id).then(function(){});
-            setUser(function(prev){return Object.assign({},prev,{catchPrefix:pfx2});});
+            loadUserData(u.id);
+          } else {
+            // Profile row missing for a restored session = account was deleted.
+            // Only skip sign-out for a fresh signup (created within the last 60 s).
+            var createdAt=new Date(u.created_at||0).getTime();
+            var isNewSignup=(Date.now()-createdAt)<60000;
+            if(isNewSignup){
+              setSetupDone(false);
+              setShowOnboarding(true);
+              loadUserData(u.id);
+            } else {
+              // Stale session — account no longer exists, force sign-out
+              supabase.auth.signOut().catch(function(){});
+              Object.keys(localStorage).forEach(function(k){
+                if(k.startsWith("sb-")||k.startsWith("supabase")) localStorage.removeItem(k);
+              });
+              setUser(null);
+              setAuthLoading(false);
+              return;
+            }
           }
           loadUserData(u.id);
         }).catch(function(){
