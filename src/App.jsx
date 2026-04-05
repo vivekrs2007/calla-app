@@ -5967,20 +5967,33 @@ export default function App() {
     }
   },[]);
 
-  // ── Fetch invite details (invited_email) when token is available ───────────
-  // Blocks the form until we know the exact email this invite belongs to
+  // ── Fetch invite details via edge function (never direct table — anon RLS removed) ──
+  // Direct table access exposed ALL pending invites + tokens to unauthenticated users.
+  // The get-invite edge function requires the token as input and uses service role server-side.
   useEffect(function(){
     if(!pendingInvite) return;
     setInviteDetailsLoading(true);
-    supabase.from("invites").select("id,family_id,invited_email,status").eq("token",pendingInvite).eq("status","pending").maybeSingle().then(function(res){
+    fetch("https://pqvxzsrpifiuovhtxldp.supabase.co/functions/v1/get-invite",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":"Bearer "+SUPABASE_KEY,
+        "apikey":SUPABASE_KEY,
+      },
+      body:JSON.stringify({token:pendingInvite}),
+    }).then(function(r){return r.json();}).then(function(r){
       setInviteDetailsLoading(false);
-      if(res.error) console.error("Invite lookup error:",res.error);
-      if(res.data){
-        setInviteDetails(res.data);
+      if(r.ok&&r.invite){
+        setInviteDetails(r.invite);
       } else {
+        console.error("get-invite:",r.error);
         setInviteDetails(null);
       }
-    }).catch(function(e){console.error("Invite lookup failed:",e);setInviteDetailsLoading(false);});
+    }).catch(function(e){
+      console.error("get-invite fetch failed:",e);
+      setInviteDetailsLoading(false);
+      setInviteDetails(null);
+    });
   },[pendingInvite]);
 
   // ── Restore session on page load ──────────────────────────────────────────

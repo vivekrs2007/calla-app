@@ -1,16 +1,13 @@
--- ── Invites table: allow unauthenticated token lookup ────────────────────
--- The invite landing page loads BEFORE the partner creates an account.
--- Without this policy, anon requests return nothing → "expired" error.
+-- ── Invites table: secure RLS — no anon direct reads ─────────────────────
+-- Anon SELECT was required for the invite landing page but exposed ALL pending
+-- invites (email + tokens) to anyone who queried without a filter.
+-- Fix: drop the anon policy. Invite lookup is now done via the get-invite
+-- edge function (service role, requires token as input).
 
--- Allow anyone (anon) to read a pending invite by its token
--- Scope is narrow: only pending invites, only when a token exists
+-- Remove the insecure anon read policy
 DROP POLICY IF EXISTS "Public invite lookup by token" ON invites;
-CREATE POLICY "Public invite lookup by token"
-  ON invites FOR SELECT
-  TO anon
-  USING (token IS NOT NULL AND status = 'pending');
 
--- Also ensure authenticated users can still read invites in their family
+-- Authenticated users can read invites (needed by acceptInvite after sign-in)
 DROP POLICY IF EXISTS "Authenticated invite read" ON invites;
 CREATE POLICY "Authenticated invite read"
   ON invites FOR SELECT
