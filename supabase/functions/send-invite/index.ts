@@ -20,15 +20,15 @@ serve(async (req) => {
 
     if (!RESEND_API_KEY) {
       console.error("RESEND_API_KEY not set");
-      return new Response(JSON.stringify({ error: "RESEND_API_KEY not configured" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      return new Response(JSON.stringify({ ok: false, error: "RESEND_API_KEY not configured" }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     if (!to || !to.includes("@")) {
       console.error("Invalid or missing to address:", to);
-      return new Response(JSON.stringify({ error: "Invalid recipient email" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      return new Response(JSON.stringify({ ok: false, error: "Invalid recipient email" }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -144,8 +144,8 @@ serve(async (req) => {
 
   } catch (err) {
     console.error("send-invite unhandled error:", err);
-    return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return new Response(JSON.stringify({ ok: false, error: String(err) }), {
+      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 })
