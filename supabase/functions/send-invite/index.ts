@@ -100,7 +100,7 @@ serve(async (req) => {
             You're invited to Calla
           </h1>
           <p style="margin:0 0 20px;font-size:14px;color:rgba(245,240,232,0.55);letter-spacing:0.06em;text-transform:uppercase;font-weight:600;">
-            Family Calendar · Made in Canada 🍁
+            Family Calendar · Built in Ottawa, Canada 🍁
           </p>
           <!-- Pill badge -->
           <div style="display:inline-block;background:rgba(245,240,232,0.1);border:1px solid rgba(245,240,232,0.2);border-radius:99px;padding:7px 18px;">
@@ -159,7 +159,38 @@ serve(async (req) => {
           </p>
         </td></tr>
 
-        <!-- ── Install nudge ─────────────────────────────────────────── -->
+        <!-- ── Privacy & trust ────────────────────��──────────────────── -->
+        <tr><td style="background:#ffffff;padding:0 40px 32px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="border:1.5px solid #e0ede5;border-radius:16px;overflow:hidden;">
+            <!-- Header row -->
+            <tr><td style="background:#f0f8f2;padding:14px 20px;border-bottom:1px solid #e0ede5;">
+              <p style="margin:0;font-size:13px;font-weight:800;color:#1a2e1a;letter-spacing:0.04em;text-transform:uppercase;">
+                🔒 Your privacy — always protected
+              </p>
+            </td></tr>
+            <!-- Trust items -->
+            <tr><td style="padding:16px 20px;">
+              ${[
+                ["🗑️", "School emails deleted after processing", "Forwarded emails are read by AI to extract the event, then permanently deleted. We never store or index your inbox."],
+                ["👶", "Zero kids' data stored or sold — ever", "We never collect, profile, or monetise information about your children. No exceptions."],
+                ["🔐", "Your calendar is private to your family", "Only you and the people you explicitly invite can see your events. No advertisers, no third parties."],
+                ["🇨🇦", "Canadian-built, Canadian-hosted", "Calla is made by a small team in Ottawa, ON. Your data stays in Canada and is governed by PIPEDA."],
+                ["🚫", "No ads. No tracking. No data brokers.", "We make money from subscriptions only — not from selling your family's information."],
+              ].map(([icon, title, desc]) => `
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
+                <tr>
+                  <td width="32" valign="top" style="font-size:17px;padding-right:10px;padding-top:1px;">${icon}</td>
+                  <td valign="top">
+                    <p style="margin:0 0 2px;font-size:13px;font-weight:700;color:#1a2e1a;">${title}</p>
+                    <p style="margin:0;font-size:12px;color:#7a8e7a;line-height:1.55;">${desc}</p>
+                  </td>
+                </tr>
+              </table>`).join("")}
+            </td></tr>
+          </table>
+        </td></tr>
+
+        <!-- ── Install nudge ──────────────────────────────────────────�� -->
         <tr><td style="background:#f7f4ee;padding:20px 40px;border-top:1px solid #e8e0d2;">
           <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
@@ -175,7 +206,7 @@ serve(async (req) => {
         <tr><td style="background:#f0ebe0;border-radius:0 0 20px 20px;padding:20px 40px;text-align:center;border-top:1px solid #e8e0d2;">
           <p style="margin:0;font-size:12px;color:#a0aa9a;line-height:1.8;">
             This invite expires in 7 days · If you weren't expecting this, safely ignore it.<br/>
-            <a href="https://getcalla.ca" style="color:#2d5a3d;text-decoration:none;font-weight:600;">getcalla.ca</a> · Made with care in Canada 🍁
+            <a href="https://getcalla.ca" style="color:#2d5a3d;text-decoration:none;font-weight:600;">getcalla.ca</a> · Built with care in Ottawa, Canada 🍁
           </p>
         </td></tr>
 
