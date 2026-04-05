@@ -31,7 +31,7 @@ import {
   ChevronLeft, ChevronRight, ChevronDown, ChevronUp,
   MapPin, Clock, Repeat, Package, DollarSign, Trash2,
   X, Check, AlertTriangle, Zap, Sun, Sunset, Moon,
-  Copy, Link, LogOut, Share2, Folder, FileText, Calendar,
+  Copy, Link, LogOut, Share2, FileText, Calendar,
   ShoppingCart, MessageCircle, Send, List, Star, Compass, Locate
 , ExternalLink } from "lucide-react";
 
@@ -4665,29 +4665,13 @@ function DigestScreen({members, user, onBack, toast}) {
 }
 
 function MoreScreen({members,setMembers,events,user,setUser,paid,trialLeft,onUpgrade,onSignOut,notifSettings,setNotifSettings,saveMember,deleteMember,toast,familyId,sendInvite,requestPermission,topBar}) {
-  const fr=useRef();
   const [confirmSignOut,setConfirmSignOut]=useState(false);
-  const [sec,setSec]=useState(null),[docs,setDocs]=useState([]);
+  const [sec,setSec]=useState(null);
   const [budget,setBudget]=useState(500),[invite,setInvite]=useState(""),[invited,setInvited]=useState(false),[link,setLink]=useState(""),[inviteLink,setInviteLink]=useState("");
   const gm=id=>id?members.find(m=>m.id===id)||{name:"Family",color:"var(--cream3)",emoji:"👨‍👩‍👧‍👦"}:{name:"Family",color:"var(--cream3)",emoji:"👨‍👩‍👧‍👦"};
-  // Load documents from Supabase
-  useEffect(function(){
-    if(!user||!user.id) return;
-    supabase.from("vault_documents").select("*").or(familyId?"family_id.eq."+familyId+",user_id.eq."+user.id:"user_id.eq."+user.id).order("created_at",{ascending:false}).then(function(res){
-      if(res.data&&res.data.length>0) setDocs(res.data.map(function(d){return{id:d.id,name:d.name,memberId:d.member_id,emoji:d.emoji||"📄",date:d.created_at?d.created_at.slice(0,10):todayStr,filePath:d.file_url};}));
-    }).catch(function(){});
-  },[user&&user.id,familyId]);
   const ce=events.filter(e=>e.cost&&parseFloat(e.cost)>0);
   const tot=ce.reduce((s,e)=>{const c=parseFloat(e.cost)||0;return s+(e.costType==="monthly"?c:e.costType==="session"?c*4:e.costType==="season"?c/3:c);},0);
   const Back=()=>(<div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 14px)",marginBottom:4}}><button onClick={()=>setSec(null)} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--sage)",border:"none",borderRadius:10,color:"#f5f0e8",fontWeight:700,fontSize:14,padding:"9px 16px",boxShadow:"0 2px 8px rgba(26,58,42,.2)"}}><ChevronLeft size={16}/>Back</button></div>);
-  const SECS=[
-    {id:"family",Icon:Users,label:"Family Members",desc:members.length+" members"},
-    {id:"digest",Icon:Sun,label:"Morning Text",desc:"Daily SMS with your schedule"},
-    {id:"vault",Icon:Folder,label:"Document Vault",desc:"Permission slips, records"},
-    {id:"budget",Icon:DollarSign,label:"Budget Tracker",desc:"$"+tot.toFixed(0)+"/mo estimated"},
-    {id:"sharing",Icon:Share2,label:"Family Sharing",desc:"Invite partner & share access"},
-    {id:"notif_settings",Icon:Bell,label:"Notification Settings",desc:"Reminders, quiet hours"},
-  ];
   // Helper: a single row in the grouped list
   const Row=({Icon,iconBg,label,desc,onTap,last=false,danger=false})=>(
     <button onClick={onTap} style={{width:"100%",display:"flex",alignItems:"center",gap:14,padding:"14px 18px",background:"transparent",border:"none",borderBottom:last?"none":"1px solid rgba(240,236,226,.06)",textAlign:"left"}}>
@@ -4737,8 +4721,7 @@ function MoreScreen({members,setMembers,events,user,setUser,paid,trialLeft,onUpg
         <Row Icon={Users}      iconBg="rgba(83,136,122,.25)"  label="Family Members"   desc={members.length+" members"}         onTap={()=>setSec("family")}/>
         <Row Icon={Share2}     iconBg="rgba(59,130,246,.2)"   label="Family Sharing"   desc="Invite partner & sync"              onTap={()=>setSec("sharing")}/>
         <Row Icon={Sun}        iconBg="rgba(176,141,82,.25)"  label="Morning Text"     desc="Daily SMS digest"                   onTap={()=>setSec("digest")}/>
-        <Row Icon={Folder}     iconBg="rgba(139,92,246,.2)"   label="Document Vault"   desc="Slips, records, cards"              onTap={()=>setSec("vault")}/>
-        <Row Icon={DollarSign} iconBg="rgba(16,185,129,.2)"   label="Budget Tracker"   desc={"$"+tot.toFixed(0)+"/mo estimated"} onTap={()=>setSec("budget")}/>
+<Row Icon={DollarSign} iconBg="rgba(16,185,129,.2)"   label="Budget Tracker"   desc={"$"+tot.toFixed(0)+"/mo estimated"} onTap={()=>setSec("budget")}/>
         <Row Icon={Settings}   iconBg="rgba(45,90,61,.15)"    label="Account Settings" desc="Name, email, password"              onTap={()=>setSec("account")}/>
         <Row Icon={Bell}       iconBg="rgba(59,130,246,.2)"   label="Notifications"    desc="Reminders, quiet hours"             onTap={()=>setSec("notif_settings")}/>
         <Row Icon={LogOut}     iconBg="rgba(220,80,80,.15)"   label="Sign Out"         danger                                    onTap={()=>setConfirmSignOut(true)} last/>
@@ -4801,40 +4784,6 @@ function MoreScreen({members,setMembers,events,user,setUser,paid,trialLeft,onUpg
   if(sec==="family") return <MembersScreen members={members} setMembers={setMembers} events={events} saveMember={saveMember} deleteMember={deleteMember} sendInvite={sendInvite} onBack={()=>setSec(null)}/>;
   if(sec==="digest") return <DigestScreen members={members} onBack={function(){setSec(null);}} user={user} toast={toast}/>;
   if(sec==="notif_settings") return <NotifSettingsScreen settings={notifSettings} setSettings={setNotifSettings} members={members} requestPermission={requestPermission} onBack={()=>setSec(null)}/>;
-  if(sec==="vault") return (
-    <div><Back/>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}><h2 style={{fontSize:20,fontWeight:800}}>Document Vault</h2><Btn onClick={()=>fr.current&&fr.current.click()} style={{display:"flex",alignItems:"center",gap:6,padding:"10px 14px",fontSize:15}}><Plus size={13}/>Upload</Btn></div>
-      <input ref={fr} type="file" accept="image/*,.pdf,.doc,.docx" style={{display:"none"}} onChange={async function(e){
-        var file=e.target.files&&e.target.files[0];
-        if(!file||!user||!user.id) return;
-        var ext=file.name.split(".").pop()||"file";
-        var path="vault/"+user.id+"/"+genId()+"."+ext;
-        var {error:upErr}=await supabase.storage.from("documents").upload(path,file,{upsert:true});
-        if(upErr){return;}
-        // Store the file PATH only (not a public URL) — signed URLs generated on demand
-        var emoji=file.type.startsWith("image/")?"🖼️":file.type==="application/pdf"?"📄":"📁";
-        var newDoc={id:genId(),name:file.name,memberId:null,emoji:emoji,date:todayStr,filePath:path};
-        var {error:dbErr}=await supabase.from("vault_documents").insert({id:newDoc.id,user_id:user.id,family_id:familyId||null,name:file.name,emoji:emoji,member_id:null,file_url:path,created_at:new Date().toISOString()});
-        if(!dbErr) setDocs(function(p){return[{...newDoc},...p];});
-        e.target.value="";
-      }}/>
-      <div style={{display:"flex",flexDirection:"column",gap:10}}>
-        {docs.map(d=>{const m=gm(d.memberId);return(
-          <Card key={d.id} style={{display:"flex",alignItems:"center",gap:12}}>
-            <div style={{width:42,height:42,background:"var(--ink4)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{d.emoji}</div>
-            <div style={{flex:1}}><p style={{fontWeight:700,fontSize:15}}>{d.name}</p><div style={{display:"flex",gap:8,marginTop:3}}><span style={{fontSize:15,color:m.color}}>{m.emoji} {m.name}</span><span style={{fontSize:15,color:"var(--cream3)"}}>{fd(d.date)}</span></div>{d.filePath&&<button onClick={async function(){
-  var {data:sd}=await supabase.storage.from("documents").createSignedUrl(d.filePath,3600);
-  if(sd&&sd.signedUrl) window.open(sd.signedUrl,"_blank");
-}} style={{background:"none",border:"none",padding:0,color:"var(--sage3)",fontSize:12,fontWeight:600,cursor:"pointer",textDecoration:"underline",marginTop:2}}>View</button>}</div>
-            <button onClick={function(){
-              setDocs(function(x){return x.filter(function(i){return i.id!==d.id;});});
-              supabase.from("vault_documents").delete().eq("id",d.id).then(function(){}).catch(function(){});
-            }} style={{background:"none",border:"none",color:"var(--border3)"}}><X size={15}/></button>
-          </Card>
-        );})}
-      </div>
-    </div>
-  );
   if(sec==="budget") return (
     <div><Back/>
       <h2 style={{fontSize:20,fontWeight:800,marginBottom:18}}>Budget Tracker</h2>
@@ -5061,8 +5010,7 @@ function PaywallScreen({ trialLeft, onPay, onDismiss, hard = false }) {
             ["⚡","Conflict Alerts","Never double-book"],
             ["👨‍👩‍👧","Co-parent Sync","Both parents, live"],
             ["🎒","Packing Lists","Nothing forgotten"],
-            ["📁","Document Vault","Permission slips safe"],
-            ["💰","Budget Tracker","All costs in one place"],
+["💰","Budget Tracker","All costs in one place"],
             ["🔒","Privacy First","Emails deleted instantly"],
           ].map(([icon, title, desc]) => (
             <div key={title} style={{ background:"#fff", border:"1px solid var(--border2)", borderRadius:12, padding:"12px", boxShadow:"0 1px 3px rgba(45,60,45,.05)" }}>
