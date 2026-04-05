@@ -3230,7 +3230,7 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
   const [loadingCatch,setLoadingCatch]=useState(false);
   const [selectedCatchId,setSelectedCatchId]=useState(null); // id of item being processed
 
-  var catchPrefix=user&&user.id?user.id.replace(/-/g,"").slice(0,10):"";
+  var catchPrefix=user&&user.catchPrefix?user.catchPrefix:(user&&user.id?user.id.replace(/-/g,"").slice(0,10):"");
 
   function loadCatchItems(){
     if(!catchPrefix) return;
@@ -3744,10 +3744,10 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
           <Card style={{marginBottom:14,background:"rgba(59,130,246,.08)",borderColor:"#BFDBFE"}}>
             <p style={{fontSize:15,fontWeight:700,color:"var(--sage3)",marginBottom:6}}>Your private catch address</p>
             {(function(){
-              var addr=(user&&user.id?(user.id.replace(/-/g,"").slice(0,10)):"family")+"@getcalla.ca";
+              var addr=catchPrefix+"@getcalla.ca";
               return (
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-                  <code style={{flex:1,fontSize:14,fontWeight:700,color:"var(--sage2)",background:"var(--ink2)",border:"1px solid rgba(59,130,246,.25)",borderRadius:8,padding:"9px 12px",wordBreak:"break-all"}}>{addr}</code>
+                  <code style={{flex:1,fontSize:15,fontWeight:700,color:"var(--sage2)",background:"var(--ink2)",border:"1px solid rgba(59,130,246,.25)",borderRadius:8,padding:"9px 12px",wordBreak:"break-all"}}>{addr}</code>
                   <button onClick={()=>navigator.clipboard&&navigator.clipboard.writeText(addr)} style={{background:"var(--sage2)",color:"var(--cream)",border:"none",borderRadius:8,padding:"9px 14px",display:"flex",alignItems:"center",gap:5,fontSize:15,fontWeight:700,flexShrink:0}}><Copy size={13}/>Copy</button>
                 </div>
               );
@@ -5895,17 +5895,24 @@ export default function App() {
             }
             if(profile.paid===true) setPaid(true);
             if(!profile.onboarding_seen) setShowOnboarding(true);
-            // Store catch prefix so receive-email edge function can reverse-lookup this user
-            if(!profile.catch_prefix){
-              var pfx=u.id.replace(/-/g,"").slice(0,10);
+            // Store catch prefix — use family name slug for readability
+            var isPureHex=/^[0-9a-f]{10}$/.test(profile.catch_prefix||"");
+            if(!profile.catch_prefix||isPureHex){
+              var familySlug=(profile.family_name||"").toLowerCase().replace(/[^a-z0-9]/g,"").slice(0,15);
+              var pfx=familySlug.length>=3?familySlug+u.id.replace(/-/g,"").slice(-3):u.id.replace(/-/g,"").slice(0,10);
               supabase.from("profiles").update({catch_prefix:pfx}).eq("id",u.id).then(function(){});
+              setUser(function(prev){return Object.assign({},prev,{catchPrefix:pfx});});
+            } else {
+              setUser(function(prev){return Object.assign({},prev,{catchPrefix:profile.catch_prefix});});
             }
           } else {
             setSetupDone(localStorage.getItem("calla_setup_"+u.id)==="true");
             setShowOnboarding(true);
-            // Also set catch prefix for brand-new profiles
-            var pfx2=u.id.replace(/-/g,"").slice(0,10);
+            // Brand-new profile — generate from family name in metadata
+            var familySlug2=(meta.family_name||"").toLowerCase().replace(/[^a-z0-9]/g,"").slice(0,15);
+            var pfx2=familySlug2.length>=3?familySlug2+u.id.replace(/-/g,"").slice(-3):u.id.replace(/-/g,"").slice(0,10);
             supabase.from("profiles").update({catch_prefix:pfx2}).eq("id",u.id).then(function(){});
+            setUser(function(prev){return Object.assign({},prev,{catchPrefix:pfx2});});
           }
           loadUserData(u.id);
         }).catch(function(){
@@ -5936,7 +5943,7 @@ export default function App() {
   useEffect(function(){
     if(!user||!user.id) return;
     function refreshBadge(){
-      var pfx=user.id.replace(/-/g,"").slice(0,10);
+      var pfx=user.catchPrefix||user.id.replace(/-/g,"").slice(0,10);
       var q=familyId
         ? supabase.from("catch_items").select("id",{count:"exact",head:true}).eq("family_id",familyId).eq("processed",false)
         : supabase.from("catch_items").select("id",{count:"exact",head:true}).eq("catch_prefix",pfx).eq("processed",false);
