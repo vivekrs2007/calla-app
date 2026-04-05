@@ -1731,7 +1731,7 @@ const ShareSheet = ({ev,onClose}) => {
 };
 
 /* ─── Event Sheet ───────────────────────────────────────────────────────── */
-function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
+function EventSheet({ev,members,onClose,onDelete,onSave,user,onTagNotify}) {
   useScrollLock(true);
   const [confirmDelete,setConfirmDelete]=useState(false);
   const [packed,setPacked]     = useState({});
@@ -1741,6 +1741,8 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
   const [showMentionPicker,setShowMentionPicker] = useState(false);
   const [mentionSearch,setMentionSearch] = useState("");
   const [showShare,setShowShare] = useState(false);
+  const [editMode,setEditMode] = useState(false);
+  const [editEv,setEditEv] = useState({...ev});
   const commentInputRef = useRef();
   const sheetRef = useRef();
   const dragStartY = useRef(null);
@@ -1883,8 +1885,24 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
                 </Pill>
                 {ev.recurring&&<Pill color="var(--sage3)" bg="rgba(67,143,126,.14)"><Repeat size={10}/> Recurring</Pill>}
               </div>
-              <h2 style={{fontSize:20,fontWeight:800,letterSpacing:"-.3px",lineHeight:1.2,paddingRight:8}}>{ev.title}</h2>
+              {editMode&&(
+                <select value={editEv.memberId} onChange={function(e){setEditEv(function(x){return{...x,memberId:e.target.value};});}} style={{fontSize:13,padding:"4px 8px",borderRadius:8,border:"1px solid var(--sage2)",background:"var(--ink3)",color:"var(--cream)",marginBottom:4}}>
+                  {members.map(function(mm){return <option key={mm.id} value={mm.id}>{mm.emoji} {mm.name}</option>;})}
+                </select>
+              )}
+              {editMode
+                ? <input value={editEv.title} onChange={function(e){setEditEv(function(x){return{...x,title:e.target.value};});}} style={{fontSize:18,fontWeight:800,letterSpacing:"-.3px",background:"var(--ink3)",border:"1.5px solid var(--sage2)",borderRadius:10,padding:"6px 10px",width:"100%",color:"var(--cream)"}}/>
+                : <h2 style={{fontSize:20,fontWeight:800,letterSpacing:"-.3px",lineHeight:1.2,paddingRight:8}}>{ev.title}</h2>
+              }
             </div>
+            {editMode
+              ? <button onClick={function(){if(onSave)onSave(editEv);setEditMode(false);}} style={{height:32,borderRadius:16,background:"var(--sage2)",border:"none",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:8,padding:"0 14px",minHeight:"auto",minWidth:"auto",touchAction:"manipulation",gap:4,color:"#fff",fontWeight:700,fontSize:13}}>
+                  ✓ Save
+                </button>
+              : <button onClick={function(){setEditMode(true);setEditEv({...ev});}} style={{width:32,height:32,borderRadius:"50%",background:"var(--sage4)",border:"1px solid var(--sage2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:8,minHeight:"auto",minWidth:"auto",touchAction:"manipulation"}}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sage2)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+            }
             <button
               onClick={onClose}
               style={{width:32,height:32,borderRadius:"50%",background:"var(--ink4)",border:"none",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:12,minHeight:"auto",minWidth:"auto",touchAction:"manipulation"}}
@@ -1898,43 +1916,90 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
         <div style={{flex:1,minHeight:0,overflowY:"scroll",WebkitOverflowScrolling:"touch",overscrollBehavior:"contain",padding:"16px 20px calc(env(safe-area-inset-bottom,0px) + 100px) 20px"}}>
 
           {/* Details */}
-          <div style={{display:"flex",flexDirection:"column",gap:2,marginBottom:16}}>
-            {[[Calendar,fd(ev.date),"Date"],[Clock,ev.time||"No time","Time"],ev.cost?[DollarSign,"$"+ev.cost+" / "+(ev.costType||"one-time"),"Cost"]:null].filter(Boolean).map(([Icon,val,label])=>(
-              <div key={label} style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderBottom:"1px solid #F3F4F6"}}>
-                <div style={{width:34,height:34,background:"var(--sage-light)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Icon size={15} color="var(--sage)"/></div>
-                <div><p style={{fontSize:15,color:"#2d4a2d",fontWeight:700,textTransform:"uppercase",letterSpacing:".04em"}}>{label}</p><p style={{fontSize:15,fontWeight:600,marginTop:1}}>{val}</p></div>
+          {editMode ? (
+            <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:16}}>
+              <div>
+                <p style={{fontSize:11,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em",marginBottom:6}}>Date</p>
+                <input type="date" value={editEv.date} onChange={function(e){setEditEv(function(x){return{...x,date:e.target.value};});}} style={{width:"100%",fontSize:15,padding:"11px 14px",borderRadius:12,border:"1.5px solid var(--ink5)",background:"#fff",color:"var(--sage)"}}/>
               </div>
-            ))}
-          </div>
-
-          {/* Location */}
-          {ev.location?(
-            <div style={{marginBottom:16}}>
-              <div style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderBottom:"1px solid #F3F4F6",marginBottom:10}}>
-                <div style={{width:34,height:34,background:"var(--sage-light)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><MapPin size={15} color="var(--sage)"/></div>
+              <div style={{display:"flex",gap:10}}>
                 <div style={{flex:1}}>
-                  <p style={{fontSize:15,color:"#2d4a2d",fontWeight:700,textTransform:"uppercase",letterSpacing:".04em"}}>Location</p>
-                  <p style={{fontSize:15,fontWeight:600,color:"var(--sage3)",marginTop:1,cursor:"pointer"}} onClick={()=>openMaps(ev.location)}>{ev.location}</p>
+                  <p style={{fontSize:11,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em",marginBottom:6}}>Start Time</p>
+                  <input type="time" value={editEv.time||""} onChange={function(e){setEditEv(function(x){return{...x,time:e.target.value};});}} style={{width:"100%",fontSize:15,padding:"11px 14px",borderRadius:12,border:"1.5px solid var(--ink5)",background:"#fff",color:"var(--sage)"}}/>
+                </div>
+                <div style={{flex:1}}>
+                  <p style={{fontSize:11,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em",marginBottom:6}}>End Time</p>
+                  <input type="time" value={editEv.endTime||""} onChange={function(e){setEditEv(function(x){return{...x,endTime:e.target.value};});}} style={{width:"100%",fontSize:15,padding:"11px 14px",borderRadius:12,border:"1.5px solid var(--ink5)",background:"#fff",color:"var(--sage)"}}/>
                 </div>
               </div>
-              <div style={{borderRadius:16,overflow:"hidden",border:"1px solid var(--border2)",marginBottom:10,position:"relative"}}>
-                <iframe title="Location" src={"https://www.openstreetmap.org/export/embed.html?layer=mapnik&query="+encodeURIComponent(ev.location)} width="100%" height="160" style={{display:"block",border:"none"}} loading="lazy"/>
-                <button onClick={()=>openMaps(ev.location)} style={{position:"absolute",top:8,right:8,background:"var(--ink2)",borderRadius:8,padding:"5px 10px",display:"flex",alignItems:"center",gap:5,boxShadow:"0 2px 8px rgba(0,0,0,.14)",border:"1px solid var(--border)",minHeight:"auto",minWidth:"auto"}}><MapPin size={11} color="var(--sage2)"/><span style={{fontSize:15,fontWeight:700,color:"var(--sage3)"}}>Open</span></button>
+              <div>
+                <p style={{fontSize:11,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em",marginBottom:6}}>Location</p>
+                <input placeholder="Location (optional)" value={editEv.location||""} onChange={function(e){setEditEv(function(x){return{...x,location:e.target.value};});}} style={{width:"100%",fontSize:15,padding:"11px 14px",borderRadius:12,border:"1.5px solid var(--ink5)",background:"#fff",color:"var(--sage)"}}/>
               </div>
-              <button onClick={()=>openDirs(ev.location)} style={{width:"100%",background:"var(--sage-light)",border:"1.5px solid var(--sage-mid)",borderRadius:12,padding:"12px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontWeight:700,fontSize:15,color:"var(--sage)",cursor:"pointer"}}><MapPin size={16}/>Get Directions</button>
+              <div style={{display:"flex",gap:10}}>
+                <div style={{flex:1}}>
+                  <p style={{fontSize:11,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em",marginBottom:6}}>Cost</p>
+                  <input type="number" placeholder="0.00" value={editEv.cost||""} onChange={function(e){setEditEv(function(x){return{...x,cost:e.target.value};});}} style={{width:"100%",fontSize:15,padding:"11px 14px",borderRadius:12,border:"1.5px solid var(--ink5)",background:"#fff",color:"var(--sage)"}}/>
+                </div>
+                <div style={{flex:1}}>
+                  <p style={{fontSize:11,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em",marginBottom:6}}>Cost Type</p>
+                  <select value={editEv.costType||"one-time"} onChange={function(e){setEditEv(function(x){return{...x,costType:e.target.value};});}} style={{width:"100%",fontSize:15,padding:"11px 14px",borderRadius:12,border:"1.5px solid var(--ink5)",background:"#fff",color:"var(--sage)"}}>
+                    <option value="one-time">One-time</option>
+                    <option value="session">Per session</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="season">Per season</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <p style={{fontSize:11,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".06em",marginBottom:6}}>Notes</p>
+                <textarea placeholder="Notes (optional)" value={editEv.notes||""} onChange={function(e){setEditEv(function(x){return{...x,notes:e.target.value};});}} rows={3} style={{width:"100%",fontSize:15,padding:"11px 14px",borderRadius:12,border:"1.5px solid var(--ink5)",background:"#fff",color:"var(--sage)",resize:"vertical"}}/>
+              </div>
+              <button onClick={function(){setEditMode(false);setEditEv({...ev});}} style={{background:"none",border:"1px solid var(--border2)",borderRadius:12,padding:"11px",fontWeight:600,fontSize:15,color:"var(--cream3)",cursor:"pointer"}}>
+                Cancel
+              </button>
             </div>
-          ):(
-            <div style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderBottom:"1px solid #F3F4F6",marginBottom:16}}>
-              <div style={{width:34,height:34,background:"var(--ink4)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><MapPin size={15} color="#D1D5DB"/></div>
-              <div><p style={{fontSize:15,color:"#2d4a2d",fontWeight:700,textTransform:"uppercase",letterSpacing:".04em"}}>Location</p><p style={{fontSize:15,color:"var(--border3)",marginTop:1}}>Not set</p></div>
-            </div>
+          ) : (
+            <>
+              <div style={{display:"flex",flexDirection:"column",gap:2,marginBottom:16}}>
+                {[[Calendar,fd(ev.date),"Date"],[Clock,ev.time||"No time","Time"],ev.cost?[DollarSign,"$"+ev.cost+" / "+(ev.costType||"one-time"),"Cost"]:null].filter(Boolean).map(([Icon,val,label])=>(
+                  <div key={label} style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderBottom:"1px solid #F3F4F6"}}>
+                    <div style={{width:34,height:34,background:"var(--sage-light)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Icon size={15} color="var(--sage)"/></div>
+                    <div><p style={{fontSize:15,color:"#2d4a2d",fontWeight:700,textTransform:"uppercase",letterSpacing:".04em"}}>{label}</p><p style={{fontSize:15,fontWeight:600,marginTop:1}}>{val}</p></div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Location */}
+              {ev.location?(
+                <div style={{marginBottom:16}}>
+                  <div style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderBottom:"1px solid #F3F4F6",marginBottom:10}}>
+                    <div style={{width:34,height:34,background:"var(--sage-light)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><MapPin size={15} color="var(--sage)"/></div>
+                    <div style={{flex:1}}>
+                      <p style={{fontSize:15,color:"#2d4a2d",fontWeight:700,textTransform:"uppercase",letterSpacing:".04em"}}>Location</p>
+                      <p style={{fontSize:15,fontWeight:600,color:"var(--sage3)",marginTop:1,cursor:"pointer"}} onClick={()=>openMaps(ev.location)}>{ev.location}</p>
+                    </div>
+                  </div>
+                  <div style={{borderRadius:16,overflow:"hidden",border:"1px solid var(--border2)",marginBottom:10,position:"relative"}}>
+                    <iframe title="Location" src={"https://www.openstreetmap.org/export/embed.html?layer=mapnik&query="+encodeURIComponent(ev.location)} width="100%" height="160" style={{display:"block",border:"none"}} loading="lazy"/>
+                    <button onClick={()=>openMaps(ev.location)} style={{position:"absolute",top:8,right:8,background:"var(--ink2)",borderRadius:8,padding:"5px 10px",display:"flex",alignItems:"center",gap:5,boxShadow:"0 2px 8px rgba(0,0,0,.14)",border:"1px solid var(--border)",minHeight:"auto",minWidth:"auto"}}><MapPin size={11} color="var(--sage2)"/><span style={{fontSize:15,fontWeight:700,color:"var(--sage3)"}}>Open</span></button>
+                  </div>
+                  <button onClick={()=>openDirs(ev.location)} style={{width:"100%",background:"var(--sage-light)",border:"1.5px solid var(--sage-mid)",borderRadius:12,padding:"12px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontWeight:700,fontSize:15,color:"var(--sage)",cursor:"pointer"}}><MapPin size={16}/>Get Directions</button>
+                </div>
+              ):(
+                <div style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderBottom:"1px solid #F3F4F6",marginBottom:16}}>
+                  <div style={{width:34,height:34,background:"var(--ink4)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><MapPin size={15} color="#D1D5DB"/></div>
+                  <div><p style={{fontSize:15,color:"#2d4a2d",fontWeight:700,textTransform:"uppercase",letterSpacing:".04em"}}>Location</p><p style={{fontSize:15,color:"var(--border3)",marginTop:1}}>Not set</p></div>
+                </div>
+              )}
+
+              {/* Notes */}
+              {ev.notes&&<Card style={{marginBottom:16,background:"var(--ink3)"}}><div style={{display:"flex",gap:10}}><FileText size={15} color="var(--cream3)" style={{marginTop:2,flexShrink:0}}/><p style={{fontSize:15,color:"var(--cream2)",lineHeight:1.65}}>{ev.notes}</p></div></Card>}
+            </>
           )}
 
-          {/* Notes */}
-          {ev.notes&&<Card style={{marginBottom:16,background:"var(--ink3)"}}><div style={{display:"flex",gap:10}}><FileText size={15} color="var(--cream3)" style={{marginTop:2,flexShrink:0}}/><p style={{fontSize:15,color:"var(--cream2)",lineHeight:1.65}}>{ev.notes}</p></div></Card>}
-
-          {/* Packing */}
-          {ev.packingList&&ev.packingList.length>0&&(
+          {/* Packing + Comments (hidden in edit mode) */}
+          {!editMode&&ev.packingList&&ev.packingList.length>0&&(
             <Card style={{marginBottom:16}}>
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
                 <Package size={15} color="var(--sage)"/>
@@ -1952,7 +2017,7 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
           )}
 
           {/* Comments + @tagging */}
-          <div style={{marginBottom:16}}>
+          {!editMode&&<div style={{marginBottom:16}}>
             <button onClick={()=>setShowComments(s=>!s)}
               style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"none",padding:"0 0 14px",width:"100%",justifyContent:"flex-start"}}>
               <div style={{width:28,height:28,borderRadius:8,background:"rgba(67,143,126,.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -2077,7 +2142,7 @@ function EventSheet({ev,members,onClose,onDelete,user,onTagNotify}) {
                 </div>
               </>
             )}
-          </div>
+          </div>}
 
           {/* Share + Delete row */}
           <div style={{display:"flex",gap:10,paddingBottom:"calc(env(safe-area-inset-bottom,16px) + 8px)"}}>
@@ -2477,7 +2542,7 @@ function DaySheet({date,events,members,onClose,onSelect}) {
 }
 
 /* ─── Dashboard ─────────────────────────────────────────────────────────── */
-function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,initialSel,onClearSel,onShowAdd,onShowVoice,onSelectEv,trialExpired,onUpgrade,topBar,selectedMemberId,familyName}) {
+function DashScreen({events,members,onAdd,onDelete,onSave,showBanner,onBannerDismiss,initialSel,onClearSel,onShowAdd,onShowVoice,onSelectEv,trialExpired,onUpgrade,topBar,selectedMemberId,familyName}) {
   const [anchor,setAnchor]=useState(todayStr);
   const [showAdd,setShowAdd]=useState(false);
   const [showVoice,setShowVoice]=useState(false);
@@ -2730,7 +2795,7 @@ function DashScreen({events,members,onAdd,onDelete,showBanner,onBannerDismiss,in
 
       {showAdd&&<AddSheet members={members} events={events} onAdd={function(ev){onAdd(ev);setShowAdd(false);}} onClose={function(){setShowAdd(false);}}/>}
       {showVoice&&<VoiceSheet members={members} onAdd={function(ev){onAdd(ev);}} onClose={function(){setShowVoice(false);}}/>}
-      {sel&&<EventSheet ev={sel} members={members} onClose={function(){setSel(null);}} onDelete={function(id){onDelete(id);setSel(null);}}/>}
+      {sel&&<EventSheet ev={sel} members={members} onClose={function(){setSel(null);}} onDelete={function(id){onDelete(id);setSel(null);}} onSave={function(updated){if(onSave)onSave(updated);setSel(updated);}}/>}
       {dayView&&<DaySheet date={dayView} events={events} members={members} onClose={function(){setDayView(null);}} onSelect={function(ev){setDayView(null);openEv(ev);}}/>}
     </div>
   );
@@ -4602,9 +4667,16 @@ function DigestScreen({members, user, onBack, toast}) {
 function MoreScreen({members,setMembers,events,user,setUser,paid,trialLeft,onUpgrade,onSignOut,notifSettings,setNotifSettings,saveMember,deleteMember,toast,familyId,sendInvite,requestPermission,topBar}) {
   const fr=useRef();
   const [confirmSignOut,setConfirmSignOut]=useState(false);
-  const [sec,setSec]=useState(null),[docs,setDocs]=useState([{id:"d1",name:"Emma's Vaccination Record",memberId:"m3",emoji:"💉",date:addDays(todayStr,-30)},{id:"d2",name:"Soccer Permission Slip",memberId:"m3",emoji:"⚽",date:addDays(todayStr,-5)},{id:"d3",name:"Insurance Card",memberId:null,emoji:"🏥",date:addDays(todayStr,-60)}]);
+  const [sec,setSec]=useState(null),[docs,setDocs]=useState([]);
   const [budget,setBudget]=useState(500),[invite,setInvite]=useState(""),[invited,setInvited]=useState(false),[link,setLink]=useState(""),[inviteLink,setInviteLink]=useState("");
   const gm=id=>id?members.find(m=>m.id===id)||{name:"Family",color:"var(--cream3)",emoji:"👨‍👩‍👧‍👦"}:{name:"Family",color:"var(--cream3)",emoji:"👨‍👩‍👧‍👦"};
+  // Load documents from Supabase
+  useEffect(function(){
+    if(!user||!user.id) return;
+    supabase.from("vault_documents").select("*").or(familyId?"family_id.eq."+familyId+",user_id.eq."+user.id:"user_id.eq."+user.id).order("created_at",{ascending:false}).then(function(res){
+      if(res.data&&res.data.length>0) setDocs(res.data.map(function(d){return{id:d.id,name:d.name,memberId:d.member_id,emoji:d.emoji||"📄",date:d.created_at?d.created_at.slice(0,10):todayStr,fileUrl:d.file_url};}));
+    }).catch(function(){});
+  },[user&&user.id,familyId]);
   const ce=events.filter(e=>e.cost&&parseFloat(e.cost)>0);
   const tot=ce.reduce((s,e)=>{const c=parseFloat(e.cost)||0;return s+(e.costType==="monthly"?c:e.costType==="session"?c*4:e.costType==="season"?c/3:c);},0);
   const Back=()=>(<div style={{paddingTop:"calc(env(safe-area-inset-top,44px) + 14px)",marginBottom:4}}><button onClick={()=>setSec(null)} style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--sage)",border:"none",borderRadius:10,color:"#f5f0e8",fontWeight:700,fontSize:14,padding:"9px 16px",boxShadow:"0 2px 8px rgba(26,58,42,.2)"}}><ChevronLeft size={16}/>Back</button></div>);
@@ -4732,13 +4804,30 @@ function MoreScreen({members,setMembers,events,user,setUser,paid,trialLeft,onUpg
   if(sec==="vault") return (
     <div><Back/>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}><h2 style={{fontSize:20,fontWeight:800}}>Document Vault</h2><Btn onClick={()=>fr.current&&fr.current.click()} style={{display:"flex",alignItems:"center",gap:6,padding:"10px 14px",fontSize:15}}><Plus size={13}/>Upload</Btn></div>
-      <input ref={fr} type="file" style={{display:"none"}}/>
+      <input ref={fr} type="file" accept="image/*,.pdf,.doc,.docx" style={{display:"none"}} onChange={async function(e){
+        var file=e.target.files&&e.target.files[0];
+        if(!file||!user||!user.id) return;
+        var ext=file.name.split(".").pop()||"file";
+        var path="vault/"+user.id+"/"+genId()+"."+ext;
+        var {error:upErr}=await supabase.storage.from("documents").upload(path,file,{upsert:true});
+        if(upErr){return;}
+        var {data:urlData}=supabase.storage.from("documents").getPublicUrl(path);
+        var fileUrl=urlData&&urlData.publicUrl;
+        var emoji=file.type.startsWith("image/")?"🖼️":file.type==="application/pdf"?"📄":"📁";
+        var newDoc={id:genId(),name:file.name,memberId:null,emoji:emoji,date:todayStr,fileUrl:fileUrl};
+        var {error:dbErr}=await supabase.from("vault_documents").insert({id:newDoc.id,user_id:user.id,family_id:familyId||null,name:file.name,emoji:emoji,member_id:null,file_url:fileUrl,created_at:new Date().toISOString()});
+        if(!dbErr) setDocs(function(p){return[newDoc,...p];});
+        e.target.value="";
+      }}/>
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
         {docs.map(d=>{const m=gm(d.memberId);return(
           <Card key={d.id} style={{display:"flex",alignItems:"center",gap:12}}>
             <div style={{width:42,height:42,background:"var(--ink4)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{d.emoji}</div>
-            <div style={{flex:1}}><p style={{fontWeight:700,fontSize:15}}>{d.name}</p><div style={{display:"flex",gap:8,marginTop:3}}><span style={{fontSize:15,color:m.color}}>{m.emoji} {m.name}</span><span style={{fontSize:15,color:"var(--cream3)"}}>{fd(d.date)}</span></div></div>
-            <button onClick={()=>setDocs(x=>x.filter(i=>i.id!==d.id))} style={{background:"none",border:"none",color:"var(--border3)"}}><X size={15}/></button>
+            <div style={{flex:1}}><p style={{fontWeight:700,fontSize:15}}>{d.name}</p><div style={{display:"flex",gap:8,marginTop:3}}><span style={{fontSize:15,color:m.color}}>{m.emoji} {m.name}</span><span style={{fontSize:15,color:"var(--cream3)"}}>{fd(d.date)}</span></div>{d.fileUrl&&<button onClick={function(){window.open(d.fileUrl,"_blank");}} style={{background:"none",border:"none",padding:0,color:"var(--sage3)",fontSize:12,fontWeight:600,cursor:"pointer",textDecoration:"underline",marginTop:2}}>View</button>}</div>
+            <button onClick={function(){
+              setDocs(function(x){return x.filter(function(i){return i.id!==d.id;});});
+              supabase.from("vault_documents").delete().eq("id",d.id).then(function(){}).catch(function(){});
+            }} style={{background:"none",border:"none",color:"var(--border3)"}}><X size={15}/></button>
           </Card>
         );})}
       </div>
@@ -4827,6 +4916,42 @@ function MoreScreen({members,setMembers,events,user,setUser,paid,trialLeft,onUpg
           <div style={{flex:1}}><p style={{fontWeight:600,fontSize:15,color:"var(--cream)"}}>{invite}</p><p style={{fontSize:13,color:"var(--cream3)"}}>Invite pending</p></div>
           <Pill color="var(--gold)" bg="rgba(160,120,32,.08)">Pending</Pill>
         </div>}
+      </Card>
+
+      {/* Calendar Export */}
+      <Card style={{marginTop:12}}>
+        <p style={{fontWeight:700,fontSize:16,marginBottom:4,color:"var(--cream)"}}>Export to Calendar</p>
+        <p style={{fontSize:14,color:"var(--cream3)",marginBottom:14}}>Download your family calendar for Apple Calendar, Google Calendar, or Outlook</p>
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          <button onClick={function(){
+            var icsLines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Calla//Family Calendar//EN","CALSCALE:GREGORIAN"];
+            events.forEach(function(ev){
+              var dt=(ev.date||todayStr).replace(/-/g,"");
+              var tm=ev.time?(ev.time.replace(":","")+"00"):"000000";
+              icsLines.push("BEGIN:VEVENT");
+              icsLines.push("UID:"+ev.id+"@getcalla.ca");
+              icsLines.push("DTSTART:"+dt+"T"+tm);
+              icsLines.push("SUMMARY:"+ev.title.replace(/,/g,"\\,"));
+              if(ev.location) icsLines.push("LOCATION:"+ev.location.replace(/,/g,"\\,"));
+              if(ev.notes) icsLines.push("DESCRIPTION:"+ev.notes.replace(/,/g,"\\,"));
+              icsLines.push("END:VEVENT");
+            });
+            icsLines.push("END:VCALENDAR");
+            var blob=new Blob([icsLines.join("\r\n")],{type:"text/calendar"});
+            var url=URL.createObjectURL(blob);
+            var a=document.createElement("a");
+            a.href=url;a.download="calla-family.ics";a.click();
+            URL.revokeObjectURL(url);
+          }} style={{width:"100%",background:"var(--sage-light)",border:"1.5px solid var(--sage-mid)",borderRadius:12,padding:"13px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontWeight:700,fontSize:15,color:"var(--sage)",cursor:"pointer"}}>
+            <span>📅</span> Download .ics file
+          </button>
+          <button onClick={function(){
+            var gcUrl="https://calendar.google.com/calendar/r?cid="+encodeURIComponent("webcal://getcalla.ca/calendar/"+((user&&user.id)||"family"));
+            window.open(gcUrl,"_blank");
+          }} style={{width:"100%",background:"var(--ink3)",border:"1px solid var(--border2)",borderRadius:12,padding:"13px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontWeight:600,fontSize:15,color:"var(--cream2)",cursor:"pointer"}}>
+            <span>🔗</span> Add to Google Calendar
+          </button>
+        </div>
       </Card>
     </div>
   );
@@ -5043,13 +5168,15 @@ function TrialBanner({ daysLeft, onUpgrade }) {
 }
 
 /* ─── Morning Text / Digest Screen ─────────────────────────────────────── */
-function ListsScreen({members,topBar}) {
-  const PRESET=[
-    {id:"grocery",icon:"🛒",name:"Grocery",color:"var(--sage2)",items:[]},
-    {id:"todo",icon:"✅",name:"To Do",color:"var(--sage3)",items:[]},
-    {id:"packing",icon:"🎒",name:"Packing",color:"#7C3AED",items:[]},
-  ];
-  const [lists,setLists]=useState(PRESET);
+const LISTS_PRESET=[
+  {id:"grocery",icon:"🛒",name:"Grocery",color:"var(--sage2)",items:[]},
+  {id:"todo",icon:"✅",name:"To Do",color:"var(--sage3)",items:[]},
+  {id:"packing",icon:"🎒",name:"Packing",color:"#7C3AED",items:[]},
+];
+function ListsScreen({members,topBar,user,familyId}) {
+  const [lists,setLists]=useState(function(){
+    try{var s=localStorage.getItem("calla_lists");return s?JSON.parse(s):LISTS_PRESET;}catch(e){return LISTS_PRESET;}
+  });
   const [active,setActive]=useState("grocery");
   const [input,setInput]=useState("");
   const [assignTo,setAssignTo]=useState("");
@@ -5058,6 +5185,39 @@ function ListsScreen({members,topBar}) {
   const [addingList,setAddingList]=useState(false);
   const inputRef=useRef();
   const cur=lists.find(function(l){return l.id===active;})||lists[0];
+
+  // Load from Supabase on mount
+  useEffect(function(){
+    if(!user||!user.id) return;
+    var uid=user.id;
+    var fid=familyId||null;
+    supabase.from("lists_data").select("data").or(fid?"family_id.eq."+fid+",user_id.eq."+uid:"user_id.eq."+uid).order("updated_at",{ascending:false}).limit(1).then(function(res){
+      if(res.data&&res.data.length>0&&res.data[0].data){
+        var loaded=res.data[0].data;
+        if(Array.isArray(loaded)&&loaded.length>0){
+          setLists(loaded);
+          try{localStorage.setItem("calla_lists",JSON.stringify(loaded));}catch(e){}
+        }
+      }
+    }).catch(function(){});
+  },[user&&user.id,familyId]);
+
+  // Persist lists on every change
+  var listsRef=useRef(lists);
+  useEffect(function(){listsRef.current=lists;},[lists]);
+  useEffect(function(){
+    try{localStorage.setItem("calla_lists",JSON.stringify(lists));}catch(e){}
+    if(!user||!user.id) return;
+    var timer=setTimeout(function(){
+      supabase.from("lists_data").upsert({
+        user_id:user.id,
+        family_id:familyId||null,
+        data:lists,
+        updated_at:new Date().toISOString(),
+      },{onConflict:"user_id"}).then(function(){}).catch(function(){});
+    },800);
+    return function(){clearTimeout(timer);};
+  },[lists,user&&user.id,familyId]);
 
   const addItem=function(){
     if(!input.trim())return;
@@ -6246,6 +6406,31 @@ export default function App() {
     }
   };
 
+  // ── Update event in Supabase ─────────────────────────────────────────────
+  const saveEvent=function(updated){
+    setEvents(function(p){
+      return p.map(function(e){return e.id===updated.id?{...e,...updated}:e;});
+    });
+    toast({icon:"✓",title:"Event updated",color:"var(--sage2)"});
+    if(user&&user.id){
+      supabase.from("events").update({
+        title:updated.title,
+        member_id:updated.memberId,
+        date:updated.date,
+        time:updated.time,
+        end_time:updated.endTime,
+        location:updated.location,
+        notes:updated.notes,
+        cost:updated.cost,
+        cost_type:updated.costType,
+      }).eq("id",updated.id).then(function(res){
+        if(res.error) toast({icon:"✗",title:"Failed to update event",color:"#c0392b"});
+      }).catch(function(){
+        toast({icon:"✗",title:"Failed to update event",color:"#c0392b"});
+      });
+    }
+  };
+
   // ── Save member to Supabase ───────────────────────────────────────────────
   const saveMember=function(m){
     if(user&&user.id){
@@ -6502,7 +6687,7 @@ export default function App() {
 
 
   const screen=()=>{
-    if(tab==="home")    return <DashScreen events={selectedMemberId?events.filter(function(e){return e.memberId===selectedMemberId;}):events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)} onSelectEv={function(ev){setGlobalSel(ev);setShowGlobalEv(true);}} trialExpired={!paid&&trial&&trial.expired} onUpgrade={function(){setShowPaywall(true);}} selectedMemberId={selectedMemberId} onClearMember={function(){setSelectedMemberId(null);}} topBar={topBarEl} familyName={user&&user.family}/>;
+    if(tab==="home")    return <DashScreen events={selectedMemberId?events.filter(function(e){return e.memberId===selectedMemberId;}):events} members={members} onAdd={addEvent} onDelete={delEvent} onSave={saveEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)} onSelectEv={function(ev){setGlobalSel(ev);setShowGlobalEv(true);}} trialExpired={!paid&&trial&&trial.expired} onUpgrade={function(){setShowPaywall(true);}} selectedMemberId={selectedMemberId} onClearMember={function(){setSelectedMemberId(null);}} topBar={topBarEl} familyName={user&&user.family}/>;
     if(tab==="inbox")   return <InboxScreen members={members} onAdd={addEvent} user={user} familyId={familyId} topBar={topBarEl} aiDisclosureSeen={aiDisclosureSeen} onShowAiDisclosure={()=>setShowAiDisclosure(true)}/>;
     if(tab==="discover") return !paid&&trial&&trial.expired ? (
       <div style={{textAlign:"center",padding:"60px 24px"}}>
@@ -6512,7 +6697,7 @@ export default function App() {
         <Btn onClick={function(){setShowPaywall(true);}}>View Plans</Btn>
       </div>
     ) : <DiscoverScreen members={members} onAdd={addEvent} user={user} topBar={topBarEl}/>;
-    if(tab==="lists")   return <ListsScreen members={members} topBar={topBarEl}/>;
+    if(tab==="lists")   return <ListsScreen members={members} topBar={topBarEl} user={user} familyId={familyId}/>;
     if(tab==="members") return <MembersScreen members={members} setMembers={setMembers} events={events}/>;
     if(tab==="notif")   return <NotifScreen events={events} members={members} onSelectEvent={ev=>{setGlobalSel(ev);setTab("home");}} topBar={topBarEl}/>;
     if(tab==="more")    return <MoreScreen members={members} setMembers={setMembers} events={events} user={user} setUser={setUser} paid={paid} trialLeft={trial?trial.left:null} onUpgrade={()=>setShowPaywall(true)} notifSettings={notif} setNotifSettings={setNotif} saveMember={saveMember} deleteMember={deleteMember} toast={toast} familyId={familyId} sendInvite={sendInvite} requestPermission={requestNotificationPermission} onSignOut={()=>{
@@ -6645,7 +6830,7 @@ export default function App() {
         </div>
       </div>
       <Nav active={tab} setActive={go} inboxBadge={inboxBadge} notifBadge={upc&&notif.enabled?upc:0}/>
-      {showGlobalEv&&globalSel&&<EventSheet ev={globalSel} members={members} onClose={function(){setShowGlobalEv(false);setGlobalSel(null);}} onDelete={function(id){delEvent(id);setShowGlobalEv(false);setGlobalSel(null);}} user={user}/> }
+      {showGlobalEv&&globalSel&&<EventSheet ev={globalSel} members={members} onClose={function(){setShowGlobalEv(false);setGlobalSel(null);}} onDelete={function(id){delEvent(id);setShowGlobalEv(false);setGlobalSel(null);}} onSave={function(updated){saveEvent(updated);setGlobalSel(updated);}} user={user}/> }
       {showAdd&&<AddSheet members={members} events={events} onAdd={function(ev){addEvent(ev);setShowAdd(false);}} onClose={function(){setShowAdd(false);}}/> }
       {showVoice&&<VoiceSheet members={members} onAdd={function(ev){addEvent(ev);}} onClose={function(){setShowVoice(false);}}/> }
       {showAiDisclosure&&<AiDisclosureModal onDone={function(){localStorage.setItem("calla_ai_disclosure_seen","true");setShowAiDisclosure(false);}}/>}
