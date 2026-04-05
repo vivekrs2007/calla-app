@@ -131,8 +131,10 @@ serve(async (req) => {
 
     if (!res.ok) {
       console.error("Resend error:", JSON.stringify(data));
-      return new Response(JSON.stringify({ error: data.message || "Failed to send email", resend: data }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      // Always return 200 so supabase.functions.invoke doesn't throw —
+      // the caller reads { ok: false, error } to decide what to show.
+      return new Response(JSON.stringify({ ok: false, error: data.message || "Resend rejected the email", resend: data }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 

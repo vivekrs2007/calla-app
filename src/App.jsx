@@ -6007,7 +6007,7 @@ export default function App() {
               // Stale session — account no longer exists, force sign-out
               supabase.auth.signOut().catch(function(){});
               Object.keys(localStorage).forEach(function(k){
-                if(k.startsWith("sb-")||k.startsWith("supabase")) localStorage.removeItem(k);
+                if(k.startsWith("sb-")||k.startsWith("supabase")||k.startsWith("calla_")) localStorage.removeItem(k);
               });
               setUser(null);
               setAuthLoading(false);
@@ -6429,7 +6429,7 @@ export default function App() {
   // (onAuthStateChange is not reliable in Capacitor)
   try {
     Object.keys(localStorage).forEach(function(k){
-      if(k.startsWith("sb-")||k.startsWith("supabase")||k.startsWith("calla_setup")) localStorage.removeItem(k);
+      if(k.startsWith("sb-")||k.startsWith("supabase")||k.startsWith("calla_")) localStorage.removeItem(k);
     });
   } catch(e){}
   // Reset all app state
