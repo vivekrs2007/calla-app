@@ -1385,9 +1385,49 @@ function FirstTimeSetup({user,onDone}) {
   );
 }
 
+/* ─── AI + Privacy Disclosure Modal ────────────────────────────────────── */
+function AiDisclosureModal({onDone}) {
+  return (
+    <div style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(10,20,14,.72)",display:"flex",alignItems:"flex-end",justifyContent:"center",backdropFilter:"blur(3px)",WebkitBackdropFilter:"blur(3px)"}}>
+      <div className="fu" style={{background:"var(--ink2)",borderRadius:"24px 24px 0 0",padding:"28px 24px",paddingBottom:"calc(28px + env(safe-area-inset-bottom,0px))",maxWidth:480,width:"100%",border:"1px solid var(--border2)"}}>
+        <div style={{width:40,height:4,borderRadius:99,background:"var(--border2)",margin:"0 auto 24px"}}/>
+        <div style={{fontSize:40,textAlign:"center",marginBottom:16}}>🔒</div>
+        <h2 style={{fontSize:22,fontWeight:700,textAlign:"center",marginBottom:10,letterSpacing:"-.5px",fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",lineHeight:1.2}}>How Calla handles your kids' data</h2>
+        <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:28}}>
+          {[
+            ["🤖","AI reads your emails to extract event details","Email text is sent to Anthropic's Claude AI to identify dates, times, and names. It is not stored or used to train AI models."],
+            ["🗑️","Emails are deleted immediately after you save","Once you tap Save to Calendar, the original email is permanently deleted from our servers. We never keep email content."],
+            ["🔐","Kids' names stay within your family","Names and events you add are visible only to you and any co-parent you invite. We never share or sell your children's data."],
+          ].map(([icon,title,body],i)=>(
+            <div key={i} style={{display:"flex",gap:14,alignItems:"flex-start",background:"rgba(45,90,61,.08)",borderRadius:14,padding:"14px 14px"}}>
+              <span style={{fontSize:22,flexShrink:0}}>{icon}</span>
+              <div>
+                <p style={{fontWeight:700,fontSize:14,color:"var(--cream)",marginBottom:3}}>{title}</p>
+                <p style={{fontSize:13,color:"var(--cream3)",lineHeight:1.55}}>{body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <Btn onClick={onDone} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontSize:16,padding:"16px"}}>
+          <Check size={16}/>Got it — I understand
+        </Btn>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Co-parent Setup (post-login step 2) ───────────────────────────────── */
-function CoParentSetup({user,onDone}) {
-  const [partnerEmail,setPartnerEmail]=useState(""),[sent,setSent]=useState(false),[skipped,setSkipped]=useState(false);
+function CoParentSetup({user,onDone,onInvite}) {
+  const [partnerEmail,setPartnerEmail]=useState(""),[sent,setSent]=useState(false),[skipped,setSkipped]=useState(false),[sending,setSending]=useState(false);
+  function doInvite(){
+    if(!partnerEmail.includes("@")||partnerEmail.trim()===user.email||sending) return;
+    setSending(true);
+    if(onInvite){
+      onInvite(partnerEmail,function(ok){setSending(false);setSent(true);});
+    } else {
+      setSending(false);setSent(true);
+    }
+  }
   if(skipped||sent) return (
     <div style={{height:"100vh",maxHeight:"100dvh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:36,textAlign:"center",background:"var(--ink2)"}}>
       <div className="fu">
@@ -1424,8 +1464,8 @@ function CoParentSetup({user,onDone}) {
       {/* Pinned bottom — always visible */}
       <div style={{flexShrink:0,padding:"16px 24px",paddingBottom:"calc(20px + env(safe-area-inset-bottom,0px))"}}>
         <div style={{display:"flex",gap:10,marginBottom:12}}>
-          <input placeholder="partner@email.com" type="email" value={partnerEmail} onChange={e=>setPartnerEmail(e.target.value)} style={{flex:1,fontSize:15}} onKeyDown={e=>e.key==="Enter"&&partnerEmail.includes("@")&&partnerEmail.trim()!==user.email&&setSent(true)}/>
-          <Btn onClick={()=>{if(partnerEmail.includes("@")&&partnerEmail.trim()!==user.email)setSent(true);}} style={{padding:"0 22px",flexShrink:0,fontSize:15}}>Invite</Btn>
+          <input placeholder="partner@email.com" type="email" value={partnerEmail} onChange={e=>setPartnerEmail(e.target.value)} style={{flex:1,fontSize:15}} onKeyDown={e=>e.key==="Enter"&&doInvite()}/>
+          <Btn onClick={doInvite} style={{padding:"0 22px",flexShrink:0,fontSize:15}}>{sending?"Sending…":"Invite"}</Btn>
         </div>
         <button onClick={()=>setSkipped(true)} style={{background:"none",border:"none",color:"var(--cream3)",fontSize:15,fontWeight:400,display:"block",width:"100%",textAlign:"center",padding:"10px"}}>I'll invite someone later</button>
       </div>
@@ -3215,7 +3255,7 @@ function FlyerScanner({members, onAdd}) {
   );
 }
 
-function InboxScreen({members,onAdd,user,familyId,topBar}) {
+function InboxScreen({members,onAdd,user,familyId,topBar,aiDisclosureSeen,onShowAiDisclosure}) {
   const [tab,setTab]=useState("email");
   const [text,setText]=useState("");
   const [stage,setStage]=useState("idle");
@@ -3665,6 +3705,9 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
       // Go straight to review — deletion happens only after user confirms Save
       setExtracted(evs);
       setChecked(new Set(evs.map(function(e){return e.id;})));
+      // Show one-time AI + privacy disclosure if a kid's name was detected
+      var kidNameDetected=evs.some(function(e){return e.memberId;})&&members.some(function(m){return t.toLowerCase().includes(m.name.toLowerCase());});
+      if(kidNameDetected&&!aiDisclosureSeen&&onShowAiDisclosure) onShowAiDisclosure();
       setStage("review");
       }catch(e){
         console.error("analyze crash:",e);
@@ -5847,6 +5890,9 @@ export default function App() {
   const [familyId,setFamilyId]   = useState(null);
   const [pendingInvite,setPendingInvite] = useState(null);
   const [showOnboarding,setShowOnboarding] = useState(false);
+  const [showCoParentSetup,setShowCoParentSetup] = useState(false);
+  const [showAiDisclosure,setShowAiDisclosure] = useState(false);
+  const [aiDisclosureSeen] = useState(()=>!!localStorage.getItem("calla_ai_disclosure_seen"));
 
   // ── Trial scrubber ────────────────────────────────────────────────────────
   const [trialStart,setTrialStart] = useState(null);
@@ -6213,7 +6259,7 @@ export default function App() {
     setEvents(function(p){return p.filter(function(e){return e.memberId!==id;});});
     if(user&&user.id){
       supabase.from("members").delete().eq("id",id).then(function(){});
-      supabase.from("events").delete().eq("member_id",id).eq("user_id",user.id).then(function(){});
+      supabase.from("events").delete().eq("member_id",id).then(function(){});
     }
   };
 
@@ -6269,7 +6315,18 @@ export default function App() {
       setSetupDone(true);
       if(fname) setUser(function(u){return{...u,family:fname};});
       if(newMembers&&newMembers.length>0) setMembers(newMembers);
+      if(!localStorage.getItem("calla_coparent_onboarding_seen")) setShowCoParentSetup(true);
     }}/></>
+  );
+  // ── Step 2b: Invite co-parent (shown once after first-time setup) ─────────
+  if(showCoParentSetup) return (
+    <><GS/><Toasts toasts={toasts}/><CoParentSetup user={user}
+      onInvite={function(email,cb){sendInvite(email,function(){cb&&cb(true);},function(){cb&&cb(false);});}}
+      onDone={function(){
+        localStorage.setItem("calla_coparent_onboarding_seen","true");
+        setShowCoParentSetup(false);
+      }}
+    /></>
   );
   // ── Step 3: Hard paywall — trial expired ──────────────────────────────────
   if(!paid && trial && trial.expired) return (
@@ -6312,7 +6369,7 @@ export default function App() {
 
   const screen=()=>{
     if(tab==="home")    return <DashScreen events={selectedMemberId?events.filter(function(e){return e.memberId===selectedMemberId;}):events} members={members} onAdd={addEvent} onDelete={delEvent} showBanner={showBanner} onBannerDismiss={()=>setShowBanner(false)} initialSel={globalSel} onClearSel={()=>setGlobalSel(null)} onShowAdd={()=>setShowAdd(true)} onShowVoice={()=>setShowVoice(true)} onSelectEv={function(ev){setGlobalSel(ev);setShowGlobalEv(true);}} trialExpired={!paid&&trial&&trial.expired} onUpgrade={function(){setShowPaywall(true);}} selectedMemberId={selectedMemberId} onClearMember={function(){setSelectedMemberId(null);}} topBar={topBarEl} familyName={user&&user.family}/>;
-    if(tab==="inbox")   return <InboxScreen members={members} onAdd={addEvent} user={user} familyId={familyId} topBar={topBarEl}/>;
+    if(tab==="inbox")   return <InboxScreen members={members} onAdd={addEvent} user={user} familyId={familyId} topBar={topBarEl} aiDisclosureSeen={aiDisclosureSeen} onShowAiDisclosure={()=>setShowAiDisclosure(true)}/>;
     if(tab==="discover") return !paid&&trial&&trial.expired ? (
       <div style={{textAlign:"center",padding:"60px 24px"}}>
         <div style={{fontSize:48,marginBottom:16}}>🔒</div>
@@ -6457,6 +6514,7 @@ export default function App() {
       {showGlobalEv&&globalSel&&<EventSheet ev={globalSel} members={members} onClose={function(){setShowGlobalEv(false);setGlobalSel(null);}} onDelete={function(id){delEvent(id);setShowGlobalEv(false);setGlobalSel(null);}} user={user}/> }
       {showAdd&&<AddSheet members={members} events={events} onAdd={function(ev){addEvent(ev);setShowAdd(false);}} onClose={function(){setShowAdd(false);}}/> }
       {showVoice&&<VoiceSheet members={members} onAdd={function(ev){addEvent(ev);}} onClose={function(){setShowVoice(false);}}/> }
+      {showAiDisclosure&&<AiDisclosureModal onDone={function(){localStorage.setItem("calla_ai_disclosure_seen","true");setShowAiDisclosure(false);}}/>}
     </>
   );
 }
