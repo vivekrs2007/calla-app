@@ -5896,9 +5896,9 @@ export default function App() {
   const [familyId,setFamilyId]   = useState(null);
   const [pendingInvite,setPendingInvite] = useState(null);
   const [inviteDetails,setInviteDetails] = useState(null); // {invited_email, family_id, id}
-  const [inviteAuthMode,setInviteAuthMode] = useState("signup");
+  const [inviteDetailsLoading,setInviteDetailsLoading] = useState(false);
+  const [inviteAuthMode,setInviteAuthMode] = useState("signup"); // internal only — no tabs shown
   const [inviteAuthName,setInviteAuthName] = useState("");
-  const [inviteAuthEmail,setInviteAuthEmail] = useState("");
   const [inviteAuthPass,setInviteAuthPass] = useState("");
   const [inviteAuthLoading,setInviteAuthLoading] = useState(false);
   const [inviteAuthError,setInviteAuthError] = useState("");
@@ -5968,19 +5968,18 @@ export default function App() {
   },[]);
 
   // ── Fetch invite details (invited_email) when token is available ───────────
-  // Used to pre-fill + lock the email field and validate on accept
+  // Blocks the form until we know the exact email this invite belongs to
   useEffect(function(){
     if(!pendingInvite) return;
+    setInviteDetailsLoading(true);
     supabase.from("invites").select("id,family_id,invited_email,status").eq("token",pendingInvite).single().then(function(res){
+      setInviteDetailsLoading(false);
       if(res.data){
         setInviteDetails(res.data);
-        // Pre-fill email only if user hasn't typed anything yet
-        setInviteAuthEmail(function(cur){ return cur||res.data.invited_email||""; });
       } else {
-        // Token not found or expired — clear it
         setInviteDetails(null);
       }
-    });
+    }).catch(function(){setInviteDetailsLoading(false);});
   },[pendingInvite]);
 
   // ── Restore session on page load ──────────────────────────────────────────
@@ -6354,31 +6353,27 @@ export default function App() {
 
   // ── Pending invite — show BEFORE onboarding/auth so partner never hits auth screen ──
   if(pendingInvite){
-    var expectedEmail=inviteDetails?inviteDetails.invited_email.trim().toLowerCase():"";
+    var invitedEmail=inviteDetails?inviteDetails.invited_email:"";
+    var invitedEmailLower=invitedEmail.trim().toLowerCase();
     function handleInviteAuth(){
       setInviteAuthError("");
-      var emailVal=inviteAuthEmail.trim().toLowerCase();
-      // Validate email matches the invited address
-      if(expectedEmail&&emailVal&&emailVal!==expectedEmail){
-        setInviteAuthError("Please use "+inviteDetails.invited_email+" — that's the address this invite was sent to.");
+      if(!inviteDetails){setInviteAuthError("Loading invite details…");return;}
+      if(inviteDetails.status!=="pending"){
+        setInviteAuthError("This invite has already been used or has expired.");
         return;
       }
       if(inviteAuthMode==="signup"){
         if(!inviteAuthName.trim()){setInviteAuthError("Please enter your name.");return;}
-        if(!emailVal||!emailVal.includes("@")){setInviteAuthError("Please enter a valid email.");return;}
         if(!inviteAuthPass.trim()||inviteAuthPass.length<8){setInviteAuthError("Password must be at least 8 characters.");return;}
-      } else {
-        if(!emailVal){setInviteAuthError("Please enter your email.");return;}
-        if(!inviteAuthPass.trim()){setInviteAuthError("Please enter your password.");return;}
-      }
-      setInviteAuthLoading(true);
-      if(inviteAuthMode==="signup"){
-        supabase.auth.signUp({email:emailVal,password:inviteAuthPass,options:{data:{name:inviteAuthName.trim(),family_name:""}}}).then(function(res){
+        setInviteAuthLoading(true);
+        supabase.auth.signUp({email:invitedEmailLower,password:inviteAuthPass,options:{data:{name:inviteAuthName.trim(),family_name:""}}}).then(function(res){
           if(res.error){
             setInviteAuthLoading(false);
             var msg=res.error.message||"";
             if(msg.toLowerCase().includes("already registered")||msg.toLowerCase().includes("already exists")){
-              setInviteAuthError("Account already exists — try signing in instead.");
+              // Auto-switch to sign-in — they already have an account with this email
+              setInviteAuthMode("login");
+              setInviteAuthError("You already have a Calla account with this email. Enter your password to sign in and join.");
             } else {
               setInviteAuthError(msg||"Sign up failed. Please try again.");
             }
@@ -6386,21 +6381,17 @@ export default function App() {
           }
           var u=res.data.user;
           supabase.from("profiles").upsert({id:u.id,name:inviteAuthName.trim(),family_name:"",setup_done:false,trial_start:new Date().toISOString(),paid:false}).then(function(){
-            var uobj={id:u.id,name:inviteAuthName.trim()||"Partner",family:"",email:emailVal};
+            var uobj={id:u.id,name:inviteAuthName.trim()||"Partner",family:"",email:invitedEmailLower};
             acceptInvite(pendingInvite,uobj);
           });
         }).catch(function(){setInviteAuthLoading(false);setInviteAuthError("Network error. Please try again.");});
       } else {
-        supabase.auth.signInWithPassword({email:emailVal,password:inviteAuthPass}).then(function(res){
-          if(res.error){setInviteAuthLoading(false);setInviteAuthError("Wrong email or password — try again.");return;}
+        // Sign-in mode — auto-triggered when "already registered"
+        if(!inviteAuthPass.trim()){setInviteAuthError("Please enter your password.");return;}
+        setInviteAuthLoading(true);
+        supabase.auth.signInWithPassword({email:invitedEmailLower,password:inviteAuthPass}).then(function(res){
+          if(res.error){setInviteAuthLoading(false);setInviteAuthError("Wrong password — try again.");return;}
           var u=res.data.user;
-          // Validate the signed-in account matches invited email
-          if(expectedEmail&&u.email.toLowerCase()!==expectedEmail){
-            supabase.auth.signOut();
-            setInviteAuthLoading(false);
-            setInviteAuthError("This invite was sent to "+inviteDetails.invited_email+". Please sign in with that account.");
-            return;
-          }
           var meta=u.user_metadata||{};
           var uobj={id:u.id,name:meta.name||"Partner",family:meta.family_name||"",email:u.email};
           acceptInvite(pendingInvite,uobj);
@@ -6410,7 +6401,7 @@ export default function App() {
     return (
       <><GS/><Toasts toasts={toasts}/>
       <div style={{height:"100vh",maxHeight:"100dvh",display:"flex",flexDirection:"column",background:"var(--ink2)",overflow:"hidden"}}>
-        {/* Premium header */}
+        {/* Header */}
         <div style={{background:"linear-gradient(160deg,#1e3d2a 0%,#2d5a3d 100%)",padding:"calc(env(safe-area-inset-top,44px) + 24px) 28px 28px",textAlign:"center",flexShrink:0}}>
           <div style={{fontSize:44,marginBottom:8}}>🌸</div>
           <h1 style={{fontSize:24,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",letterSpacing:"-.5px",marginBottom:4}}>You're invited to Calla</h1>
@@ -6418,7 +6409,7 @@ export default function App() {
         </div>
         <div style={{flex:1,overflowY:"auto",padding:"24px 24px 0"}}>
           {user ? (
-            /* Already logged in — show feature list + accept */
+            /* Already logged in — just show accept */
             <div className="fu">
               <p style={{fontSize:15,color:"var(--cream3)",lineHeight:1.75,marginBottom:20,textAlign:"center"}}>Someone shared their family calendar with you. Once you join, you'll both see every event and update in real time.</p>
               <div style={{background:"rgba(45,90,61,.08)",border:"1px solid rgba(83,136,122,.2)",borderRadius:16,padding:"16px",marginBottom:20}}>
@@ -6430,27 +6421,36 @@ export default function App() {
                 );})}
               </div>
             </div>
+          ) : inviteDetailsLoading ? (
+            /* Loading invite details — block form until email is confirmed */
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 0",gap:14}}>
+              <div style={{width:28,height:28,border:"2px solid var(--border2)",borderTopColor:"var(--sage2)",borderRadius:"50%",animation:"spin .7s linear infinite"}}/>
+              <p style={{fontSize:14,color:"var(--cream3)"}}>Loading your invite…</p>
+            </div>
+          ) : !inviteDetails ? (
+            /* Token not found or expired */
+            <div style={{textAlign:"center",padding:"40px 0"}}>
+              <div style={{fontSize:40,marginBottom:12}}>⚠️</div>
+              <p style={{fontSize:15,color:"var(--cream3)",lineHeight:1.6}}>This invite link has expired or has already been used.</p>
+            </div>
           ) : (
-            /* Not logged in — inline auth (no family name field) */
+            /* Signup form — email locked to invited address, no tabs */
             <div className="fu">
-              <p style={{fontSize:15,color:"var(--cream3)",lineHeight:1.65,marginBottom:16,textAlign:"center"}}>Create a free account or sign in to join.</p>
-              {/* Mode tabs */}
-              <div style={{display:"flex",background:"rgba(255,255,255,.06)",borderRadius:12,padding:3,marginBottom:16,gap:3}}>
-                {[["signup","New account"],["login","Sign in"]].map(function([m,label]){return(
-                  <button key={m} onClick={function(){setInviteAuthMode(m);setInviteAuthError("");}} style={{flex:1,background:inviteAuthMode===m?"rgba(45,90,61,.75)":"none",border:"none",borderRadius:9,padding:"9px 8px",fontSize:13,fontWeight:600,color:inviteAuthMode===m?"#f5f0e8":"var(--cream3)",cursor:"pointer",transition:"all .2s"}}>
-                    {label}
-                  </button>
-                );})}
-              </div>
+              {inviteAuthMode==="login"&&(
+                <div style={{background:"rgba(45,90,61,.12)",border:"1px solid rgba(83,136,122,.3)",borderRadius:12,padding:"12px 14px",marginBottom:16,display:"flex",gap:10,alignItems:"flex-start"}}>
+                  <span style={{fontSize:16,flexShrink:0}}>ℹ️</span>
+                  <p style={{fontSize:13,color:"var(--cream2)",lineHeight:1.5,margin:0}}>You already have a Calla account with this email. Enter your password below to sign in and join.</p>
+                </div>
+              )}
               {inviteAuthMode==="signup"&&(
                 <input value={inviteAuthName} onChange={function(e){setInviteAuthName(e.target.value);}} placeholder="Your name" autoComplete="name" style={{display:"block",width:"100%",background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.12)",borderRadius:12,padding:"12px 14px",fontSize:15,color:"var(--cream)",marginBottom:10,boxSizing:"border-box",outline:"none"}}/>
               )}
-              {/* Email: locked to the invited address when known */}
+              {/* Email — always locked to the invited address */}
               <div style={{position:"relative",marginBottom:10}}>
-                <input value={inviteAuthEmail} onChange={function(e){if(!expectedEmail)setInviteAuthEmail(e.target.value);}} readOnly={!!expectedEmail} placeholder="Email address" type="email" autoComplete="email" style={{display:"block",width:"100%",background:expectedEmail?"rgba(45,90,61,.18)":"rgba(255,255,255,.07)",border:expectedEmail?"1px solid rgba(83,136,122,.4)":"1px solid rgba(255,255,255,.12)",borderRadius:12,padding:"12px 14px",paddingRight:expectedEmail?"42px":"14px",fontSize:15,color:expectedEmail?"var(--sage2)":"var(--cream)",boxSizing:"border-box",outline:"none"}}/>
-                {expectedEmail&&<span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:14}}>✓</span>}
+                <input value={invitedEmail} readOnly placeholder="Email address" type="email" style={{display:"block",width:"100%",background:"rgba(45,90,61,.18)",border:"1px solid rgba(83,136,122,.4)",borderRadius:12,padding:"12px 14px",paddingRight:42,fontSize:15,color:"var(--sage2)",boxSizing:"border-box",outline:"none",cursor:"default"}}/>
+                <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:14,color:"var(--sage2)"}}>✓</span>
               </div>
-              <input value={inviteAuthPass} onChange={function(e){setInviteAuthPass(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")handleInviteAuth();}} placeholder={inviteAuthMode==="signup"?"Password (8+ characters)":"Password"} type="password" autoComplete={inviteAuthMode==="signup"?"new-password":"current-password"} style={{display:"block",width:"100%",background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.12)",borderRadius:12,padding:"12px 14px",fontSize:15,color:"var(--cream)",marginBottom:inviteAuthError?8:0,boxSizing:"border-box",outline:"none"}}/>
+              <input value={inviteAuthPass} onChange={function(e){setInviteAuthPass(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")handleInviteAuth();}} placeholder={inviteAuthMode==="signup"?"Choose a password (8+ characters)":"Password"} type="password" autoComplete={inviteAuthMode==="signup"?"new-password":"current-password"} style={{display:"block",width:"100%",background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.12)",borderRadius:12,padding:"12px 14px",fontSize:15,color:"var(--cream)",marginBottom:inviteAuthError?8:0,boxSizing:"border-box",outline:"none"}}/>
               {inviteAuthError&&<p style={{fontSize:13,color:"var(--rose)",marginBottom:0,textAlign:"center",marginTop:6}}>{inviteAuthError}</p>}
             </div>
           )}
@@ -6460,12 +6460,12 @@ export default function App() {
             <Btn onClick={function(){acceptInvite(pendingInvite);}} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"16px",fontSize:16,marginBottom:12}}>
               <Check size={16}/>Accept &amp; go to my calendar →
             </Btn>
-          ) : (
+          ) : inviteDetails&&!inviteDetailsLoading ? (
             <Btn onClick={handleInviteAuth} disabled={inviteAuthLoading} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"16px",fontSize:16,marginBottom:12,opacity:inviteAuthLoading?.6:1}}>
-              {inviteAuthLoading?"Joining...":(inviteAuthMode==="signup"?"Create account & join →":"Sign in & join →")}
+              {inviteAuthLoading?"Joining...":(inviteAuthMode==="login"?"Sign in & join →":"Create account & join →")}
             </Btn>
-          )}
-          <button onClick={function(){setPendingInvite(null);localStorage.removeItem("calla_pending_invite");window.history.replaceState({},"",window.location.pathname);}} style={{background:"none",border:"none",color:"var(--cream3)",fontSize:14,cursor:"pointer",display:"block",width:"100%",textAlign:"center",padding:"8px"}}>
+          ) : null}
+          <button onClick={function(){setPendingInvite(null);setInviteDetails(null);setInviteAuthMode("signup");setInviteAuthPass("");setInviteAuthName("");setInviteAuthError("");localStorage.removeItem("calla_pending_invite");window.history.replaceState({},"",window.location.pathname);}} style={{background:"none",border:"none",color:"var(--cream3)",fontSize:14,cursor:"pointer",display:"block",width:"100%",textAlign:"center",padding:"8px"}}>
             Decline for now
           </button>
         </div>
