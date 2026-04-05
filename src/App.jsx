@@ -6156,25 +6156,32 @@ export default function App() {
         }
         var invite=res.data[0];
         var link=window.location.origin+"?invite="+(invite.token||inviteToken);
-        // Send email via Edge Function
-        supabase.functions.invoke("send-invite",{
-          body:{
+        // Send email via Edge Function (plain fetch to avoid supabase.functions.invoke auth issues)
+        fetch("https://pqvxzsrpifiuovhtxldp.supabase.co/functions/v1/send-invite",{
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json",
+            "Authorization":"Bearer "+SUPABASE_KEY,
+            "apikey":SUPABASE_KEY,
+          },
+          body:JSON.stringify({
             to:partnerEmail.trim(),
             inviterName:user.name||"Your partner",
             inviteLink:link,
             familyName:user.family||"My Family",
-          }
-        }).then(function(r){
+          })
+        }).then(function(res){return res.json();}).then(function(r){
           sendingInviteRef.current=false;
-          if(r.error||!r.data?.ok){
-            var msg=r.data?.error||r.error?.message||"Invite saved but email couldn't be sent. Share the link manually.";
-            console.error("send-invite edge error:",msg,r);
+          if(!r.ok){
+            var msg=r.error||"Invite saved but email couldn't be sent.";
+            console.error("send-invite error:",msg,r);
             onError&&onError(msg);
           } else {
             onSuccess&&onSuccess(link,invite.token||inviteToken);
           }
         }).catch(function(e){
           sendingInviteRef.current=false;
+          console.error("send-invite fetch error:",e);
           onError&&onError("Network error sending invite. Please try again.");
         });
       });
