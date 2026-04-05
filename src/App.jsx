@@ -5972,21 +5972,38 @@ export default function App() {
     return function(){if(sub&&sub.data&&sub.data.subscription)sub.data.subscription.unsubscribe();};
   },[]);
 
-  // ── Catch inbox badge: poll for unread catch_items ────────────────────────
+  // ── Catch inbox badge: poll + Realtime subscription ──────────────────────
   useEffect(function(){
     if(!user||!user.id) return;
+    var pfx=user.catchPrefix||user.id.replace(/-/g,"").slice(0,10);
+
     function refreshBadge(){
-      var pfx=user.catchPrefix||user.id.replace(/-/g,"").slice(0,10);
       var q=familyId
         ? supabase.from("catch_items").select("id",{count:"exact",head:true}).eq("family_id",familyId).eq("processed",false)
         : supabase.from("catch_items").select("id",{count:"exact",head:true}).eq("catch_prefix",pfx).eq("processed",false);
-      q.then(function(res){
-        setInboxBadge(res.count||0);
-      }).catch(function(){});
+      q.then(function(res){ setInboxBadge(res.count||0); }).catch(function(){});
     }
+
+    // Initial load + 60s fallback poll
     refreshBadge();
     var iv=setInterval(refreshBadge,60000);
-    return function(){clearInterval(iv);};
+
+    // Realtime: instant badge bump + toast when a new email arrives
+    var filterStr=familyId?"family_id=eq."+familyId:"catch_prefix=eq."+pfx;
+    var channel=supabase.channel("catch_items_live_"+user.id)
+      .on("postgres_changes",{event:"INSERT",schema:"public",table:"catch_items",filter:filterStr},
+        function(payload){
+          setInboxBadge(function(n){return n+1;});
+          var sender=(payload.new&&(payload.new.from_name||payload.new.from_address))||"Someone";
+          var subj=(payload.new&&payload.new.subject)||"New email";
+          toast({icon:"📬",title:"New email: "+subj,subtitle:"From "+sender,color:"var(--sage2)"});
+        })
+      .subscribe();
+
+    return function(){
+      clearInterval(iv);
+      supabase.removeChannel(channel);
+    };
   },[user,familyId]);
 
   // ── Load events + members from Supabase ───────────────────────────────────

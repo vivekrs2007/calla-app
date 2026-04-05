@@ -169,6 +169,67 @@ serve(async (req) => {
     }
 
     console.log(`✓ Stored email for prefix=${prefix}, family=${profile.family_id}, subject="${subject}"`);
+
+    // ── Send push notification ────────────────────────────────────────────
+    const FCM_SERVER_KEY = Deno.env.get("FCM_SERVER_KEY");
+    if (FCM_SERVER_KEY && profile.id) {
+      try {
+        // Collect tokens for the profile owner + any co-parent sharing the family
+        const { data: tokenRows } = await supabase
+          .from("user_push_tokens")
+          .select("token")
+          .eq("user_id", profile.id);
+
+        // Also notify co-parent (other members of the same family)
+        const { data: coParentProfiles } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("family_id", profile.family_id)
+          .neq("id", profile.id);
+
+        let allTokens: string[] = (tokenRows || []).map((r: any) => r.token).filter(Boolean);
+
+        if (coParentProfiles && coParentProfiles.length > 0) {
+          for (const cp of coParentProfiles) {
+            const { data: cpTokens } = await supabase
+              .from("user_push_tokens")
+              .select("token")
+              .eq("user_id", cp.id);
+            allTokens = allTokens.concat((cpTokens || []).map((r: any) => r.token).filter(Boolean));
+          }
+        }
+
+        if (allTokens.length > 0) {
+          const senderLabel = from_name || from_address || "Someone";
+          const pushRes = await fetch("https://fcm.googleapis.com/fcm/send", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `key=${FCM_SERVER_KEY}`,
+            },
+            body: JSON.stringify({
+              registration_ids: allTokens,
+              notification: {
+                title: "📬 New email in your Calla inbox",
+                body:  `${senderLabel}: ${subject}`,
+                icon:  "/favicon.svg",
+                badge: "/favicon.svg",
+                tag:   "calla-catch",
+              },
+              data: { type: "catch_item", prefix },
+              webpush: { fcm_options: { link: "https://getcalla.ca" } },
+            }),
+          });
+          const pushData = await pushRes.json();
+          console.log("FCM push sent:", JSON.stringify(pushData).slice(0, 200));
+        } else {
+          console.log("No push tokens for this user — skipping notification");
+        }
+      } catch (pushErr) {
+        console.error("Push notification error (non-fatal):", pushErr);
+      }
+    }
+
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
