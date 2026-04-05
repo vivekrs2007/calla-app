@@ -1,98 +1,122 @@
 /**
  * Calla Inbound Email — Cloudflare Email Worker
- * Simple line-based approach — no external dependencies
+ * Uses RFC 2822 blank-line separator to isolate body from headers.
  */
 
-function extractReadableText(rawEmail) {
-  const lines = rawEmail.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
-  const readable = [];
-  let plainSection = [];   // text/plain lines collected
-  let inPlain = false;
-  let inHtml = false;
-  let inBase64Block = false;
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
-  for (let i = 0; i < lines.length; i++) {
-    const line   = lines[i];
-    const trimmed = line.trim();
-    const lower  = trimmed.toLowerCase();
+function stripHtml(html) {
+  return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(?:p|div|li|tr)>/gi, "\n")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"')
+    .replace(/\s{3,}/g, "\n\n").trim();
+}
 
-    // ── MIME / email header lines — skip ───────────────────────────────
-    if (
-      /^(content-type|content-transfer-encoding|content-disposition|mime-version|received|message-id|date|subject|from|to|cc|bcc|reply-to|return-path|dkim-signature|arc-|x-|list-|delivered-to|authentication-results|feedback-id|precedence|auto-submitted)/i
-        .test(trimmed)
-    ) {
-      // Track which section we're entering
-      if (lower.startsWith("content-type: text/plain"))  { inPlain = true;  inHtml = false; inBase64Block = false; }
-      else if (lower.startsWith("content-type: text/html"))   { inHtml  = true;  inPlain = false; inBase64Block = false; }
-      else if (lower.startsWith("content-type: multipart"))   { inPlain = false; inHtml  = false; }
-      if (lower.startsWith("content-transfer-encoding: base64")) inBase64Block = true;
+function decodeQP(s) {
+  return s
+    .replace(/=\r?\n/g, "")
+    .replace(/=([0-9A-Fa-f]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+}
+
+function decodeB64(s) {
+  try { return atob(s.replace(/\s/g, "")); } catch (_) { return ""; }
+}
+
+// Extract readable text from MIME parts given a boundary
+function extractParts(bodyText, boundary) {
+  const escaped = escapeRegex(boundary);
+  // Split on --boundary lines
+  const parts = bodyText.split(new RegExp(`\\n?--${escaped}(?:--|[ \\t]*\\n)`));
+  let plainText = "";
+  let htmlText  = "";
+
+  for (const part of parts) {
+    if (!part.trim()) continue;
+    const sep = part.indexOf("\n\n");
+    if (sep === -1) continue;
+
+    const headers = part.slice(0, sep).toLowerCase();
+    let   content = part.slice(sep + 2);
+
+    // Decode transfer encoding
+    if      (headers.includes("base64"))           content = decodeB64(content);
+    else if (headers.includes("quoted-printable")) content = decodeQP(content);
+
+    // Nested multipart — recurse
+    const nestedBm = headers.match(/boundary="([^"]+)"/i) || headers.match(/boundary=([^\s;]+)/i);
+    if (nestedBm && headers.includes("multipart/")) {
+      const nested = extractParts(content, nestedBm[1].replace(/"/g, "").trim());
+      if (nested && !plainText) plainText = nested;
       continue;
     }
 
-    // ── MIME boundaries — skip, reset section flags ────────────────────
-    if (trimmed.startsWith("--")) {
-      inPlain = false; inHtml = false; inBase64Block = false;
-      continue;
-    }
+    const isPlain = headers.includes("content-type: text/plain") || headers.includes("content-type:text/plain");
+    const isHtml  = headers.includes("content-type: text/html")  || headers.includes("content-type:text/html");
 
-    // ── Skip base64 blocks (long lines of base64 chars) ───────────────
-    if (inBase64Block || /^[A-Za-z0-9+/]{40,}={0,2}$/.test(trimmed)) {
-      continue;
-    }
-
-    // ── Skip quoted-printable encoded junk ────────────────────────────
-    if (/^=[0-9A-Fa-f]{2}/.test(trimmed) && trimmed.length < 8) continue;
-
-    // ── Strip HTML tags if line looks like HTML ────────────────────────
-    if ((trimmed.startsWith("<") || trimmed.includes("</")) && trimmed.includes(">")) {
-      const stripped = trimmed
-        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
-        .replace(/<[^>]+>/g, " ")
-        .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-        .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
-        .replace(/\s{2,}/g, " ").trim();
-      if (stripped.length > 3) readable.push(stripped);
-      continue;
-    }
-
-    // ── Decode quoted-printable soft line breaks ───────────────────────
-    let decoded = trimmed
-      .replace(/=([0-9A-Fa-f]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
-      .replace(/=$/, ""); // soft wrap
-
-    if (decoded.length > 0) readable.push(decoded);
+    if (isPlain && !plainText) plainText = content.trim();
+    else if (isHtml  && !htmlText)  htmlText  = stripHtml(content);
   }
 
-  // Deduplicate adjacent identical lines and clean up
-  const deduped = [];
-  for (const l of readable) {
-    if (deduped.length === 0 || deduped[deduped.length - 1] !== l) deduped.push(l);
+  return (plainText || htmlText).trim();
+}
+
+// Main extractor — finds the blank line that separates RFC 2822 headers from body
+function extractBodyFromMime(rawEmail) {
+  const text = rawEmail.replace(/\r\n/g, "\n");
+
+  // The first \n\n in the raw email separates top-level headers from body
+  const sep = text.indexOf("\n\n");
+  if (sep === -1) return text.slice(0, 3000);
+
+  const topHeaders = text.slice(0, sep);
+  const body       = text.slice(sep + 2);
+
+  // Check for multipart boundary in top-level headers
+  const bm = topHeaders.match(/boundary="([^"]+)"/i) || topHeaders.match(/boundary=([^\s;]+)/i);
+  if (bm) {
+    const boundary = bm[1].replace(/"/g, "").trim();
+    const result   = extractParts(body, boundary);
+    if (result) return result.slice(0, 20000);
   }
 
-  return deduped.join("\n").replace(/\n{3,}/g, "\n\n").trim().slice(0, 20000);
+  // Single-part email
+  const enc  = (topHeaders.match(/content-transfer-encoding:\s*([^\n]+)/i)?.[1] || "").toLowerCase().trim();
+  let   bodyText = body;
+  if      (enc === "base64")           bodyText = decodeB64(bodyText);
+  else if (enc === "quoted-printable") bodyText = decodeQP(bodyText);
+
+  if (topHeaders.match(/content-type:\s*text\/html/i)) bodyText = stripHtml(bodyText);
+
+  return bodyText.trim().slice(0, 20000);
 }
 
 export default {
   async email(message, env, ctx) {
-    const toAddress  = message.to   || "";
-    const prefix     = toAddress.split("@")[0].toLowerCase();
+    const toAddress   = message.to   || "";
+    const prefix      = toAddress.split("@")[0].toLowerCase();
     const fromAddress = message.from || "";
-    const subject    = message.headers.get("subject") || "(No subject)";
-    const fromHeader = message.headers.get("from")    || fromAddress;
-    const fromName   = (fromHeader.match(/^"?([^"<]+)"?\s*</)?.[1] || "").trim();
+    const subject     = message.headers.get("subject") || "(No subject)";
+    const fromHeader  = message.headers.get("from")    || fromAddress;
+    const fromName    = (fromHeader.match(/^"?([^"<]+)"?\s*</)?.[1] || "").trim();
 
-    let bodyText = subject; // fallback
+    let bodyText = subject;
     try {
       const rawBuffer = await new Response(message.raw).arrayBuffer();
       const rawText   = new TextDecoder("utf-8", { fatal: false }).decode(rawBuffer);
-      const extracted = extractReadableText(rawText);
-      if (extracted.length > 10) bodyText = extracted;
+      const extracted = extractBodyFromMime(rawText);
+      if (extracted.length > 5) bodyText = extracted;
     } catch (e) {
       console.error("Parse error:", e);
     }
 
-    console.log(`prefix=${prefix} subject="${subject}" bodyLen=${bodyText.length} preview="${bodyText.slice(0,80)}"`);
+    console.log(`prefix=${prefix} subject="${subject}" bodyLen=${bodyText.length} preview="${bodyText.slice(0, 100)}"`);
 
     const edgeUrl = (env.SUPABASE_EDGE_URL || "").replace(/\/$/, "");
     try {
@@ -104,11 +128,8 @@ export default {
         },
         body: JSON.stringify({ prefix, from_address: fromAddress, from_name: fromName, subject, body_text: bodyText }),
       });
-      if (!res.ok) {
-        console.error(`HTTP ${res.status}: ${await res.text().catch(() => "")}`);
-      } else {
-        console.log(`✓ Stored for prefix=${prefix}`);
-      }
+      if (!res.ok) console.error(`HTTP ${res.status}: ${await res.text().catch(() => "")}`);
+      else         console.log(`✓ Stored for prefix=${prefix}`);
     } catch (e) {
       console.error("Fetch error:", e);
     }

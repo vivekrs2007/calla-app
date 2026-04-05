@@ -3557,7 +3557,7 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
       var usedDates={};
 
       // ── 1. Specific named dates: March 29, Apr 6th, etc. ─────────────────
-      var namedRe=/([A-Z][a-z]+\.?\s+\d{1,2}(?:st|nd|rd|th)?)/g;
+      var namedRe=/([A-Z][a-z]+\.?\s+\d{1,2}(?:st|nd|rd|th)?)(?!\d)/g;
       var nm;
       while((nm=namedRe.exec(t))!==null){
         var ds=parseNamedDate(nm[1]);
