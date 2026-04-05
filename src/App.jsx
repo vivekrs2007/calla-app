@@ -3283,7 +3283,7 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
   }
 
   function deleteCatchItem(id){
-    supabase.from("catch_items").update({processed:true,processed_at:new Date().toISOString()}).eq("id",id).then(function(){
+    supabase.from("catch_items").delete().eq("id",id).then(function(){
       setCatchItems(function(prev){return prev.filter(function(x){return x.id!==id;});});
     }).catch(function(){});
   }
