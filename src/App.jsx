@@ -3524,6 +3524,11 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
         return "";
       }
 
+      // ── Local date formatter (avoids UTC-offset day-shift from toISOString) ─
+      function localDateStr(d){
+        return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+      }
+
       // ── Date parsers ─────────────────────────────────────────────────────
       // Parse "March 29" or "March 29th" or "Mar 29"
       function parseNamedDate(str){
@@ -3534,7 +3539,7 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
         if(mIdx===-1) return "";
         var d=new Date(now.getFullYear(),mIdx,parseInt(m[2]));
         if(d<now) d.setFullYear(now.getFullYear()+1);
-        return d.toISOString().split("T")[0];
+        return localDateStr(d);
       }
 
       // Parse "Monday" / "this Monday" / "next Monday"
@@ -3542,11 +3547,11 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
         var m=str.match(/(?:this|next|on)?\s*(monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i);
         if(!m) return "";
         var wdi=WD.indexOf(m[1].toLowerCase());
-        var d=new Date(now);
+        var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()); // midnight local — no UTC shift
         var diff=(wdi-d.getDay()+7)%7;
         if(diff===0) diff=7; // if today, use next week
         d.setDate(d.getDate()+diff);
-        return d.toISOString().split("T")[0];
+        return localDateStr(d);
       }
 
       // ── Extract subject line ─────────────────────────────────────────────
@@ -3632,11 +3637,11 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
         var rSentTitle=rLastLine.replace(/\s+(?:every|on|at)\s*$/i,"").trim();
         var rtitle=rSentTitle&&rSentTitle.length>2&&rSentTitle.length<50?rSentTitle:(titlePrefix||subjectLine||rm3[1].charAt(0).toUpperCase()+rm3[1].slice(1)+" Session");
         for(var w=0;w<4;w++){
-          var rd=new Date(now);
+          var rd=new Date(now.getFullYear(),now.getMonth(),now.getDate());
           var rdiff=(rdi-rd.getDay()+7)%7+w*7;
           if(rdiff===0) rdiff=7;
           rd.setDate(rd.getDate()+rdiff);
-          var rds=rd.toISOString().split("T")[0];
+          var rds=localDateStr(rd);
           if(!usedDates[rds]){
             usedDates[rds]=true;
             evs.push({id:genId(),title:rtitle,date:rds,time:parseTime(rtm&&rtm[1]||""),location:rloc,memberId:suggestMember(t),confidence:rtm?"high":"medium",notes:""});
