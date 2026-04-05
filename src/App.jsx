@@ -6113,10 +6113,12 @@ export default function App() {
     if(sendingInviteRef.current) return;
     sendingInviteRef.current=true;
     var doInvite=function(fid){
+      var inviteToken=(typeof crypto!=="undefined"&&crypto.randomUUID)?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now().toString(36);
       supabase.from("invites").insert({
         family_id:fid,
         invited_by:user.id,
         invited_email:partnerEmail.trim().toLowerCase(),
+        token:inviteToken,
         status:"pending",
       }).select().then(function(res){
         if(res.error){
@@ -6132,7 +6134,7 @@ export default function App() {
           return;
         }
         var invite=res.data[0];
-        var link=window.location.origin+"?invite="+invite.token;
+        var link=window.location.origin+"?invite="+(invite.token||inviteToken);
         // Send email via Edge Function
         supabase.functions.invoke("send-invite",{
           body:{
@@ -6143,7 +6145,7 @@ export default function App() {
           }
         }).then(function(){});
         sendingInviteRef.current=false;
-        onSuccess&&onSuccess(link,invite.token);
+        onSuccess&&onSuccess(link,invite.token||inviteToken);
       });
     };
     if(familyId){
@@ -6313,7 +6315,15 @@ export default function App() {
     <><GS/><Toasts toasts={toasts}/><FirstTimeSetup user={user} onDone={function(fname,newMembers){
       localStorage.setItem("calla_setup_"+user.id,"true");
       setSetupDone(true);
-      if(fname) setUser(function(u){return{...u,family:fname};});
+      // Regenerate catch prefix now that we have the family name
+      if(fname&&user&&user.id){
+        var slug=fname.toLowerCase().replace(/[^a-z0-9]/g,"").slice(0,15);
+        var pfx=slug.length>=3?slug+user.id.replace(/-/g,"").slice(-3):user.id.replace(/-/g,"").slice(0,10);
+        supabase.from("profiles").update({catch_prefix:pfx,family_name:fname}).eq("id",user.id).then(function(){});
+        setUser(function(u){return{...u,family:fname,catchPrefix:pfx};});
+      } else if(fname){
+        setUser(function(u){return{...u,family:fname};});
+      }
       if(newMembers&&newMembers.length>0) setMembers(newMembers);
       if(!localStorage.getItem("calla_coparent_onboarding_seen")) setShowCoParentSetup(true);
     }}/></>
