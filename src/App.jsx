@@ -3711,103 +3711,136 @@ function InboxScreen({members,onAdd,user,familyId,topBar}) {
 
   return (
     <div className="screen-enter">
-      {/* Hero header — matches mockup */}
-      <div style={{background:"var(--sage)",margin:"-20px -18px 16px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 28px",borderRadius:"0 0 24px 24px"}}>
+      {/* ── Hero header ─────────────────────────────────────────────────── */}
+      <div style={{background:"linear-gradient(160deg,#1e3d2a 0%,#2d5a3d 100%)",margin:"-20px -18px 20px",padding:"calc(env(safe-area-inset-top,44px) + 10px) 18px 24px",borderRadius:"0 0 28px 28px",boxShadow:"0 4px 24px rgba(30,61,42,.25)"}}>
         {topBar}
-        <p style={{fontSize:11,fontWeight:600,color:"rgba(245,240,232,.45)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:4,fontFamily:"-apple-system,sans-serif"}}>Smart Inbox</p>
-        <p style={{fontSize:26,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.2,letterSpacing:"-.4px",marginBottom:14,textAlign:"center"}}>Calla Remembers<br/>Everything.</p>
-        <div style={{display:"flex",gap:8,justifyContent:"center"}}>
-          <button onClick={function(){setTab("email");}} style={{background:tab==="email"?"#f5f0e8":"transparent",color:tab==="email"?"var(--sage)":"#f5f0e8",border:"1.5px solid rgba(245,240,232,.7)",borderRadius:100,padding:"8px 18px",fontSize:13,fontWeight:700,fontFamily:"-apple-system,sans-serif"}}>Email Inbox</button>
-          <button onClick={function(){setTab("flyer");}} style={{background:tab==="flyer"?"#f5f0e8":"transparent",color:tab==="flyer"?"var(--sage)":"#f5f0e8",border:"1.5px solid rgba(245,240,232,.7)",borderRadius:100,padding:"8px 18px",fontSize:13,fontWeight:700,fontFamily:"-apple-system,sans-serif"}}>Flyer Capture</button>
+        <div style={{textAlign:"center",marginBottom:18}}>
+          <p style={{fontSize:11,fontWeight:700,color:"rgba(245,240,232,.5)",letterSpacing:".12em",textTransform:"uppercase",marginBottom:6}}>Smart Inbox</p>
+          <p style={{fontSize:27,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.2,letterSpacing:"-.5px",marginBottom:0}}>Calla Remembers<br/>Everything.</p>
+        </div>
+        {/* Tab switcher */}
+        <div style={{background:"rgba(255,255,255,.10)",borderRadius:14,padding:4,display:"flex",gap:4}}>
+          <button onClick={function(){setTab("email");}} style={{flex:1,padding:"9px 0",borderRadius:10,background:tab==="email"?"#f5f0e8":"transparent",color:tab==="email"?"#1e3d2a":"rgba(245,240,232,.8)",fontWeight:700,fontSize:13,border:"none",transition:"all .2s",fontFamily:"-apple-system,sans-serif"}}>✉️ Email Inbox</button>
+          <button onClick={function(){setTab("flyer");}} style={{flex:1,padding:"9px 0",borderRadius:10,background:tab==="flyer"?"#f5f0e8":"transparent",color:tab==="flyer"?"#1e3d2a":"rgba(245,240,232,.8)",fontWeight:700,fontSize:13,border:"none",transition:"all .2s",fontFamily:"-apple-system,sans-serif"}}>📄 Flyer Capture</button>
         </div>
       </div>
-
-      {/* Privacy pledge — email tab only */}
-      {tab==="email"&&(
-        <div style={{background:"rgba(45,90,61,.06)",border:"1px solid rgba(83,136,122,.2)",borderRadius:16,padding:"12px 14px",marginBottom:16,display:"flex",gap:10,alignItems:"flex-start"}}>
-          <Check size={16} color="var(--sage2)" style={{flexShrink:0,marginTop:2}}/>
-          <div>
-            <p style={{fontWeight:700,fontSize:15,color:"var(--sage3)",marginBottom:2}}>Your privacy is protected</p>
-            <p style={{fontSize:15,color:"var(--sage3)",lineHeight:1.6}}>Emails deleted immediately after extraction. Nothing else is stored.</p>
-          </div>
-        </div>
-      )}
 
       {/* Flyer tab */}
       {tab==="flyer"&&(
         <FlyerScanner members={members} onAdd={onAdd}/>
       )}
 
-      {/* Email tab */}
+      {/* Email tab — idle */}
       {tab==="email"&&stage==="idle"&&(
         <>
-          <Card style={{marginBottom:14,background:"rgba(59,130,246,.08)",borderColor:"#BFDBFE"}}>
-            <p style={{fontSize:15,fontWeight:700,color:"var(--sage3)",marginBottom:6}}>Your private catch address</p>
-            {(function(){
-              var addr=catchPrefix+"@getcalla.ca";
-              return (
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-                  <code style={{flex:1,fontSize:15,fontWeight:700,color:"var(--sage2)",background:"var(--ink2)",border:"1px solid rgba(59,130,246,.25)",borderRadius:8,padding:"9px 12px",wordBreak:"break-all"}}>{addr}</code>
-                  <button onClick={()=>navigator.clipboard&&navigator.clipboard.writeText(addr)} style={{background:"var(--sage2)",color:"var(--cream)",border:"none",borderRadius:8,padding:"9px 14px",display:"flex",alignItems:"center",gap:5,fontSize:15,fontWeight:700,flexShrink:0}}><Copy size={13}/>Copy</button>
+          {/* ── Private address card ─────────────────────────────────────── */}
+          {(function(){
+            var addr=catchPrefix+"@getcalla.ca";
+            return (
+              <div style={{background:"linear-gradient(135deg,#1e3d2a 0%,#2d5a3d 100%)",borderRadius:20,padding:"18px 18px 16px",marginBottom:20,boxShadow:"0 4px 20px rgba(30,61,42,.18)"}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+                  <div style={{width:32,height:32,borderRadius:10,background:"rgba(245,240,232,.12)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>🔒</div>
+                  <div>
+                    <p style={{fontWeight:700,fontSize:13,color:"rgba(245,240,232,.5)",letterSpacing:".06em",textTransform:"uppercase",marginBottom:1}}>Your Private Catch Address</p>
+                  </div>
                 </div>
-              );
-            })()}
-            <p style={{fontSize:15,color:"var(--sage3)"}}>Forward any school or coach email to this address, or CC it when signing up for activities.</p>
-          </Card>
-
-          {/* ── Received emails from catch address ─────────────────────── */}
-          {(catchItems.length>0||loadingCatch)&&(
-            <div style={{marginBottom:16}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
-                <p style={{fontSize:13,fontWeight:700,color:"var(--cream3)",textTransform:"uppercase",letterSpacing:".05em"}}>
-                  📬 Arrived at your catch address {catchItems.length>0&&<span style={{background:"var(--sage2)",color:"#fff",borderRadius:99,padding:"1px 7px",fontSize:12,fontWeight:700,marginLeft:6}}>{catchItems.length}</span>}
-                </p>
-                <button onClick={loadCatchItems} style={{background:"none",border:"none",color:"var(--sage2)",fontSize:13,fontWeight:600,padding:"4px 0"}}>Refresh</button>
+                <div style={{background:"rgba(245,240,232,.08)",border:"1px solid rgba(245,240,232,.15)",borderRadius:12,padding:"11px 14px",marginBottom:12,display:"flex",alignItems:"center",gap:10}}>
+                  <code style={{flex:1,fontSize:14,fontWeight:700,color:"#a8d5b5",letterSpacing:".02em",wordBreak:"break-all"}}>{addr}</code>
+                  <button onClick={()=>{navigator.clipboard&&navigator.clipboard.writeText(addr);}} style={{background:"rgba(245,240,232,.15)",border:"none",borderRadius:8,padding:"7px 12px",display:"flex",alignItems:"center",gap:5,fontSize:12,fontWeight:700,color:"#f5f0e8",flexShrink:0,cursor:"pointer"}}>
+                    <Copy size={12}/>Copy
+                  </button>
+                </div>
+                <p style={{fontSize:13,color:"rgba(245,240,232,.6)",lineHeight:1.55}}>Forward coach or school emails here, or CC it when registering for activities.</p>
               </div>
-              {loadingCatch&&catchItems.length===0&&(
-                <div style={{textAlign:"center",padding:"18px 0",color:"var(--cream3)",fontSize:14}}>Checking inbox…</div>
-              )}
+            );
+          })()}
+
+          {/* ── Inbox emails ─────────────────────────────────────────────── */}
+          {loadingCatch&&catchItems.length===0&&(
+            <div style={{textAlign:"center",padding:"24px 0 8px"}}>
+              <div style={{width:32,height:32,border:"2.5px solid var(--border2)",borderTopColor:"var(--sage2)",borderRadius:"50%",animation:"spin .7s linear infinite",margin:"0 auto 10px"}}/>
+              <p style={{fontSize:14,color:"var(--cream3)"}}>Checking inbox…</p>
+            </div>
+          )}
+
+          {catchItems.length>0&&(
+            <div style={{marginBottom:20}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <p style={{fontSize:13,fontWeight:700,color:"var(--cream2)",letterSpacing:".05em",textTransform:"uppercase"}}>Inbox</p>
+                  <span style={{background:"var(--sage2)",color:"#fff",borderRadius:99,padding:"2px 8px",fontSize:11,fontWeight:800}}>{catchItems.length}</span>
+                </div>
+                <button onClick={loadCatchItems} style={{background:"none",border:"none",color:"var(--sage2)",fontSize:13,fontWeight:600,padding:"4px 0",cursor:"pointer"}}>↻ Refresh</button>
+              </div>
               {catchItems.map(function(item){
                 var isSelected=selectedCatchId===item.id;
+                var initials=((item.from_name||item.from_address||"?").trim().split(/\s+/).map(function(w){return w[0];}).slice(0,2).join("")).toUpperCase()||"?";
                 return (
-                  <div key={item.id} style={{background:isSelected?"rgba(45,90,61,.1)":"var(--ink2)",border:"1.5px solid "+(isSelected?"var(--sage2)":"var(--border2)"),borderRadius:14,padding:"12px 14px",marginBottom:8,position:"relative"}}>
-                    <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
-                      <div style={{width:36,height:36,borderRadius:10,background:"rgba(59,130,246,.10)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>📧</div>
+                  <div key={item.id} style={{background:isSelected?"rgba(45,90,61,.08)":"var(--ink2)",border:"1.5px solid "+(isSelected?"var(--sage2)":"var(--border2)"),borderRadius:18,padding:"14px 14px 12px",marginBottom:10,boxShadow:isSelected?"0 0 0 3px rgba(45,90,61,.12)":"0 1px 4px rgba(0,0,0,.06)",transition:"all .2s"}}>
+                    <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
+                      {/* Sender avatar */}
+                      <div style={{width:40,height:40,borderRadius:13,background:"linear-gradient(135deg,#2d5a3d,#4a8a64)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:800,color:"#f5f0e8",flexShrink:0,letterSpacing:".02em"}}>{initials}</div>
                       <div style={{flex:1,minWidth:0}}>
-                        <p style={{fontWeight:700,fontSize:14,color:"var(--cream)",marginBottom:2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.subject||"(No subject)"}</p>
-                        <p style={{fontSize:13,color:"var(--cream3)",marginBottom:0,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.from_name||item.from_address||"Unknown sender"} · {fmtReceivedAt(item.received_at)}</p>
+                        <p style={{fontWeight:700,fontSize:14,color:"var(--cream)",marginBottom:3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.subject||"(No subject)"}</p>
+                        <p style={{fontSize:12,color:"var(--cream3)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.from_name||item.from_address||"Unknown"} · {fmtReceivedAt(item.received_at)}</p>
                       </div>
-                      <button onClick={function(){deleteCatchItem(item.id);}} style={{background:"none",border:"none",padding:"4px",color:"var(--cream3)",fontSize:16,flexShrink:0,cursor:"pointer"}}>×</button>
+                      <button onClick={function(){deleteCatchItem(item.id);}} style={{background:"none",border:"none",padding:"4px 6px",color:"var(--cream3)",fontSize:18,flexShrink:0,cursor:"pointer",lineHeight:1}}>×</button>
                     </div>
-                    <div style={{display:"flex",gap:8,marginTop:10}}>
-                      <button onClick={function(){openCatchItem(item);}} style={{flex:1,background:"var(--sage2)",color:"#fff",border:"none",borderRadius:10,padding:"9px",fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                    <div style={{display:"flex",gap:8,marginTop:12}}>
+                      <button onClick={function(){openCatchItem(item);}} style={{flex:1,background:"linear-gradient(135deg,#2d5a3d,#3d7a54)",color:"#f5f0e8",border:"none",borderRadius:11,padding:"10px",fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6,boxShadow:"0 2px 8px rgba(45,90,61,.3)"}}>
                         ✨ Extract Events
                       </button>
-                      <button onClick={function(){deleteCatchItem(item.id);}} style={{background:"var(--ink3)",color:"var(--cream3)",border:"none",borderRadius:10,padding:"9px 14px",fontWeight:600,fontSize:13,cursor:"pointer"}}>
+                      <button onClick={function(){deleteCatchItem(item.id);}} style={{background:"var(--ink3)",color:"var(--cream3)",border:"1px solid var(--border2)",borderRadius:11,padding:"10px 16px",fontWeight:600,fontSize:13,cursor:"pointer"}}>
                         Discard
                       </button>
                     </div>
                   </div>
                 );
               })}
-              <div style={{borderBottom:"1px solid var(--border2)",margin:"14px 0 16px"}}/>
             </div>
           )}
 
-          <div style={{position:"relative",marginBottom:10}}>
-            <textarea rows={7} placeholder={"Paste any email here...\n\nWorks for:\n• Coach/instructor updates & cancellations\n• School event notices\n• Registration deadlines\n• Any email with event details"} value={text} onChange={e=>{setText(e.target.value);if(!e.target.value)setSelectedCatchId(null);}} style={{resize:"none",fontSize:15,lineHeight:1.65}}/>
+          {/* ── Empty inbox state ────────────────────────────────────────── */}
+          {!loadingCatch&&catchItems.length===0&&(
+            <div style={{textAlign:"center",padding:"8px 0 20px"}}>
+              <div style={{fontSize:40,marginBottom:10,opacity:.5}}>📭</div>
+              <p style={{fontWeight:700,fontSize:15,color:"var(--cream2)",marginBottom:4}}>Inbox is empty</p>
+              <p style={{fontSize:13,color:"var(--cream3)",lineHeight:1.6,maxWidth:260,margin:"0 auto 0"}}>Forward a coach or school email to your catch address and it'll appear here automatically.</p>
+            </div>
+          )}
+
+          {/* ── Divider ──────────────────────────────────────────────────── */}
+          <div style={{display:"flex",alignItems:"center",gap:10,margin:"4px 0 16px"}}>
+            <div style={{flex:1,height:1,background:"var(--border2)"}}/>
+            <p style={{fontSize:12,fontWeight:600,color:"var(--cream3)",letterSpacing:".06em",textTransform:"uppercase"}}>or paste an email</p>
+            <div style={{flex:1,height:1,background:"var(--border2)"}}/>
           </div>
-          <button onClick={()=>analyze()} disabled={!text.trim()} style={{width:"100%",background:text.trim()?"var(--sage)":"var(--ink4)",color:text.trim()?"#f5f0e8":"var(--cream3)",borderRadius:12,padding:"14px",fontWeight:700,fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",gap:8,border:"none",opacity:text.trim()?1:0.5}}>
-            ✨ Extract Events
-          </button>
+
+          {/* ── Paste section ────────────────────────────────────────────── */}
+          <div style={{background:"var(--ink2)",border:"1.5px solid var(--border2)",borderRadius:18,overflow:"hidden",marginBottom:12}}>
+            <textarea rows={6} placeholder={"Paste any email text here…\n\nWorks for:\n• Practice & game schedules\n• Cancellations & rescheduling\n• Registration confirmations\n• Any message with event details"} value={text} onChange={e=>{setText(e.target.value);if(!e.target.value)setSelectedCatchId(null);}} style={{resize:"none",fontSize:14,lineHeight:1.7,border:"none",borderRadius:0,background:"transparent",padding:"14px 16px",width:"100%",boxSizing:"border-box"}}/>
+            {text.trim()&&(
+              <div style={{borderTop:"1px solid var(--border2)",padding:"10px 12px",display:"flex",justifyContent:"flex-end"}}>
+                <button onClick={()=>analyze()} style={{background:"linear-gradient(135deg,#2d5a3d,#3d7a54)",color:"#f5f0e8",border:"none",borderRadius:10,padding:"9px 20px",fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",gap:6,boxShadow:"0 2px 8px rgba(45,90,61,.3)"}}>
+                  ✨ Extract Events
+                </button>
+              </div>
+            )}
+          </div>
+          {!text.trim()&&(
+            <button disabled style={{width:"100%",background:"var(--ink3)",color:"var(--cream3)",borderRadius:12,padding:"13px",fontWeight:700,fontSize:14,border:"1.5px dashed var(--border2)",opacity:.6,cursor:"default",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+              ✨ Extract Events
+            </button>
+          )}
         </>
       )}
 
       {tab==="email"&&stage==="analyzing"&&(
-        <div style={{textAlign:"center",padding:"32px 0"}}>
-          <div style={{width:48,height:48,border:"3px solid #E5E7EB",borderTopColor:"#111",borderRadius:"50%",animation:"spin .7s linear infinite",margin:"0 auto 16px"}}/>
-          <p style={{fontWeight:700,fontSize:15,marginBottom:4}}>Reading email…</p>
-          <p style={{fontSize:15,color:"var(--cream3)"}}>Detecting events and sender</p>
+        <div style={{textAlign:"center",padding:"48px 0 32px"}}>
+          <style>{`@keyframes pulseRing{0%{transform:scale(.95);box-shadow:0 0 0 0 rgba(45,90,61,.5)}70%{transform:scale(1);box-shadow:0 0 0 14px rgba(45,90,61,0)}100%{transform:scale(.95);box-shadow:0 0 0 0 rgba(45,90,61,0)}}`}</style>
+          <div style={{width:64,height:64,borderRadius:"50%",background:"linear-gradient(135deg,#2d5a3d,#4a8a64)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px",animation:"pulseRing 1.4s ease-out infinite",fontSize:26}}>✉️</div>
+          <p style={{fontWeight:800,fontSize:17,color:"var(--cream)",marginBottom:6,fontFamily:"'Playfair Display',Georgia,serif"}}>Reading your email…</p>
+          <p style={{fontSize:14,color:"var(--cream3)",lineHeight:1.6}}>Detecting events, dates & sender</p>
         </div>
       )}
 
