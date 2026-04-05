@@ -4674,7 +4674,7 @@ function MoreScreen({members,setMembers,events,user,setUser,paid,trialLeft,onUpg
   useEffect(function(){
     if(!user||!user.id) return;
     supabase.from("vault_documents").select("*").or(familyId?"family_id.eq."+familyId+",user_id.eq."+user.id:"user_id.eq."+user.id).order("created_at",{ascending:false}).then(function(res){
-      if(res.data&&res.data.length>0) setDocs(res.data.map(function(d){return{id:d.id,name:d.name,memberId:d.member_id,emoji:d.emoji||"📄",date:d.created_at?d.created_at.slice(0,10):todayStr,fileUrl:d.file_url};}));
+      if(res.data&&res.data.length>0) setDocs(res.data.map(function(d){return{id:d.id,name:d.name,memberId:d.member_id,emoji:d.emoji||"📄",date:d.created_at?d.created_at.slice(0,10):todayStr,filePath:d.file_url};}));
     }).catch(function(){});
   },[user&&user.id,familyId]);
   const ce=events.filter(e=>e.cost&&parseFloat(e.cost)>0);
@@ -4811,19 +4811,21 @@ function MoreScreen({members,setMembers,events,user,setUser,paid,trialLeft,onUpg
         var path="vault/"+user.id+"/"+genId()+"."+ext;
         var {error:upErr}=await supabase.storage.from("documents").upload(path,file,{upsert:true});
         if(upErr){return;}
-        var {data:urlData}=supabase.storage.from("documents").getPublicUrl(path);
-        var fileUrl=urlData&&urlData.publicUrl;
+        // Store the file PATH only (not a public URL) — signed URLs generated on demand
         var emoji=file.type.startsWith("image/")?"🖼️":file.type==="application/pdf"?"📄":"📁";
-        var newDoc={id:genId(),name:file.name,memberId:null,emoji:emoji,date:todayStr,fileUrl:fileUrl};
-        var {error:dbErr}=await supabase.from("vault_documents").insert({id:newDoc.id,user_id:user.id,family_id:familyId||null,name:file.name,emoji:emoji,member_id:null,file_url:fileUrl,created_at:new Date().toISOString()});
-        if(!dbErr) setDocs(function(p){return[newDoc,...p];});
+        var newDoc={id:genId(),name:file.name,memberId:null,emoji:emoji,date:todayStr,filePath:path};
+        var {error:dbErr}=await supabase.from("vault_documents").insert({id:newDoc.id,user_id:user.id,family_id:familyId||null,name:file.name,emoji:emoji,member_id:null,file_url:path,created_at:new Date().toISOString()});
+        if(!dbErr) setDocs(function(p){return[{...newDoc},...p];});
         e.target.value="";
       }}/>
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
         {docs.map(d=>{const m=gm(d.memberId);return(
           <Card key={d.id} style={{display:"flex",alignItems:"center",gap:12}}>
             <div style={{width:42,height:42,background:"var(--ink4)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{d.emoji}</div>
-            <div style={{flex:1}}><p style={{fontWeight:700,fontSize:15}}>{d.name}</p><div style={{display:"flex",gap:8,marginTop:3}}><span style={{fontSize:15,color:m.color}}>{m.emoji} {m.name}</span><span style={{fontSize:15,color:"var(--cream3)"}}>{fd(d.date)}</span></div>{d.fileUrl&&<button onClick={function(){window.open(d.fileUrl,"_blank");}} style={{background:"none",border:"none",padding:0,color:"var(--sage3)",fontSize:12,fontWeight:600,cursor:"pointer",textDecoration:"underline",marginTop:2}}>View</button>}</div>
+            <div style={{flex:1}}><p style={{fontWeight:700,fontSize:15}}>{d.name}</p><div style={{display:"flex",gap:8,marginTop:3}}><span style={{fontSize:15,color:m.color}}>{m.emoji} {m.name}</span><span style={{fontSize:15,color:"var(--cream3)"}}>{fd(d.date)}</span></div>{d.filePath&&<button onClick={async function(){
+  var {data:sd}=await supabase.storage.from("documents").createSignedUrl(d.filePath,3600);
+  if(sd&&sd.signedUrl) window.open(sd.signedUrl,"_blank");
+}} style={{background:"none",border:"none",padding:0,color:"var(--sage3)",fontSize:12,fontWeight:600,cursor:"pointer",textDecoration:"underline",marginTop:2}}>View</button>}</div>
             <button onClick={function(){
               setDocs(function(x){return x.filter(function(i){return i.id!==d.id;});});
               supabase.from("vault_documents").delete().eq("id",d.id).then(function(){}).catch(function(){});

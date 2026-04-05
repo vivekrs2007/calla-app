@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS vault_documents (
   family_id  UUID REFERENCES families(id) ON DELETE SET NULL,
   name       TEXT NOT NULL,
   emoji      TEXT DEFAULT '📄',
-  member_id  UUID REFERENCES members(id) ON DELETE SET NULL,
+  member_id  TEXT REFERENCES members(id) ON DELETE SET NULL,
   file_url   TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
