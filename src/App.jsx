@@ -848,7 +848,7 @@ function Auth({onLogin}) {
       {/* Dark green header */}
       <div style={{background:"linear-gradient(160deg,#1a2e1a 0%,#2d5a3d 100%)",padding:"calc(env(safe-area-inset-top,44px) + 28px) 28px 36px",textAlign:"center",flexShrink:0}}>
         <div style={{width:64,height:64,background:"rgba(245,240,232,.12)",border:"1.5px solid rgba(245,240,232,.18)",borderRadius:20,display:"inline-flex",alignItems:"center",justifyContent:"center",marginBottom:14}}>
-          <span style={{fontSize:30}}>🌸</span>
+          <img src={callaLily} alt="Calla" style={{width:46,height:46,objectFit:"contain"}}/>
         </div>
         <h1 style={{fontSize:32,fontWeight:700,letterSpacing:"-.8px",fontFamily:"'Playfair Display',Georgia,serif",color:"#f5f0e8",marginBottom:6}}>Calla</h1>
         <p style={{color:"rgba(245,240,232,.6)",fontSize:14,fontWeight:400,letterSpacing:".01em"}}>The family brain you don't have to be.</p>
@@ -1128,7 +1128,7 @@ function FirstTimeSetup({user,onDone}) {
       {DOTS}
       <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 28px 16px"}}>
         <div className="fu" style={{textAlign:"center"}}>
-          <div style={{fontSize:68,marginBottom:20,lineHeight:1}}>🌸</div>
+          <div style={{marginBottom:20}}><img src={callaLily} alt="Calla" style={{width:96,height:96,objectFit:"contain"}}/></div>
           <h1 style={{fontSize:28,fontWeight:800,letterSpacing:"-.5px",marginBottom:10,fontFamily:"'Playfair Display',Georgia,serif",color:"var(--cream)",lineHeight:1.15}}>Welcome to Calla</h1>
           <p style={{color:"var(--cream3)",fontSize:16,lineHeight:1.7,marginBottom:32,fontWeight:300}}>Let's set up your family calendar in two minutes.</p>
         </div>
@@ -6481,7 +6481,7 @@ export default function App() {
       <div style={{height:"100vh",maxHeight:"100dvh",display:"flex",flexDirection:"column",background:"var(--ink2)",overflow:"hidden"}}>
         {/* Header */}
         <div style={{background:"linear-gradient(160deg,#1e3d2a 0%,#2d5a3d 100%)",padding:"calc(env(safe-area-inset-top,44px) + 24px) 28px 28px",textAlign:"center",flexShrink:0}}>
-          <div style={{fontSize:44,marginBottom:8}}>🌸</div>
+          <div style={{marginBottom:8}}><img src={callaLily} alt="Calla" style={{width:64,height:64,objectFit:"contain"}}/></div>
           <h1 style={{fontSize:24,fontWeight:800,color:"#f5f0e8",fontFamily:"'Playfair Display',Georgia,serif",letterSpacing:"-.5px",marginBottom:4}}>You're invited to Calla</h1>
           <p style={{fontSize:13,color:"rgba(245,240,232,.6)",fontWeight:400}}>Family calendar · Made in Canada 🍁</p>
         </div>
@@ -6613,7 +6613,7 @@ export default function App() {
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
       <div style={{display:"flex",alignItems:"center",gap:10}}>
         <div style={{width:34,height:34,background:"rgba(245,240,232,.18)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,border:"1px solid rgba(245,240,232,.25)"}}>
-          <span style={{fontSize:16}}>🌸</span>
+          <img src={callaLily} alt="Calla" style={{width:22,height:22,objectFit:"contain"}}/>
         </div>
         <p style={{fontWeight:700,fontSize:16,fontFamily:"'Playfair Display',Georgia,serif",color:"#f5f0e8",lineHeight:1}}>{user.family}</p>
       </div>
@@ -6692,7 +6692,7 @@ export default function App() {
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
                   <div style={{display:"flex",alignItems:"center",gap:10}}>
                     <div style={{width:34,height:34,background:"rgba(245,240,232,.18)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",border:"1px solid rgba(245,240,232,.25)"}}>
-                      <span style={{fontSize:16}}>🌸</span>
+                      <img src={callaLily} alt="Calla" style={{width:22,height:22,objectFit:"contain"}}/>
                     </div>
                     <p style={{fontWeight:700,fontSize:16,fontFamily:"'Playfair Display',Georgia,serif",color:"#f5f0e8",lineHeight:1}}>{user.family}</p>
                   </div>
