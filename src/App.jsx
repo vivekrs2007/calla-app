@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, Fragment } from "react";
+import callaLily from "./assets/calla-lily.png";
 import { supabase, SUPABASE_KEY } from "./supabase.js";
 import { App as CapApp } from "@capacitor/app";
 import { initializeApp } from "firebase/app";
@@ -203,6 +204,7 @@ const GS = () => (
     .field-shake{animation:fieldShake .38s ease forwards}
     .today-glow{animation:todayGlow 3s ease-in-out infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes floatIn{from{opacity:0;transform:translateY(18px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
     @keyframes sonar{0%{transform:scale(1);opacity:.5}100%{transform:scale(2.8);opacity:0}}
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
     @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
@@ -6414,11 +6416,9 @@ export default function App() {
 
   // ── Step 0: Loading session ───────────────────────────────────────────────
   if(authLoading) return (
-    <><GS/><div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--ink2)"}}>
-      <div style={{textAlign:"center"}}>
-        <div style={{fontSize:40,marginBottom:16}}>🌸</div>
-        <div style={{width:24,height:24,border:"2px solid var(--border2)",borderTopColor:"var(--sage2)",borderRadius:"50%",animation:"spin .7s linear infinite",margin:"0 auto"}}/>
-      </div>
+    <><GS/><div style={{height:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"linear-gradient(160deg,#1a2e1a 0%,#2d5a3d 100%)"}}>
+      <img src={callaLily} alt="Calla" style={{width:200,height:200,objectFit:"contain",animation:"floatIn .8s ease-out both"}}/>
+      <p style={{fontFamily:"'Playfair Display',Georgia,serif",fontSize:28,fontWeight:700,color:"#f5f0e8",marginTop:8,letterSpacing:"0.5px"}}>Calla</p>
     </div></>
   );
 
